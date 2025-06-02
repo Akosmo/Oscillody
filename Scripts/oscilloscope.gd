@@ -26,22 +26,15 @@ var waveform_number: int
 var waveform_x_spacing: float
 var waveform_y_pos: int
 var waveform_color: Color
-var waveform_thickness: int
 
-var audio_frame_buffers: Array
 var waveform_points: PackedVector2Array # Array which will contain data for drawing waveform lines
 
 var waveform_height: float
-var waveform_height_multiplier: float
-var max_waveform_height: float
+var adjust_to_window: float
 
 var offset: float # Offset for a waveform's initial X position
 
-var height_quotient: float
-
-var point_idx: int # Iterator
-
-var array_with_frames: Array
+var array_with_frames: PackedFloat32Array
 
 # For X and Y positions of each line point.
 var x: float
@@ -49,9 +42,13 @@ var y: float
 
 #endregion ##################################
 
+func _ready() -> void:
+	MainUtils.update_visualizer.connect(update_oscilloscope)
+	update_oscilloscope()
+
 # Redraws canvas.
 func _draw() -> void:
-	for stem in GlobalVariables.number_of_stems:
+	for stem: int in GlobalVariables.number_of_stems:
 		if GlobalVariables.number_of_stems > 1:
 			waveform(GlobalVariables.waveform_configs[stem], MainUtils.audio_frame_buffers[stem])
 		else:
@@ -61,28 +58,29 @@ func _draw() -> void:
 func _process(_delta: float) -> void:
 	queue_redraw() # Calls _draw()
 
+func update_oscilloscope() -> void:
+	waveform_height = remap(GlobalVariables.waveform_height, 1.0, 10.0, 0.25, 1.0)
+	
+	# Multiplying by a number that looks fine.
+	if GlobalVariables.vertical_layout and GlobalVariables.number_of_stems > 1:
+		adjust_to_window = MainUtils.window_size.y * 0.08
+	elif not GlobalVariables.vertical_layout and GlobalVariables.number_of_stems > 1:
+		adjust_to_window = MainUtils.window_size.y * 0.15
+	else:
+		adjust_to_window = MainUtils.window_size.y * 0.35
+	
+	waveform_height *= adjust_to_window
+
 # Handles audio data and waveform display.
-func waveform(waveform_configs: Array, buffers: Array) -> void:
+func waveform(waveform_configs: Array[Variant], buffers: Array) -> void:
 	waveform_number = waveform_configs[0]
 	waveform_x_spacing = waveform_configs[1]
 	waveform_y_pos = waveform_configs[2]
 	waveform_color = waveform_configs[3]
-	waveform_thickness = waveform_configs[4]
 	
-	audio_frame_buffers = buffers
-	waveform_points.clear() # Array which will contain data for drawing waveform lines
+	if waveform_color.a == 0.0:
+		return
 	
-	waveform_height_multiplier = GlobalVariables.waveform_height
-	max_waveform_height = GlobalVariables.max_waveform_height
-	
-	if GlobalVariables.vertical_layout and GlobalVariables.number_of_stems > 1:
-		waveform_height = MainUtils.window_size.x * 0.05
-	elif not GlobalVariables.vertical_layout and GlobalVariables.number_of_stems > 1:
-		waveform_height = MainUtils.window_size.x * 0.1
-	else:
-		waveform_height = MainUtils.window_size.x * 0.2
-	
-	# Up to next commment, gets and modifies frame buffer data to be displayed.
 	if GlobalVariables.number_of_stems > 2 and not GlobalVariables.vertical_layout:
 		if waveform_number == 1 or waveform_number == 3:
 			offset = 0.0
@@ -91,22 +89,27 @@ func waveform(waveform_configs: Array, buffers: Array) -> void:
 	else:
 		offset = 0.0
 	
-	height_quotient = float(waveform_height_multiplier) / float(max_waveform_height)
-	
-	point_idx = 0
-	
 	array_with_frames.clear()
 	
-	for buffer_idx: Array in audio_frame_buffers:
+	for buffer_idx: PackedFloat32Array in buffers:
 		array_with_frames.append_array(buffer_idx)
 	
-	for frame: float in array_with_frames:
-		x = point_idx * waveform_x_spacing + int(offset)
-		y = waveform_y_pos + (frame * waveform_height) * height_quotient
-		waveform_points.append(Vector2(x, y))
-		point_idx += 1
+	waveform_points.clear()
+	waveform_points.resize(array_with_frames.size())
+	
+	# Slow, this entire script should be in C#.
+	if buffers.size() == MainUtils.buffer_queue_size:
+		for point: int in array_with_frames.size():
+			x = point * waveform_x_spacing + offset
+			y = array_with_frames[point] * waveform_height + waveform_y_pos
+			waveform_points[point].x = x
+			waveform_points[point].y = y
 	
 	# Displays waveform.
-	if waveform_points.size() > 1:
-		draw_polyline(waveform_points, waveform_color, waveform_thickness)
-	
+	if waveform_points.size() > 1 and buffers.size() > 0:
+		draw_polyline(
+			waveform_points,
+			waveform_color,
+			GlobalVariables.waveform_thickness,
+			GlobalVariables.waveform_antialiasing
+			)

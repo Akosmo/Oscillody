@@ -20,17 +20,19 @@ extends TextureRect
 
 #region ICON VARIABLES ##################################
 
-var max_size_on_ui: float = 10.0
 var icon_image_ratio: float
 var icon_image_size: Vector2
-var icon_image_scale_lerpf: float = lerpf(0.02, 0.6, float(GlobalVariables.icon_size) / max_size_on_ui)
-var icon_image_scale: Vector2 = Vector2(
-	Vector2(MainUtils.window_size).x / icon_image_size.x * icon_image_scale_lerpf,
-	Vector2(MainUtils.window_size).x / icon_image_size.x * icon_image_scale_lerpf
+var icon_image_scale_factor: float = remap(
+	float(GlobalVariables.icon_size),
+	1.0,
+	20.0,
+	0.1,
+	1.0
 	)
+var icon_image_scale: Vector2
 var window_ratio: float
-
-var reduce_strength: float = 0.8
+var difference: Vector2
+var icon_shake_energy: Vector2
 
 #endregion ##################################
 
@@ -39,50 +41,92 @@ func _ready() -> void:
 	MainUtils.icon_file_selected.connect(load_icon)
 	update_icon()
 
-func update_icon() -> void:
-	icon_image_scale_lerpf = lerpf(0.02, 0.6, float(GlobalVariables.icon_size) / max_size_on_ui)
-	window_ratio = MainUtils.window_size.x / MainUtils.window_size.y
-	
-	# Scaling to different axis depending on the aspect ratio.
-	if window_ratio <= icon_image_ratio:
-		icon_image_scale = Vector2(
-			Vector2(MainUtils.window_size).x / icon_image_size.x * icon_image_scale_lerpf,
-			Vector2(MainUtils.window_size).x / icon_image_size.x * icon_image_scale_lerpf
-			)
-	else:
-		icon_image_scale = Vector2(
-			Vector2(MainUtils.window_size).y / icon_image_size.y * icon_image_scale_lerpf,
-			Vector2(MainUtils.window_size).y / icon_image_size.y * icon_image_scale_lerpf
-			)
-	
-	visible = GlobalVariables.icon_enabled
-	
-	set_self_modulate(GlobalVariables.icon_color)
-	
-	size = icon_image_size
-	
-	pivot_offset = size / 2.0
-	
-	set_scale(icon_image_scale)
-	
-	# Difference from middle of icon image to middle of window.
-	var difference: Vector2 = Vector2(
-		size.x / 2.0 - float(MainUtils.window_size.x) / 2.0,
-		size.y / 2.0 - float(MainUtils.window_size.y) / 2.0
-		)
-	position = difference * -1.0
+func _process(_delta: float) -> void:
+	if (visible and
+	(GlobalVariables.icon_position_reaction_strength or
+	GlobalVariables.icon_size_reaction_strength or
+	GlobalVariables.icon_rotation_reaction_strength)):
+		icon_reaction(MainUtils.cur_mag)
 
-func icon_reaction(mag: float, strength: float) -> void:
-	set_scale(Vector2(
-		icon_image_scale.x * (1 + mag * reduce_strength * strength),
-		icon_image_scale.y * (1 + mag * reduce_strength * strength)
-		))
-	
-	if scale < icon_image_scale:
+func update_icon() -> void:
+	visible = GlobalVariables.icon_enabled
+	if visible:
+		set_process(true)
+		
+		icon_image_scale_factor = remap(
+			float(GlobalVariables.icon_size),
+			1.0,
+			20.0,
+			0.05,
+			1.0
+			)
+		if mini(MainUtils.window_size.x, MainUtils.window_size.y) > 0:
+			window_ratio = MainUtils.window_size.x / MainUtils.window_size.y
+		
+		# Scaling to different axis depending on the aspect ratio.
+		if window_ratio <= icon_image_ratio:
+			icon_image_scale = Vector2(
+				Vector2(MainUtils.window_size).x / icon_image_size.x * icon_image_scale_factor,
+				Vector2(MainUtils.window_size).x / icon_image_size.x * icon_image_scale_factor
+				)
+		else:
+			icon_image_scale = Vector2(
+				Vector2(MainUtils.window_size).y / icon_image_size.y * icon_image_scale_factor,
+				Vector2(MainUtils.window_size).y / icon_image_size.y * icon_image_scale_factor
+				)
+		
+		set_self_modulate(GlobalVariables.icon_color)
+		
+		size = icon_image_size
+		
+		pivot_offset = size / 2.0
+		
 		set_scale(icon_image_scale)
+		
+		set_rotation_degrees(GlobalVariables.icon_rotation)
+		
+		# Difference from middle of icon image to middle of window.
+		difference = Vector2(
+			size.x / 2.0 - float(MainUtils.window_size.x) / 2.0,
+			size.y / 2.0 - float(MainUtils.window_size.y) / 2.0
+			)
+		position = difference * -1.0
+	else:
+		set_process(false)
+
+func icon_reaction(mag: float, strength: float = 0.0) -> void:
+	if GlobalVariables.icon_position_reaction_strength:
+		strength = GlobalVariables.icon_position_reaction_strength * 5.0
+		
+		position = difference * -1.0
+		
+		if MainUtils.audio_playing:
+			icon_shake_energy = Vector2(
+				randf_range(-mag, mag) * strength,
+				randf_range(-mag, mag) * strength
+				)
+			position += icon_shake_energy
+		else:
+			position = difference * -1.0
 	
-	if not MainUtils.audio_playing:
-		set_scale(icon_image_scale)
+	if GlobalVariables.icon_size_reaction_strength:
+		strength = GlobalVariables.icon_size_reaction_strength * 0.1
+		
+		set_scale(Vector2(
+			icon_image_scale.x * (1 + mag * strength),
+			icon_image_scale.y * (1 + mag * strength)
+			))
+		
+		if scale < icon_image_scale or not MainUtils.audio_playing:
+			set_scale(icon_image_scale)
+	
+	if GlobalVariables.icon_rotation_reaction_strength:
+		strength = GlobalVariables.icon_rotation_reaction_strength * 5.0
+		
+		set_rotation_degrees(GlobalVariables.icon_rotation + mag * strength)
+		
+		if scale < icon_image_scale or not MainUtils.audio_playing:
+			set_rotation_degrees(GlobalVariables.icon_rotation)
 
 func load_icon() -> void:
 	if GlobalVariables.icon_path == "":

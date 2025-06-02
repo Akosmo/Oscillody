@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b025lmq37pa7"]
 
-[ext_resource type="Script" path="res://Scripts/dividers.gd" id="1_l7xed"]
+[ext_resource type="Script" uid="uid://df6pl6yf0npib" path="res://Scripts/dividers.gd" id="1_l7xed"]
 
 [node name="Dividers" type="Control"]
 visible = false

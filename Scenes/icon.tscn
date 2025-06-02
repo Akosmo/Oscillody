@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bew8ccqn3tw2c"]
 
-[ext_resource type="Script" path="res://Scripts/icon.gd" id="2_wwtau"]
+[ext_resource type="Script" uid="uid://dx0pad1xqgmg7" path="res://Scripts/icon.gd" id="2_wwtau"]
 
 [node name="Icon" type="TextureRect"]
 visible = false

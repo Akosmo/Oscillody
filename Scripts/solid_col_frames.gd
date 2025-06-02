@@ -29,7 +29,7 @@ extends Control
 
 #region SOLID COLOR VARIABLES ##################################
 
-var v_layout_sizes: Array = [
+var v_layout_sizes: Array[Vector2i] = [
 	MainUtils.window_size,
 	Vector2i(MainUtils.window_size.x, MainUtils.window_size.y / 2),
 	Vector2i(MainUtils.window_size.x, MainUtils.window_size.y / 3),
@@ -51,7 +51,7 @@ func _ready() -> void:
 	update_solid_col_frames()
 
 func update_solid_col_frames() -> void:
-	var visibility: Array = [false, false, false, false]
+	var visibility: Array[bool] = [false, false, false, false]
 	
 	if GlobalVariables.background_type == "Solid Colors":
 		visible = true
@@ -63,7 +63,7 @@ func update_solid_col_frames() -> void:
 			Vector2i(MainUtils.window_size.x, MainUtils.window_size.y / 4)
 		]
 		
-		for waveform in GlobalVariables.number_of_stems:
+		for waveform: int in GlobalVariables.number_of_stems:
 			visibility[waveform] = true
 			
 		frame_one.visible = visibility[0]

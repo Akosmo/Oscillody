@@ -24,7 +24,7 @@ extends Control
 @onready var stop_button: Button = %StopButton
 @onready var loop_button: Button = %LoopButton
 @onready var vol_slider: HSlider = %VolSlider
-@onready var vol_val_display: Label = %VolValDisplay
+@onready var vol_amt_display: Label = %VolAmtDisplay
 @onready var seek_slider: HSlider = %SeekSlider
 @onready var seek_time_display: Label = %SeekTimeDisplay
 @onready var audio_pos_hint: Label = %AudioPosHint
@@ -33,12 +33,21 @@ extends Control
 
 #region PLAYER CONTROL VARIABLES ##################################
 
+# Grabber is 16x16. Divide by 2...
+const GRABBER_OFFSET: float = 8.0
+
 var user_seeking: bool = false
 var mouse_x_pos: String
+var mouse_x_pos_remapped: float
 var audio_pos_mouse: float
 
 var pos_mins: String
 var pos_secs: String
+
+var pos_mins_mouse: String
+var pos_secs_mouse: String
+
+var hint_offset: int = 6
 
 var dur_mins: String
 var dur_secs: String
@@ -57,11 +66,8 @@ func _process(_delta: float) -> void:
 	if not user_seeking:
 		seek_slider.set_value_no_signal(MainUtils.audio_position)
 	
-	vol_val_display.text = str(MainUtils.new_volume_display) + "%"
-	
 	pos_mins = str(floori(MainUtils.audio_position / 60.0))
 	pos_secs = str(int(fmod(MainUtils.audio_position, 60.0))).pad_zeros(2)
-	
 	dur_mins = str(floori(MainUtils.audio_duration / 60.0))
 	dur_secs = str(int(fmod(MainUtils.audio_duration, 60.0))).pad_zeros(2)
 	
@@ -69,19 +75,18 @@ func _process(_delta: float) -> void:
 		{"pm": pos_mins, "ps": pos_secs,
 		"dm": dur_mins, "ds": dur_secs}
 		)
-	
-	if Input.is_action_just_pressed("play_pause") and MainUtils.can_pause_with_spacebar:
+
+# Shortcut doesn't work if button is not visible in tree.
+func _unhandled_key_input(event: InputEvent) -> void:
+	if event.is_action_pressed("play_pause") and not MainUtils.ui_visible and play_pause_button.text == "Play":
+		play_pause_button.pressed.emit()
+	elif event.is_action_pressed("play_pause") and not MainUtils.ui_visible and play_pause_button.text != "Play":
 		play_pause_button.pressed.emit()
 
 func update_player_control() -> void:
-	vol_slider.custom_minimum_size.x = lerp(
-		float(MainUtils.window_size.x / 80), float(MainUtils.window_size.x / 8),
-		float(MainUtils.window_size.x) / float(DisplayServer.screen_get_size().x)
-		)
-	seek_slider.custom_minimum_size.x = lerp(
-		float(MainUtils.window_size.x / 80), float(MainUtils.window_size.x / 2),
-		float(MainUtils.window_size.x) / float(DisplayServer.screen_get_size().x)
-		)
+	vol_slider.custom_minimum_size.x = MainUtils.window_size.x / 12.0
+	# 720 = space (in pixels) used by buttons, margins, labels, and panel.
+	seek_slider.custom_minimum_size.x = MainUtils.window_size.x - (720.0 + vol_slider.custom_minimum_size.x)
 
 func audio_stopped() -> void:
 	play_pause_button.text = "Play"
@@ -112,36 +117,60 @@ func _on_loop_button_toggled(toggled_on: bool) -> void:
 	MainUtils.loop_enabled = toggled_on
 
 func _on_vol_slider_value_changed(value: float) -> void:
-	MainUtils.new_volume_display = roundi(value * 100.0)
+	vol_amt_display.text = str(roundi(value * 100.0)) + "%"
 	MainUtils.new_volume_in_db = linear_to_db(value)
 
 func _on_seek_slider_gui_input(event: InputEvent) -> void:
+	if "pressed=true" in str(event) and "mask=1" in str(event) and "Mouse" in str(event):
+		user_seeking = true
+	
 	# Get audio position to show on a label based on where the mouse is.
-	if GlobalVariables.master_audio_path != "":
-		if "position=" in str(event):
-			var slice_idx: int = 0
-			var event_array: PackedStringArray = str(event).split(", ")
-			for slice: String in event_array:
-				if slice.contains("position"):
-					break
-				else:
-					slice_idx += 1
-			mouse_x_pos = str(event).get_slice(", ", slice_idx).replace("position=((", "")
-			audio_pos_mouse = lerp(
-				0,
-				int(seek_slider.max_value),
-				clamp(mouse_x_pos.to_float(), 0, seek_slider.custom_minimum_size.x) / seek_slider.custom_minimum_size.x
-				)
+	if GlobalVariables.master_audio_path != "" and "position=" in str(event):
+		var slice_idx: int = 0
+		var event_array: PackedStringArray = str(event).split(", ")
+		for slice: String in event_array:
+			if slice.contains("position"):
+				break
+			else:
+				slice_idx += 1
+		mouse_x_pos = str(event).get_slice(", ", slice_idx).replace("position=((", "")
+		mouse_x_pos_remapped = clampf(
+			remap(
+				mouse_x_pos.to_float(),
+				GRABBER_OFFSET,
+				seek_slider.custom_minimum_size.x - GRABBER_OFFSET,
+				0.0,
+				1.0
+				),
+			0.0,
+			1.0
+			)
+		
+		audio_pos_mouse = remap(
+			mouse_x_pos_remapped,
+			0.0,
+			1.0,
+			0.0,
+			seek_slider.max_value
+			)
 			
-		var pos_mins_mouse: String = str(floori(audio_pos_mouse / 60.0))
-		var pos_secs_mouse: String = str(int(fmod(audio_pos_mouse, 60.0))).pad_zeros(2)
+		pos_mins_mouse = str(floori(audio_pos_mouse / 60.0))
+		pos_secs_mouse = str(int(fmod(audio_pos_mouse, 60.0))).pad_zeros(2)
 		audio_pos_hint.text = pos_mins_mouse + ":" + pos_secs_mouse
 		
-		audio_pos_hint.position.x = lerp(
+		if audio_pos_hint.text.length() == 4:
+			hint_offset = 6
+		else:
+			hint_offset = 12
+		
+		audio_pos_hint.position.x = remap(
+			clampf(mouse_x_pos.to_float(), 0.0, seek_slider.custom_minimum_size.x) \
+			/ seek_slider.custom_minimum_size.x,
+			0.0,
+			1.0,
 			seek_slider.position.x,
-			seek_slider.position.x + seek_slider.custom_minimum_size.x,
-			clamp(mouse_x_pos.to_float(), 0, seek_slider.custom_minimum_size.x) / seek_slider.custom_minimum_size.x
-			) - 6
+			seek_slider.position.x + seek_slider.custom_minimum_size.x
+			) - hint_offset
 
 func _on_seek_slider_drag_ended(_value_changed: bool) -> void:
 	user_seeking = false
@@ -149,8 +178,8 @@ func _on_seek_slider_drag_ended(_value_changed: bool) -> void:
 		MainUtils.audio_pos_changed.emit()
 
 func _on_seek_slider_value_changed(value: float) -> void:
-	user_seeking = true
-	MainUtils.new_audio_pos_from_seek = value
+	if user_seeking:
+		MainUtils.new_audio_pos_from_seek = value
 
 func _on_seek_slider_mouse_entered() -> void:
 	audio_pos_hint.visible = true

@@ -1,17 +1,24 @@
-[gd_scene load_steps=4 format=3 uid="uid://dnf05vfocusj8"]
+[gd_scene load_steps=5 format=3 uid="uid://dnf05vfocusj8"]
 
-[ext_resource type="Script" path="res://Scripts/player_control.gd" id="1_ogrew"]
-[ext_resource type="Theme" uid="uid://c1jv3e8d5qb8x" path="res://Themes/main_theme.tres" id="2_pibfw"]
-[ext_resource type="Texture2D" uid="uid://detaekmk7820v" path="res://Themes/Theme Assets/panel_texture.png" id="3_mu6cj"]
+[ext_resource type="Script" uid="uid://b4q6a3q62bv23" path="res://Scripts/player_control.gd" id="1_ogrew"]
+[ext_resource type="Texture2D" uid="uid://43vsp7ritlrx" path="res://Themes/Theme Assets/Main Theme/panel_texture.png" id="2_p3i5h"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_0pihs"]
+device = -1
+keycode = 32
+unicode = 32
+
+[sub_resource type="Shortcut" id="Shortcut_svjpu"]
+events = [SubResource("InputEventKey_0pihs")]
 
 [node name="PlayerControl" type="Control"]
 layout_mode = 3
-anchors_preset = 15
+anchors_preset = 12
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 560.0
 grow_horizontal = 2
-grow_vertical = 2
+grow_vertical = 0
 script = ExtResource("1_ogrew")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
@@ -21,17 +28,18 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -88.0
 grow_horizontal = 2
 grow_vertical = 0
 
 [node name="PanelContainer" type="PanelContainer" parent="MarginContainer"]
+clip_children = 2
 layout_mode = 2
-theme = ExtResource("2_pibfw")
 
 [node name="TextureRect" type="TextureRect" parent="MarginContainer/PanelContainer"]
-modulate = Color(1, 1, 1, 0.156863)
+modulate = Color(1, 1, 1, 0.196078)
 layout_mode = 2
-texture = ExtResource("3_mu6cj")
+texture = ExtResource("2_p3i5h")
 expand_mode = 1
 stretch_mode = 6
 
@@ -50,6 +58,9 @@ theme_override_constants/separation = 10
 unique_name_in_owner = true
 custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
+shortcut = SubResource("Shortcut_svjpu")
+shortcut_feedback = false
+shortcut_in_tooltip = false
 text = "Play"
 
 [node name="StopButton" type="Button" parent="MarginContainer/PanelContainer/MarginContainer/HBoxContainer"]
@@ -74,7 +85,7 @@ step = 0.0
 value = 1.0
 scrollable = false
 
-[node name="VolValDisplay" type="Label" parent="MarginContainer/PanelContainer/MarginContainer/HBoxContainer"]
+[node name="VolAmtDisplay" type="Label" parent="MarginContainer/PanelContainer/MarginContainer/HBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(44, 0)
 layout_mode = 2
@@ -91,11 +102,11 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "0:00 | 0:00"
 
-[node name="Control" type="Control" parent="MarginContainer/PanelContainer"]
+[node name="AudioPosHintControl" type="Control" parent="MarginContainer/PanelContainer"]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="AudioPosHint" type="Label" parent="MarginContainer/PanelContainer/Control"]
+[node name="AudioPosHint" type="Label" parent="MarginContainer/PanelContainer/AudioPosHintControl"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2

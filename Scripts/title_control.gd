@@ -26,16 +26,17 @@ extends Control
 
 #region TITLE CONTROL VARIABLES ##################################
 
-var default_title_pos: Vector2
-var default_weight: int = 400
-var bold_weight: int = 700
-var max_pos_in_ui: float = 100.0
-var title_reaction_enabled: bool = false
-var max_resolution: Vector2
-var compare_length: Vector2
+const DEFAULT_WEIGHT: int = 400
+const BOLD_WEIGHT: int = 700
+const MAX_POS_IN_UI: float = 100.0
 
-var mag_compensation: float = 6.0
+var center_of_text: Vector2 = Vector2.ZERO
+var default_title_pos: Vector2
+var max_resolution: Vector2
+var title_scale: Vector2
+
 var title_shake_energy: Vector2
+var title_size_reaction_addend: int = 0
 
 @onready var title_settings: LabelSettings = title.get_label_settings()
 @onready var font_type: SystemFont = title_settings.get_font()
@@ -43,74 +44,72 @@ var title_shake_energy: Vector2
 #endregion ##################################
 
 func _ready() -> void:
+	font_type.set_font_names(GlobalVariables.title_fonts_in_selector)
+	
 	MainUtils.update_visualizer.connect(update_title)
 	update_title()
+
+func _process(_delta: float) -> void:
+	if visible:
+		if ((GlobalVariables.title_position_reaction_strength or
+		GlobalVariables.title_size_reaction_strength) and
+		MainUtils.audio_playing):
+			title_reaction(MainUtils.cur_mag)
+		else:
+			title_size_reaction_addend = 0
+			title_shake_energy = Vector2.ZERO
+		
+		default_title_pos = Vector2(float(MainUtils.window_size.x) \
+		* (float(GlobalVariables.title_position.x) \
+		/ MAX_POS_IN_UI) - center_of_text.x,
+		float(MainUtils.window_size.y) \
+		* ((MAX_POS_IN_UI - float(GlobalVariables.title_position.y)) \
+		/ MAX_POS_IN_UI) - center_of_text.y)
+		
+		title_settings.set_font_size(GlobalVariables.title_size + title_size_reaction_addend)
+		title.set_position(default_title_pos + title_shake_energy)
 
 func update_title() -> void:
 	if GlobalVariables.title != "":
 		visible = true
+		set_process(true)
+		
+		title.text = GlobalVariables.title
+		
+		if GlobalVariables.title_font_bold:
+			font_type.set_font_weight(BOLD_WEIGHT)
+		else:
+			font_type.set_font_weight(DEFAULT_WEIGHT)
+		
+		font_type.set_font_italic(GlobalVariables.title_font_italic)
+		
+		center_of_text = title.size / 2.0
+		title.pivot_offset = center_of_text
+		max_resolution = DisplayServer.screen_get_size()
+		title_scale = Vector2(MainUtils.window_size) / max_resolution
+		if title_scale.x >= title_scale.y:
+			title.scale = Vector2(title_scale.y, title_scale.y)
+		else:
+			title.scale = Vector2(title_scale.x, title_scale.x)
+		
+		font_type.font_names[0] = GlobalVariables.title_font
+	
+		title_settings.set_font_color(GlobalVariables.title_color)
+		title_settings.set_shadow_color(GlobalVariables.title_shadow_color)
+		title_settings.set_shadow_offset(GlobalVariables.title_shadow_position)
+		title_settings.set_outline_color(GlobalVariables.title_outline_color)
+		title_settings.set_outline_size(GlobalVariables.title_outline_size)
 	else:
 		visible = false
-	
-	font_type.set_font_names(GlobalVariables.title_fonts_in_selector)
-	font_type.font_names[0] = GlobalVariables.title_font
-	
-	title_settings.set_font_color(GlobalVariables.title_color)
-	title_settings.set_shadow_color(GlobalVariables.title_shadow_color)
-	title_settings.set_shadow_offset(GlobalVariables.title_shadow_pos)
-	title_settings.set_outline_color(GlobalVariables.title_outline_color)
-	title_settings.set_outline_size(GlobalVariables.title_outline_size)
+		set_process(false)
 
-func _process(_delta: float) -> void:
-	if OS.has_feature("movie"):
-		title.size = Vector2i(2560, 1440) * 2
-	else:
-		title.size = MainUtils.window_size * 2
+func title_reaction(mag: float, strength: float = 0.0) -> void:
+	if GlobalVariables.title_position_reaction_strength:
+		strength = GlobalVariables.title_position_reaction_strength
+		
+		title_shake_energy = Vector2(randf_range(-mag, mag) * strength, randf_range(-mag, mag) * strength)
 	
-	title.text = GlobalVariables.title
-	
-	if GlobalVariables.title_font_bold:
-		font_type.set_font_weight(bold_weight)
-	else:
-		font_type.set_font_weight(default_weight)
-	
-	font_type.set_font_italic(GlobalVariables.title_font_italic)
-	
-	title_settings.set_font_size(GlobalVariables.title_size)
-	
-	default_title_pos = Vector2(
-		float(MainUtils.window_size.x) * (float(GlobalVariables.title_pos.x) / max_pos_in_ui) - title.size.x / 2.0,
-		float(MainUtils.window_size.y) * ((max_pos_in_ui - float(GlobalVariables.title_pos.y)) / max_pos_in_ui) \
-		- title.size.y / 2.0 - 0.5
-		)
-	
-	if OS.has_feature("movie"):
-		max_resolution = Vector2(2560.0, 1440.0)
-	else:
-		max_resolution = DisplayServer.screen_get_size()
-	compare_length = Vector2(MainUtils.window_size) / max_resolution
-	if compare_length.x >= compare_length.y:
-		title.scale = Vector2(compare_length.y, compare_length.y)
-	else:
-		title.scale = Vector2(compare_length.x, compare_length.x)
-	
-	title.pivot_offset = title.size / 2.0
-	
-	if not title_reaction_enabled:
-		title.set_position(default_title_pos)
-
-func title_reaction(mag: float, strength: float) -> void:
-	if title_reaction_enabled:
-		title.set_position(default_title_pos)
-	
-	title_shake_energy = Vector2(randf_range(
-		-mag * mag_compensation, mag * mag_compensation
-		) * strength,
-		randf_range(
-		-mag * mag_compensation, mag * mag_compensation
-		) * strength)
-	
-	if MainUtils.audio_playing:
-		title.position += title_shake_energy
-	else:
-		title.set_position(default_title_pos)
+	if GlobalVariables.title_size_reaction_strength:
+		strength = GlobalVariables.title_size_reaction_strength * 10.0
+		
+		title_size_reaction_addend = int(mag * strength)

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dlkl4xfcgwflc"]
 
-[ext_resource type="Script" path="res://Scripts/solid_col_frames.gd" id="1_1wyno"]
+[ext_resource type="Script" uid="uid://cseiday0obqii" path="res://Scripts/solid_col_frames.gd" id="1_1wyno"]
 
 [node name="SolidColFrames" type="Control"]
 visible = false
@@ -13,19 +13,15 @@ script = ExtResource("1_1wyno")
 [node name="FrameOne" type="ColorRect" parent="."]
 visible = false
 layout_mode = 0
-color = Color(0.06075, 0.045, 0.18, 1)
 
 [node name="FrameTwo" type="ColorRect" parent="."]
 visible = false
 layout_mode = 0
-color = Color(0.0588235, 0.0431373, 0.180392, 1)
 
 [node name="FrameThree" type="ColorRect" parent="."]
 visible = false
 layout_mode = 0
-color = Color(0.0588235, 0.0431373, 0.180392, 1)
 
 [node name="FrameFour" type="ColorRect" parent="."]
 visible = false
 layout_mode = 0
-color = Color(0.0588235, 0.0431373, 0.180392, 1)

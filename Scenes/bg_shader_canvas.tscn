@@ -1,36 +1,160 @@
-[gd_scene load_steps=6 format=3 uid="uid://b3w3av0xqrx4g"]
+[gd_scene load_steps=16 format=3 uid="uid://b3w3av0xqrx4g"]
 
-[ext_resource type="Script" path="res://Scripts/bg_shader_canvas.gd" id="1_chgca"]
-[ext_resource type="Shader" path="res://Scripts/background_shader.gdshader" id="2_l6yd8"]
-[ext_resource type="Shader" path="res://Scripts/blur.gdshader" id="3_hw0g7"]
+[ext_resource type="Script" uid="uid://bq5sx21eaopwf" path="res://Scripts/bg_shader_canvas.gd" id="1_chgca"]
+[ext_resource type="Shader" uid="uid://b7ja07xbjdjlm" path="res://Scripts/Shaders/domain_warping.gdshader" id="2_l6yd8"]
+[ext_resource type="Shader" uid="uid://dc5q4smj13aiv" path="res://Scripts/Shaders/tides.gdshader" id="3_66umm"]
+[ext_resource type="Shader" uid="uid://nddyss8tny8y" path="res://Scripts/Shaders/blur.gdshader" id="3_hw0g7"]
+[ext_resource type="Shader" uid="uid://cym35ti4xlrtv" path="res://Scripts/Shaders/echoes.gdshader" id="4_t65k1"]
+[ext_resource type="Shader" uid="uid://cspxuscf7xri7" path="res://Scripts/Shaders/isolines.gdshader" id="5_2pu2v"]
+[ext_resource type="Shader" uid="uid://dr5ho3b0t0qp8" path="res://Scripts/Shaders/current_flow.gdshader" id="6_60fxj"]
+[ext_resource type="Shader" uid="uid://ijhyd3qa7ldu" path="res://Scripts/Shaders/simple_gradient.gdshader" id="7_n6bya"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ss0xy"]
+shader = ExtResource("6_60fxj")
+shader_parameter/main_color = Color(1, 1, 1, 1)
+shader_parameter/background_color = Color(0, 0, 0, 1)
+shader_parameter/filled = false
+shader_parameter/uv_scale = 5.0
+shader_parameter/iterations = 10.0
+shader_parameter/wave_thickness = 0.05
+shader_parameter/speed = 0.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rp5y5"]
 shader = ExtResource("2_l6yd8")
-shader_parameter/user_color_mix = null
-shader_parameter/user_color = Color(0, 0, 1, 1)
-shader_parameter/user_frequency_factor = 2.0
-shader_parameter/user_amplitude = 0.5
-shader_parameter/user_speed = 0.1
-shader_parameter/user_octaves = 6
-shader_parameter/user_frequency_increment = 2.0
-shader_parameter/user_amplitude_decrement = 0.5
+shader_parameter/noise_color = Color(1, 1, 1, 1)
+shader_parameter/color_mix = false
+shader_parameter/invert_colors = false
+shader_parameter/hue_shift_amt = 0.0
+shader_parameter/octaves = 6
+shader_parameter/frequency_factor = 2.0
+shader_parameter/amplitude = 0.5
+shader_parameter/frequency_increment = 2.0
+shader_parameter/amplitude_decrement = 0.5
+shader_parameter/speed = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_6vfr8"]
+shader = ExtResource("4_t65k1")
+shader_parameter/main_color = Color(1, 1, 1, 1)
+shader_parameter/background_color = Color(0, 0, 0, 1)
+shader_parameter/param_20 = false
+shader_parameter/change_origin = false
+shader_parameter/iterations = 8
+shader_parameter/param_1 = 1.0
+shader_parameter/param_2 = 1.0
+shader_parameter/param_3 = 1.0
+shader_parameter/param_4 = 1.0
+shader_parameter/param_5 = 1.0
+shader_parameter/param_6 = 1.0
+shader_parameter/param_7 = 1.0
+shader_parameter/param_8 = 1.0
+shader_parameter/param_9 = 1.0
+shader_parameter/param_10 = 0.1
+shader_parameter/param_11 = 0.1
+shader_parameter/param_12 = 1.0
+shader_parameter/param_21 = 0
+shader_parameter/param_22 = 0
+shader_parameter/param_23 = 0
+shader_parameter/param_24 = false
+shader_parameter/param_25 = false
+shader_parameter/param_26 = false
+shader_parameter/param_27 = false
+shader_parameter/speed = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_u4r7s"]
+shader = ExtResource("5_2pu2v")
+shader_parameter/line_color = Color(1, 1, 1, 1)
+shader_parameter/background_color = Color(0, 0, 0, 1)
+shader_parameter/filled = false
+shader_parameter/line_thickness = 10.0
+shader_parameter/thickness_variation = 0.5
+shader_parameter/line_amount = 10.0
+shader_parameter/uv_scale = 5.0
+shader_parameter/speed = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7n5ve"]
+shader = ExtResource("7_n6bya")
+shader_parameter/color_1 = Color(1, 0, 0, 1)
+shader_parameter/color_2 = Color(0, 0, 1, 1)
+shader_parameter/direction = 1
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_poawf"]
+shader = ExtResource("3_66umm")
+shader_parameter/wave_color = Color(1, 1, 1, 1)
+shader_parameter/tint = Color(0, 0, 0, 1)
+shader_parameter/color_mix = false
+shader_parameter/invert_colors = false
+shader_parameter/hue_shift_amt = 0.0
+shader_parameter/iterations = 6
+shader_parameter/speed = 0.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_v8xjc"]
 shader = ExtResource("3_hw0g7")
-shader_parameter/blur_strength = null
+shader_parameter/blur_strength = 0.0
 
 [node name="BGShaderCanvas" type="CanvasLayer"]
-layer = -2
+layer = -3
 visible = false
 script = ExtResource("1_chgca")
 
-[node name="BGShaderRect" type="ColorRect" parent="."]
+[node name="CurrentFlow" type="ColorRect" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_ss0xy")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(576, 324)
+
+[node name="DomainWarping" type="ColorRect" parent="."]
+visible = false
 material = SubResource("ShaderMaterial_rp5y5")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+pivot_offset = Vector2(576, 324)
+
+[node name="Echoes" type="ColorRect" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_6vfr8")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(576, 324)
+
+[node name="Isolines" type="ColorRect" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_u4r7s")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(576, 324)
+
+[node name="SimpleGradient" type="ColorRect" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_7n5ve")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(576, 324)
+
+[node name="Tides" type="ColorRect" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_poawf")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(576, 324)
 
 [node name="Blur" type="ColorRect" parent="."]
 visible = false
@@ -40,3 +164,12 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="FakeBrightness" type="ColorRect" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 1, 1, 0)

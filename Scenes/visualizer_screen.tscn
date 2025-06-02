@@ -1,8 +1,8 @@
 [gd_scene load_steps=12 format=3 uid="uid://b2egkbqhn0ve"]
 
 [ext_resource type="PackedScene" uid="uid://bwfgwouqqrmsu" path="res://Scenes/oscilloscope.tscn" id="1_t3r4i"]
-[ext_resource type="Script" path="res://Scripts/visualizer_screen.gd" id="1_unj4c"]
-[ext_resource type="PackedScene" uid="uid://b3eaik2uo1rx6" path="res://Scenes/world_environment.tscn" id="2_1kfey"]
+[ext_resource type="Script" uid="uid://b5jhxnb666aiy" path="res://Scripts/visualizer_screen.gd" id="1_unj4c"]
+[ext_resource type="PackedScene" uid="uid://b3eaik2uo1rx6" path="res://Scenes/bloom.tscn" id="2_1kfey"]
 [ext_resource type="PackedScene" uid="uid://b3w3av0xqrx4g" path="res://Scenes/bg_shader_canvas.tscn" id="2_tl0cv"]
 [ext_resource type="PackedScene" uid="uid://y42q1aipkei5" path="res://Scenes/bg_image_canvas.tscn" id="4_hgkf4"]
 [ext_resource type="PackedScene" uid="uid://dlkl4xfcgwflc" path="res://Scenes/solid_col_frames.tscn" id="5_mkgg5"]
@@ -15,25 +15,32 @@
 [node name="VisualizerScreen" type="Node2D"]
 script = ExtResource("1_unj4c")
 
-[node name="WorldEnvironment" parent="." instance=ExtResource("2_1kfey")]
+[node name="Bloom" parent="." instance=ExtResource("2_1kfey")]
+unique_name_in_owner = true
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
-layer = -1
+[node name="BGShaderCanvas" parent="." instance=ExtResource("2_tl0cv")]
+unique_name_in_owner = true
 
-[node name="BGShaderCanvas" parent="CanvasLayer" instance=ExtResource("2_tl0cv")]
+[node name="BGImageCanvas" parent="." instance=ExtResource("4_hgkf4")]
+unique_name_in_owner = true
 
-[node name="BGImageCanvas" parent="CanvasLayer" instance=ExtResource("4_hgkf4")]
+[node name="NodeCanvas" type="CanvasLayer" parent="."]
+layer = -3
 
-[node name="SolidColFrames" parent="CanvasLayer" instance=ExtResource("5_mkgg5")]
+[node name="SolidColFrames" parent="NodeCanvas" instance=ExtResource("5_mkgg5")]
 
-[node name="Oscilloscope" parent="CanvasLayer" instance=ExtResource("1_t3r4i")]
+[node name="Oscilloscope" parent="NodeCanvas" instance=ExtResource("1_t3r4i")]
 
-[node name="Dividers" parent="CanvasLayer" instance=ExtResource("7_q3p2q")]
+[node name="Dividers" parent="NodeCanvas" instance=ExtResource("7_q3p2q")]
 
-[node name="Icon" parent="CanvasLayer" instance=ExtResource("9_3kcg7")]
+[node name="Icon" parent="NodeCanvas" instance=ExtResource("9_3kcg7")]
+unique_name_in_owner = true
 
-[node name="TitleControl" parent="CanvasLayer" instance=ExtResource("9_iyg18")]
+[node name="TitleControl" parent="NodeCanvas" instance=ExtResource("9_iyg18")]
+unique_name_in_owner = true
 
-[node name="PostProcessingCanvas" parent="CanvasLayer" instance=ExtResource("10_hh2g1")]
+[node name="PostProcessingCanvas" parent="." instance=ExtResource("10_hh2g1")]
+unique_name_in_owner = true
 
-[node name="AudioPlayers" parent="CanvasLayer" instance=ExtResource("9_7vbml")]
+[node name="AudioPlayers" parent="." instance=ExtResource("9_7vbml")]
+unique_name_in_owner = true

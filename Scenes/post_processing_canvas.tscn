@@ -1,15 +1,72 @@
-[gd_scene load_steps=11 format=3 uid="uid://h24dhnpe54qn"]
+[gd_scene load_steps=23 format=3 uid="uid://h24dhnpe54qn"]
 
-[ext_resource type="Script" path="res://Scripts/post_processing_canvas.gd" id="1_mscrk"]
-[ext_resource type="Shader" path="res://Scripts/chromatic_aberration.gdshader" id="2_0xs3i"]
-[ext_resource type="Shader" path="res://Scripts/vignette.gdshader" id="4_els8c"]
-[ext_resource type="Shader" path="res://Scripts/grain.gdshader" id="5_aauo8"]
-[ext_resource type="Shader" path="res://Scripts/soft_light.gdshader" id="5_ulfj3"]
+[ext_resource type="Script" uid="uid://dgvp1woo5phou" path="res://Scripts/post_processing_canvas.gd" id="1_mscrk"]
+[ext_resource type="Shader" uid="uid://c24svugwo5dfm" path="res://Scripts/Shaders/chromatic_aberration.gdshader" id="2_0xs3i"]
+[ext_resource type="Shader" uid="uid://bhhr0lqg01smy" path="res://Scripts/Shaders/tape_distortion.gdshader" id="3_7x6fe"]
+[ext_resource type="Shader" uid="uid://cxi88e43acnry" path="res://Scripts/Shaders/glitch.gdshader" id="3_elsuf"]
+[ext_resource type="Shader" uid="uid://dfl7xb3hyamjg" path="res://Scripts/Shaders/vignette.gdshader" id="4_els8c"]
+[ext_resource type="Shader" uid="uid://c66qqndbklssq" path="res://Scripts/Shaders/spin_zoom_blur.gdshader" id="4_px6t3"]
+[ext_resource type="Shader" uid="uid://btoyvqxth4g6p" path="res://Scripts/Shaders/grain.gdshader" id="5_aauo8"]
+[ext_resource type="Shader" uid="uid://cwmshhxwgfacf" path="res://Scripts/Shaders/soft_light.gdshader" id="5_ulfj3"]
 [ext_resource type="Texture2D" uid="uid://bfpp3dlxwxshj" path="res://Images/NoiseStrong.png" id="6_7orx6"]
+[ext_resource type="Shader" uid="uid://oon4qo8xclo4" path="res://Scripts/Shaders/scanlines.gdshader" id="7_lqvhg"]
+[ext_resource type="Shader" uid="uid://bgg40oavj55rf" path="res://Scripts/Shaders/lens_distortion.gdshader" id="8_qn307"]
+[ext_resource type="Shader" uid="uid://dm4gsvgcsck0c" path="res://Scripts/Shaders/gradient_overlay.gdshader" id="12_3uuxm"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_lbmj3"]
 shader = ExtResource("2_0xs3i")
 shader_parameter/strength = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_l252k"]
+shader = ExtResource("3_elsuf")
+shader_parameter/block_offset_amount = 0.005
+shader_parameter/pixel_offset_amount = 0.005
+shader_parameter/speed_factor = 100.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_emw54"]
+shader = ExtResource("4_px6t3")
+shader_parameter/zoom_mode = false
+shader_parameter/blur_strength = 0.25
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tn3bc"]
+shader = ExtResource("5_aauo8")
+shader_parameter/opacity = 1.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_kqm2e"]
+shader = ExtResource("5_ulfj3")
+shader_parameter/opacity = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_uq0ja"]
+shader = ExtResource("3_7x6fe")
+shader_parameter/wave_strength = 0.05
+shader_parameter/wave_speed = 0.5
+shader_parameter/wave_freq = 2.0
+shader_parameter/wave_thickness = 75
+shader_parameter/block_strength = 0.01
+shader_parameter/block_speed = 1.0
+shader_parameter/block_freq = 4.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_d7pa0"]
+shader = ExtResource("7_lqvhg")
+shader_parameter/darkness = 0.25
+shader_parameter/amount_of_lines = 400.0
+shader_parameter/interlaced_scan = false
+shader_parameter/speed = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_522y1"]
+shader = ExtResource("8_qn307")
+shader_parameter/strength = 0.2
+shader_parameter/zoom = 1.0
+shader_parameter/border = true
+shader_parameter/border_color = Color(0, 0, 0, 1)
+shader_parameter/chromatic_aberration_strength = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2sry2"]
+shader = ExtResource("12_3uuxm")
+shader_parameter/color_1 = Color(0, 0.5, 1, 1)
+shader_parameter/color_2 = Color(1, 0, 0.5, 1)
+shader_parameter/direction = 1
+shader_parameter/opacity = 0.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8kmcy"]
 shader = ExtResource("4_els8c")
@@ -17,18 +74,12 @@ shader_parameter/vignette_color = Color(0, 0, 0, 0)
 shader_parameter/vignette_size = 1.2
 shader_parameter/vignette_sharpness = 12.0
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_tn3bc"]
-shader = ExtResource("5_aauo8")
-shader_parameter/opacity = 0.0
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_kqm2e"]
-shader = ExtResource("5_ulfj3")
-shader_parameter/opacity = 0.0
-
 [node name="PostProcessingCanvas" type="CanvasLayer"]
+visible = false
 script = ExtResource("1_mscrk")
 
 [node name="ChromaticAberrationCanvas" type="CanvasLayer" parent="."]
+layer = -2
 
 [node name="ChromaticAberration" type="ColorRect" parent="ChromaticAberrationCanvas"]
 visible = false
@@ -39,11 +90,24 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VignetteCanvas" type="CanvasLayer" parent="."]
+[node name="GlitchCanvas" type="CanvasLayer" parent="."]
+layer = -2
 
-[node name="Vignette" type="ColorRect" parent="VignetteCanvas"]
+[node name="Glitch" type="ColorRect" parent="GlitchCanvas"]
 visible = false
-material = SubResource("ShaderMaterial_8kmcy")
+material = SubResource("ShaderMaterial_l252k")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SpinZoomBlurCanvas" type="CanvasLayer" parent="."]
+layer = -2
+
+[node name="SpinZoomBlur" type="ColorRect" parent="SpinZoomBlurCanvas"]
+visible = false
+material = SubResource("ShaderMaterial_emw54")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -67,6 +131,70 @@ material = SubResource("ShaderMaterial_kqm2e")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -704.0
+offset_top = -396.0
+offset_right = 704.0
+offset_bottom = 396.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("6_7orx6")
+
+[node name="TapeDistortionCanvas" type="CanvasLayer" parent="."]
+layer = -2
+
+[node name="TapeDistortion" type="ColorRect" parent="TapeDistortionCanvas"]
+visible = false
+material = SubResource("ShaderMaterial_uq0ja")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ScanlinesCanvas" type="CanvasLayer" parent="."]
+layer = -2
+
+[node name="Scanlines" type="ColorRect" parent="ScanlinesCanvas"]
+visible = false
+material = SubResource("ShaderMaterial_d7pa0")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LensDistortionCanvas" type="CanvasLayer" parent="."]
+layer = -2
+
+[node name="LensDistortion" type="ColorRect" parent="LensDistortionCanvas"]
+visible = false
+material = SubResource("ShaderMaterial_522y1")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GradientOverlayCanvas" type="CanvasLayer" parent="."]
+layer = -2
+
+[node name="GradientOverlay" type="ColorRect" parent="GradientOverlayCanvas"]
+visible = false
+material = SubResource("ShaderMaterial_2sry2")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VignetteCanvas" type="CanvasLayer" parent="."]
+layer = -2
+
+[node name="Vignette" type="ColorRect" parent="VignetteCanvas"]
+visible = false
+material = SubResource("ShaderMaterial_8kmcy")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

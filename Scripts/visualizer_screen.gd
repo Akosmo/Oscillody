@@ -20,20 +20,7 @@ extends Node2D
 
 #region NODES ##################################
 
-@onready var world_environment: WorldEnvironment = $WorldEnvironment
-@onready var bg_shader_canvas: CanvasLayer = $CanvasLayer/BGShaderCanvas
-@onready var bg_image_canvas: CanvasLayer = $CanvasLayer/BGImageCanvas
-@onready var icon: TextureRect = $CanvasLayer/Icon
-@onready var title_control: Control = $CanvasLayer/TitleControl
-@onready var post_processing_canvas: CanvasLayer = $CanvasLayer/PostProcessingCanvas
-
-@onready var audio_players: Node = $CanvasLayer/AudioPlayers
-
-#endregion ##################################
-
-#region VISUALIZER VARIABLES ##################################
-
-var reaction_strength_over_max: float
+@onready var audio_players: Node = %AudioPlayers
 
 #endregion ##################################
 
@@ -44,50 +31,23 @@ func _ready() -> void:
 	
 	# Start loads preset and audio for rendering.
 	if OS.has_feature("movie"):
-		var user_arguments: Dictionary = {} # Dictionary that will hold user arguments
-		for argument in OS.get_cmdline_user_args():
-			if "=" in argument: # If = is existent
-				# Sets key_value to ["--load_preset", ""render_preset""]
+		var user_arguments: Dictionary[String, String] = {} # Dictionary that will hold user arguments
+		MainUtils.logger("Starting render with arguments: " + str(OS.get_cmdline_user_args()))
+		for argument: String in OS.get_cmdline_user_args(): # ["--load_preset=render_preset"] - supports multiple args
+			if "=" in argument:
+				# Sets key_value to ["--load_preset", "render_preset"]
 				var key_value: PackedStringArray = argument.split("=")
-				# arguments{"load_preset": ""render_preset""}
+				# user_arguments{"load_preset": "render_preset"}
 				user_arguments[key_value[0].lstrip("--")] = key_value[1]
 			else:
-				user_arguments[argument.lstrip("--")] = ""
+				user_arguments[argument.lstrip("--")] = "" # Key with no value
 		GlobalVariables.load_preset(user_arguments["load_preset"])
 		GlobalVariables.load_audio()
 		MainUtils.update_visualizer.emit()
-		await get_tree().create_timer(0.4).timeout # Letting waveform load
+		await get_tree().create_timer(1.0).timeout # Letting waveforms and audio load
 		audio_players.play_audio_spectrum_data_node() # Playing this earlier so it's synced to audio
 		await get_tree().create_timer(0.1).timeout
 		audio_players.play_audio_nodes()
-
-func _process(_delta: float) -> void:
-	reaction_strength_over_max = GlobalVariables.reaction_strength / 10.0
-	
-	if GlobalVariables.audio_reaction_enabled:
-		if GlobalVariables.audio_reaction_targets["Title"]:
-			title_control.title_reaction_enabled = true
-			title_control.title_reaction(MainUtils.cur_mag, reaction_strength_over_max)
-		else:
-			title_control.title_reaction_enabled = false
-		
-		if GlobalVariables.audio_reaction_targets["Background"] and GlobalVariables.background_type == "Image":
-			bg_image_canvas.image_reaction(MainUtils.cur_mag, reaction_strength_over_max)
-		
-		if GlobalVariables.audio_reaction_targets["Background"] and GlobalVariables.background_type == "Shader":
-			bg_shader_canvas.shader_reaction(MainUtils.cur_mag, reaction_strength_over_max)
-		
-		if GlobalVariables.audio_reaction_targets["Icon"]:
-			icon.icon_reaction(MainUtils.cur_mag, reaction_strength_over_max)
-		
-		if GlobalVariables.audio_reaction_targets["Post-Processing"] and GlobalVariables.bloom_reaction:
-			world_environment.bloom_reaction(MainUtils.cur_mag, reaction_strength_over_max)
-		
-		if (
-			GlobalVariables.audio_reaction_targets["Post-Processing"] and
-			(GlobalVariables.chromatic_aberration_reaction or GlobalVariables.vignette_reaction)
-			):
-			post_processing_canvas.post_processing_reaction(MainUtils.cur_mag, reaction_strength_over_max)
 
 func on_close_requested() -> void:
 	if OS.has_feature("movie"):

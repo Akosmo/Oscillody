@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3 uid="uid://b3eaik2uo1rx6"]
+
+[ext_resource type="Script" uid="uid://fjyvuv3vdoqx" path="res://Scripts/bloom.gd" id="1_tm6uf"]
+
+[sub_resource type="Gradient" id="Gradient_dfcn4"]
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_cw5fq"]
+gradient = SubResource("Gradient_dfcn4")
+use_hdr = true
+
+[sub_resource type="Environment" id="Environment_xytwl"]
+background_mode = 3
+background_canvas_max_layer = -1
+ssr_fade_in = 0.487351
+ssr_depth_tolerance = 22.11
+glow_levels/1 = 1.0
+glow_levels/2 = 0.8
+glow_levels/3 = 0.6
+glow_levels/4 = 0.4
+glow_levels/5 = 0.2
+glow_levels/6 = 0.1
+glow_blend_mode = 1
+adjustment_color_correction = SubResource("GradientTexture1D_cw5fq")
+
+[node name="Bloom" type="WorldEnvironment"]
+environment = SubResource("Environment_xytwl")
+script = ExtResource("1_tm6uf")

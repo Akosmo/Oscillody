@@ -22,6 +22,8 @@ extends Node2D
 
 @onready var ui_controls: CanvasLayer = $UIControls
 
+@onready var fps_counter: Label = %FPSCounter
+
 @onready var buttons_container_control: Control = %ButtonsContainerControl
 @onready var buttons_container: HBoxContainer = %ButtonsContainer
 
@@ -35,15 +37,16 @@ extends Node2D
 @onready var customize_container: ScrollContainer = %CustomizeContainer
 @onready var settings_container: ScrollContainer = %SettingsContainer
 
-@onready var ui_anim_player: AnimationPlayer = %UIAnimPlayer
-
-@onready var fps_counter: Label = %FPSCounter
-
+@onready var greetings: CenterContainer = %Greetings
 @onready var greetings_color_rect: ColorRect = %GreetingsColorRect
 
 @onready var save_p_color_rect: ColorRect = %SavePColorRect
 
 @onready var render_p_color_rect: ColorRect = %RenderPColorRect
+
+@onready var ui_anim_player: AnimationPlayer = %UIAnimPlayer
+
+@onready var update_checker: HTTPRequest = $UpdateChecker
 
 @onready var close_popup: ConfirmationDialog = $ClosePopup
 
@@ -55,44 +58,46 @@ var side_panel_closed: bool = true
 
 var is_fullscreen: bool = false
 @onready var base_window_size: Vector2i = DisplayServer.window_get_size()
-var maximized_size: Vector2i
 
 #endregion ##################################
 
 func _ready() -> void:
+	if MainUtils.disabled_greetings:
+		greetings.visible = false
+	
 	DisplayServer.window_set_min_size(base_window_size)
 	MainUtils.update_visualizer.connect(update_main_screen)
-	get_viewport().gui_focus_changed.connect(enable_spacebar_for_pause)
 	MainUtils.close_requested.connect(on_close_requested)
+	
+	if MainUtils.can_check_updates:
+		var err: Error = update_checker.request("https://api.github.com/repos/akosmo/oscillody/releases/latest")
+		if err:
+			MainUtils.logger("Could not check for latest release. Check your internet connection.", true, true)
+	
+	update_main_screen()
 
 func _process(_delta: float) -> void:
-	fps_counter.text = "Preview - FPS: " + str(Engine.get_frames_per_second())
-	
-	# Fullscreen toggle, along with a weird workaround because if window is maximized before toggling FS,
-	# it stays stuck there. This is a known issue as of 4.3. https://github.com/godotengine/godot/issues/70166
-	# Says it was fixed here, but apparently not: https://github.com/godotengine/godot/issues/84143
-	if DisplayServer.window_get_mode() == 2:
-		maximized_size = DisplayServer.window_get_size()
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
-		DisplayServer.window_set_size(maximized_size - Vector2i(0, 5))
-		DisplayServer.window_set_position(Vector2i(0,28))
-	
-	if Input.is_action_just_pressed("fullscreen") and not is_fullscreen:
+	fps_counter.text = "Preview - FPS: " + str(int(Engine.get_frames_per_second()))
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if event.is_action_pressed("fullscreen") and not is_fullscreen:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 		is_fullscreen = true
 		MainUtils.logger("Entered fullscreen.")
-	elif Input.is_action_just_pressed("fullscreen") and is_fullscreen:
+	elif event.is_action_pressed("fullscreen") and is_fullscreen:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 		DisplayServer.window_set_size(base_window_size)
 		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_BORDERLESS, false)
 		is_fullscreen = false
 		MainUtils.logger("Left fullscreen.")
 	
-	if Input.is_action_just_pressed("toggle_ui") and ui_controls.visible:
+	if event.is_action_pressed("toggle_ui") and ui_controls.visible:
 		ui_controls.visible = false
+		MainUtils.ui_visible = false
 		MainUtils.logger("UI toggled off.")
-	elif Input.is_action_just_pressed("toggle_ui") and not ui_controls.visible:
+	elif event.is_action_pressed("toggle_ui") and not ui_controls.visible:
 		ui_controls.visible = true
+		MainUtils.ui_visible = true
 		MainUtils.logger("UI toggled on.")
 
 func update_main_screen() -> void:
@@ -101,16 +106,13 @@ func update_main_screen() -> void:
 	save_p_color_rect.custom_minimum_size = MainUtils.window_size
 	render_p_color_rect.custom_minimum_size = MainUtils.window_size
 
-func enable_spacebar_for_pause(node: Control) -> void:
-	if str(node).begins_with("TitleValue") or str(node).begins_with("PresetName"):
-		MainUtils.can_pause_with_spacebar = false
-	else:
-		MainUtils.can_pause_with_spacebar = true
-
 func on_close_requested() -> void:
 	close_popup.popup()
 
 #region UI BUILT-IN SIGNAL FUNCTIONS ##################################
+
+func _on_disable_greetings_value_toggled(toggled_on: bool) -> void:
+	MainUtils.disabled_greetings = toggled_on
 
 func _on_files_button_pressed() -> void:
 	if not files_container.visible:
@@ -160,16 +162,41 @@ func _on_settings_button_pressed() -> void:
 func _on_create_button_pressed() -> void:
 	ui_anim_player.play("greetings_out")
 
+func _on_update_checker_request_completed(result: int, _response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	MainUtils.update_last_checked = int(Time.get_unix_time_from_system())
+	MainUtils.logger(
+		"Checking update at: " + str(MainUtils.update_last_checked) + ". Disabling update checker for 10 minutes."
+		)
+	MainUtils.can_check_updates = false
+	
+	if result == HTTPRequest.RESULT_SUCCESS:
+		var json_body: Dictionary = JSON.parse_string(body.get_string_from_utf8())
+		if json_body == null:
+			MainUtils.logger("Could not parse request for latest release.", true, true)
+			return
+		var latest_version: String = json_body["tag_name"]
+		latest_version = latest_version.replace("v", "")
+		MainUtils.logger("Current version: " + MainUtils.current_version + " - Latest version: " + latest_version)
+		if MainUtils.current_version != latest_version:
+			MainUtils.logger("New version available! Go to \"Settings\" and click \"Check for Updates\".", true)
+		else:
+			MainUtils.logger("There are no new updates.")
+	else:
+		MainUtils.logger(
+			"Error code: " + str(result) \
++ " - Request failed for latest release, manually check for updates in \"Settings\".",
+			true,
+			true
+			)
+
 func _on_close_popup_confirmed() -> void:
 	MainUtils.save_settings()
 	MainUtils.logger("Session closed (main process).")
 	get_tree().quit()
 
 func _on_ui_anim_player_animation_finished(anim_name: StringName) -> void:
-	if (
-		anim_name == "panel_out" and
-		(files_container.visible or customize_container.visible or settings_container.visible)
-		):
+	if (anim_name == "panel_out" and
+	(files_container.visible or customize_container.visible or settings_container.visible)):
 		files_container.visible = false
 		customize_container.visible = false
 		settings_container.visible = false

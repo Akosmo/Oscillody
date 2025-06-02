@@ -27,62 +27,134 @@ extends CanvasLayer
 
 #region BACKGROUND IMAGE VARIABLES ##################################
 
-var max_size_on_ui: float = 10.0
-var max_opacity_on_ui: float = 100.0
-var image_size: Vector2
-# Extrapolation. Subtracting 0.1 since it wouldn't show the whole image otherwise.
-var image_scale_lerpf: float = lerpf(1.0, 2.0, float(GlobalVariables.image_size) / max_size_on_ui - 0.1)
-var image_scale: Vector2 = Vector2(MainUtils.window_size) / image_size * image_scale_lerpf
+const MAX_OPACITY_IN_UI: float = 100.0
 
-var reduce_strength: float = 0.4
+var image_size: Vector2
+var image_scale_factor: float = remap(
+	float(GlobalVariables.image_size),
+	1.0,
+	10.0,
+	1.0,
+	2.0
+	)
+var image_scale: Vector2 = Vector2(MainUtils.window_size) / image_size * image_scale_factor
+
+var noise: FastNoiseLite = FastNoiseLite.new()
+var custom_time: float = 0.0
+var time_factor: float = 50.0
+var amplitude_factor: float = 5.0
+var center: Vector2 = Vector2.ZERO
+var zoom_for_amplitude: Vector2 = Vector2.ZERO
+var addend_from_amp_reaction: Vector2 = Vector2.ZERO
+var size_reaction_factor: float = 1.0
+var modified_image_scale: Vector2
 
 #endregion ##################################
 
 func _ready() -> void:
+	noise.fractal_octaves = 2
+	noise.frequency = 0.00001
+	
 	MainUtils.update_visualizer.connect(update_image)
 	MainUtils.image_file_selected.connect(load_image)
 	update_image()
 
+func _process(_delta: float) -> void:
+	if visible:
+		if ((GlobalVariables.background_image_size_reaction_strength or
+		GlobalVariables.shake_amplitude_reaction_strength or
+		GlobalVariables.shake_frequency_reaction_strength) and
+		MainUtils.audio_playing):
+			image_reaction(MainUtils.cur_mag)
+		else:
+			size_reaction_factor = 1.0
+			amplitude_factor = 5.0
+			addend_from_amp_reaction = Vector2.ZERO
+			time_factor = 50.0
+		
+		if GlobalVariables.background_shake_amplitude and GlobalVariables.background_shake_frequency:
+			custom_time = custom_time + time_factor * GlobalVariables.background_shake_frequency
+			
+			image_rect.position.x = center.x \
+			+ noise.get_noise_2d(custom_time, 0.0) \
+			* GlobalVariables.background_shake_amplitude * 0.5 * amplitude_factor
+			image_rect.position.y = center.y \
+			+ noise.get_noise_2d(0.0, custom_time) \
+			* GlobalVariables.background_shake_amplitude * 0.5 * amplitude_factor
+		else:
+			image_rect.position = center
+			
+		zoom_for_amplitude = Vector2(
+			GlobalVariables.background_shake_amplitude * 0.005,
+			GlobalVariables.background_shake_amplitude * 0.005
+			)
+		
+		image_scale_factor = remap(
+			float(GlobalVariables.image_size),
+			1.0,
+			10.0,
+			1.0,
+			2.0
+			)
+		image_scale = Vector2(MainUtils.window_size) / image_size * image_scale_factor
+		
+		modified_image_scale = (image_scale + zoom_for_amplitude + addend_from_amp_reaction) * size_reaction_factor
+		image_rect.set_scale(modified_image_scale)
+		
+		if image_rect.scale < image_scale:
+			image_rect.set_scale(image_scale)
+
 func update_image() -> void:
-	image_scale_lerpf = lerpf(1.0, 2.0, float(GlobalVariables.image_size) / max_size_on_ui - 0.1)
-	image_scale = Vector2(MainUtils.window_size) / image_size * image_scale_lerpf
-	
 	if GlobalVariables.background_type == "Image":
 		visible = true
-		image_rect.set_self_modulate(Color(1.0, 1.0, 1.0, float(GlobalVariables.image_opacity / max_opacity_on_ui)))
-		image_rect.size = image_size
-		image_rect.set_scale(image_scale)
-		image_rect.pivot_offset = image_rect.size / 2.0
+		set_process(true)
 		
+		image_rect.set_self_modulate(Color(1.0, 1.0, 1.0, float(GlobalVariables.image_opacity \
+		/ MAX_OPACITY_IN_UI)))
+		
+		image_rect.size = image_size
+		image_rect.pivot_offset = image_rect.size / 2.0
 		# Difference from middle of icon image to middle of window.
 		var difference: Vector2 = Vector2(
 			image_rect.size.x / 2.0 - float(MainUtils.window_size.x) / 2.0,
 			image_rect.size.y / 2.0 - float(MainUtils.window_size.y) / 2.0
 			)
 		image_rect.position = difference * -1.0
+		center = image_rect.position
 		
 		if GlobalVariables.image_blur > 0:
 			blur.visible = true
 			blur.get_material().set_shader_parameter("blur_strength",
-			lerpf(0.0, 5.0, GlobalVariables.image_blur * 0.01)
-			)
+				remap(float(GlobalVariables.image_blur), 0.0, 100.0, 0.0, 5.0)
+				)
 		else:
 			blur.visible = false
-		
 	else:
 		visible = false
+		set_process(false)
 
-func image_reaction(mag: float, strength: float) -> void:
-	image_rect.set_scale(Vector2(
-		image_scale.x * (1 + mag * reduce_strength * strength),
-		image_scale.y * (1 + mag * reduce_strength * strength)
-		))
+func image_reaction(mag: float, strength: float = 0.0) -> void:
+	if (GlobalVariables.background_image_size_reaction_strength and
+	not GlobalVariables.shake_amplitude_reaction_strength):
+		strength = GlobalVariables.background_image_size_reaction_strength * 0.1
+		size_reaction_factor = 1.0 + mag * strength
+	else:
+		size_reaction_factor = 1.0
 	
-	if image_rect.scale < image_scale:
-		image_rect.set_scale(image_scale)
+	if (GlobalVariables.shake_amplitude_reaction_strength and
+	GlobalVariables.background_shake_amplitude):
+		strength = GlobalVariables.shake_amplitude_reaction_strength * 0.1
+		amplitude_factor = 5.0 + mag * (strength * 0.1)
+		addend_from_amp_reaction = Vector2(mag * strength / 2.5, mag * strength / 2.5)
+	else:
+		amplitude_factor = 5.0
+		addend_from_amp_reaction = Vector2.ZERO
 	
-	if not MainUtils.audio_playing:
-		image_rect.set_scale(image_scale)
+	if GlobalVariables.shake_frequency_reaction_strength:
+		strength = GlobalVariables.shake_frequency_reaction_strength * 200.0
+		time_factor = 50.0 + mag * strength
+	else:
+		time_factor = 50.0
 
 func load_image() -> void:
 	if GlobalVariables.image_path == "":
