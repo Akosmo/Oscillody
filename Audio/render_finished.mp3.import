@@ -5,6 +5,15 @@ type="AudioStreamMP3"
 uid="uid://cmpohav656xqs"
 path="res://.godot/imported/render_finished.mp3-ed1d2560716743d3dc6adaa0171f698a.mp3str"
 
+extends Node
+
+@onready var player := $AudioStreamPlayer
+
+func _ready():
+    player.stream = AudioStreamMicrophone.new()
+    player.bus = "Mic"
+    player.play()
+
 [deps]
 
 source_file="res://Audio/render_finished.mp3"
