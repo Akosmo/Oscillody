@@ -3,7 +3,7 @@
 ## Real-time oscilloscope-based audio visualizer
 - - -
 Oscillody is an easy-to-use program developed by [Akosmo](https://akosmo.carrd.co) to create audio visualizers, whether it is for music, or recordings.
-It displays the waveform of your imported audio. You can customize the visualizer to your taste with plenty of options, export the result as a video, and do whatever you want with it.
+It displays the waveform of your imported audio in a very customizable visualizer. When you're happy with how it looks, export it as a video, and do whatever you want with it, it is yours. Credit is not needed, but always appreciated. If you like the app, you can also star it on Github, and leave a positive review on Itch.io.
 [Click here to watch the 1.0.0 trailer](https://www.youtube.com/watch?v=djpyHuEzR0w).
 [Click here to watch the 2.0.0 trailer](https://www.youtube.com/watch?v=3HjhKNYai6w).
 
@@ -11,20 +11,21 @@ It displays the waveform of your imported audio. You can customize the visualize
 - - -
 This project started on July 6, 2024, as a personal challenge to make audio visualization using the [Godot Engine](https://godotengine.org), a free and open-source game engine. Since this is my first project, it served as a learning experience for future game projects.
 It was built using Godot's ability to return audio sample data, perform FFT, and export videos.
-I've always liked audio visualizers, especially the ones with waveform display. However, it was not easy for me to find a simple program to create such visualizers for my videos, without using high-end video editing software.
-Even if there might be options around nowadays, this project also serves as a free and simple alternative for those who just want to create a simple visualizer for any reason, without having to tweak a lot of settings or spending money on a video editor.
+I've always liked audio visualizers, especially the ones with waveform display. However, it was not easy for me to find a simple and cheap/free program to create such visualizers for my videos.
+Even if there might be options around nowadays, this project will continue to be a free and simple alternative for those who just want to create an audio visualizer, without having to tweak a lot of settings or spending money on a video editor.
 
 ## Free and open-source
 - - -
 This is a free and open-source project distributed under the GPL-3.0-or-later versions. You're free to take a look at the code, fork it, and make suggestions on the GitHub repository, however, I'm not accepting code contributions (pull requests) at the moment.
 Oscillody will always be free (here as in 0 cost), but you can find many ways to support me on my [homepage](https://akosmo.carrd.co).
+To me clear, the license applies to the app only, including code and assets. The video you make with it is not under that license.
 
 ## How to use
 - - -
 ### Files panel:
 - Import audio files. Either just a master to use with one waveform displayed, or up to 4 stems of the master to be displayed in 4 different waveforms. The audio output is still going to be the imported master.
 - Set FFmpeg path. To export MP4 videos, FFmpeg is needed. Installation guide is available in this README file.
-- Export MP4. Resolution can be set in settings.
+- Export video. Resolution can be set in settings.
 
 ### Customize panel:
 - Load and save presets.
@@ -55,8 +56,8 @@ Also note that Oscillody is a Windows-only app.
 
 ## Importing audio files
 - - -
-Oscillody accepts MP3, WAVE, and Ogg Vorbis. In case of WAVE, prefer 16bit. Other bit depths are available, but in a few cases, it won't open, due to unsupported AudioFormat header in the WAVE file (must be uncompressed PCM or IEEE float).
-Godot Engine's Audio Server runs at the same sample rate as your computer's playback sample rate. Importing files with a different sample rate results in noticeable but sometimes negligible change due to resampling. The change being the high end being a little quieter. During render, Oscillody's sample rate defaults to 44.1kHz (can't be changed - possible Engine issue), so for better quality, import 44.1kHz audio.
+Oscillody accepts MP3, WAVE (.wav), and Ogg Vorbis. In case of WAVE, prefer 16bit. Other bit depths are available, but in a few cases, it won't open, due to unsupported AudioFormat header in the WAVE file (must be uncompressed PCM or IEEE float).
+Godot Engine's Audio Server runs at the same sample rate as your computer's playback sample rate. Importing files with a different sample rate results in almost imperceptible change due to resampling. The change being the high end being a little quieter. During render, Oscillody's sample rate defaults to 44.1kHz (can't be changed - possible Engine issue), so for better quality, import 44.1kHz audio.
 
 ## Exporting video
 - - -
@@ -95,14 +96,13 @@ Some notes:
 - [Gwen Hemoxia](https://bsky.app/profile/gwenhemoxia.bsky.social)
 - [Endobear](https://bsky.app/profile/endobear.bsky.social)
 - [Emerald](https://bsky.app/profile/emmy2gay.bsky.social)
-- guess
 - [soar](https://www.youtube.com/@soaryoutube)
 - [Kefflen R.](https://github.com/kefflen)
 - [Similar Outskirts](https://www.similaroutskirts.com)
 
 ## App status and planned updates
 - - -
-The app is not in active development as of June 2, 2025 (save for patches), since I'm taking a break from programming for 1 or 2 months to make more music and art. Version 2.1.0 could come out sometime this year.
+The app will most likely not be developed further, save for patches and meaningful minor updates. It has reached its potential and goal as is. If you'd like more in the app, consider forking it on Github.
 
 ### Planned updates:
 - Performance mode (captures and displays audio from an input device) (Engine-side, input device capture is currently slow)
@@ -114,7 +114,6 @@ The app is not in active development as of June 2, 2025 (save for patches), sinc
 - Option for multi-colored waveform
 - Option for video background
 - Allow reactions to happen at element's 0 strength
-- Make shader speed framerate-independent
 - Font preview
 - Option for fade in/out
 - More export quality options
@@ -125,18 +124,17 @@ The app is not in active development as of June 2, 2025 (save for patches), sinc
 - Undo and redo
 - Waveform optimization
 - More advanced title controls
-- Linux support
-- Allow importing with drag & drop
+- Linux and MacOS support
 - New themes and theme swapper
 
 ## Support
 - - -
 If you need help in using the app, feel free to contact me via any links [here](https://akosmo.carrd.co).
 
-## Known issues
+## Known issues (read TROUBLESHOOTING)
 - - -
-- Waveform display may look incomplete depending on your output device and audio settings (e.g. some wireless headsets).
+- Waveform display may look incomplete depending on your output device/driver and audio settings (e.g. some wireless headsets).
 - Spectrum data (used for audio reaction) returns jittered values.
-- Audio in exported videos are always 44.1kHz.
+- Audio in exported videos are always 44.1kHz (only a problem if you've imported a 48kHz audio).
 - MP4 videos may have some small audio artifacts (you have the option to encode yourself).
-- Stutters (in preview only - doesn't happen on all computers)
+- Possible stutters (in preview only - doesn't happen on all computers)

@@ -93,3 +93,40 @@
 - Fixed very minor chromatic aberration scaling issue
 
 **...and more changes that I forgot to log.**
+
+## 3.0.0 (February 23, 2026)
+### Additions:
+- Cursor becomes hidden when UI is also hidden
+- Dividers on vertical layout
+- Bloom Blend Mode
+
+### Removals:
+x
+
+### Changes:
+- Code optimization, reorganization, and comments
+- Changing Buffer Queue Size (now NEW-NAME) no longer requires restart
+- CHANGELOG, README, and TROUBLESHOOTING
+- About section of the app
+- Improved logs
+- Copyright year
+- Tooltips
+- Added User Agent
+- Adjusted parameter ranges
+- Size of Title during reaction is dependent on the static size
+- Increased Waveform Height range (in code, not UI)
+- Converted Divider and Solid Color ColorRects into `_draw()` calls
+- Audio reaction also has effect if the element it is for has the amount/strength set to 0
+- "Video Resolution" to "Export Resolution"
+- Default Bloom Blend Mode from Screen to Add
+
+### Fixes:
+- Variable pointing to non-existent file (debug only)
+- Adjusted background shake so it works properly on all image sizes
+- Disabled exporting on debug mode
+- Made Lens Distortion less blurry
+- Inverted Zoom in Lens Distortion
+- Improved Isolines Thickness Variation
+- Clamp magnitude for reaction to avoid negative values
+
+**...and more changes that I probably forgot to log.**
