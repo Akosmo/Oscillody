@@ -95,7 +95,6 @@ Some notes:
 - [Gwen Hemoxia](https://bsky.app/profile/gwenhemoxia.bsky.social)
 - [Endobear](https://bsky.app/profile/endobear.bsky.social)
 - [Emerald](https://bsky.app/profile/emmy2gay.bsky.social)
-- guess
 - [soar](https://www.youtube.com/@soaryoutube)
 - [Kefflen R.](https://github.com/kefflen)
 - [Similar Outskirts](https://www.similaroutskirts.com)
