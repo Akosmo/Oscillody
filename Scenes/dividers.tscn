@@ -2,16 +2,6 @@
 
 [ext_resource type="Script" uid="uid://df6pl6yf0npib" path="res://Scripts/dividers.gd" id="1_l7xed"]
 
-[node name="Dividers" type="Control"]
+[node name="Dividers" type="Node2D"]
 visible = false
-layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
 script = ExtResource("1_l7xed")
-
-[node name="DividerOne" type="ColorRect" parent="."]
-layout_mode = 0
-
-[node name="DividerTwo" type="ColorRect" parent="."]
-layout_mode = 0

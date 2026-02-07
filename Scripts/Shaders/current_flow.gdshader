@@ -1,5 +1,5 @@
 // Oscillody
-// Copyright (C) 2025 Akosmo
+// Copyright (C) 2025-present Akosmo
 
 // This file (current_flow.gdshader) is under the MIT (especifically Expat) License.
 // "Software" in the license text refers to this single script only.
@@ -27,13 +27,13 @@ shader_type canvas_item;
 uniform mediump vec4 main_color : source_color = vec4(1.0);
 uniform mediump vec4 background_color : source_color = vec4(vec3(0.0), 1.0);
 uniform bool filled = false;
-uniform mediump float uv_scale : hint_range(1.0, 10.0, 0.1) = 5.0;
-uniform lowp float iterations : hint_range(4.0, 14.0, 1.0) = 10.0;
+uniform mediump float uv_scale : hint_range(1.0, 20.0, 0.5) = 5.0;
+uniform lowp float iterations : hint_range(3.0, 16.0, 1.0) = 10.0;
 uniform mediump float wave_thickness : hint_range(0.01, 0.5, 0.01) = 0.05;
 uniform highp float speed = 0.0;
 
 vec2 waves(highp vec2 uv) {
-	// Manipulating UV to create cool patterns.
+	// Manipulating UV with random numbers to create cool patterns.
 	uv *= uv_scale;
 	for (lowp float i = 1.0; i <= iterations; i++) {
 		lowp float i2 = i * 0.75;
@@ -49,6 +49,8 @@ vec2 waves(highp vec2 uv) {
 	else {
 		wave = abs(sin(uv.x + uv.y));
 	}
+	// 0.0 if wave_thickness < wave, 1.0 otherwise. Usually this would be inverted like `step(wave_thickness, wave)`,
+	// but I want to invert the colors.
 	wave = step(wave, wave_thickness);
 
 	lowp float zero_step = 0.0; // Allowing background color to not conflict with main color.

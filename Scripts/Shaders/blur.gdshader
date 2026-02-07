@@ -14,6 +14,6 @@ uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 uniform mediump float blur_strength : hint_range(0.0, 5.0, 1.0) = 0.0;
 
 void fragment() {
-	// Blurring using LoD
+	// Blurring using LoD.
 	COLOR = texture(SCREEN_TEXTURE, SCREEN_UV, blur_strength);
 }

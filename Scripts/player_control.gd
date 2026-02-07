@@ -1,5 +1,5 @@
 # Oscillody
-# Copyright (C) 2025 Akosmo
+# Copyright (C) 2025-present Akosmo
 
 # This file is part of Oscillody. Unless specified otherwise, it is under the license below:
 
@@ -134,6 +134,7 @@ func _on_seek_slider_gui_input(event: InputEvent) -> void:
 			else:
 				slice_idx += 1
 		mouse_x_pos = str(event).get_slice(", ", slice_idx).replace("position=((", "")
+		# Goes from 0.0 to 1.0 along the slider.
 		mouse_x_pos_remapped = clampf(
 			remap(
 				mouse_x_pos.to_float(),

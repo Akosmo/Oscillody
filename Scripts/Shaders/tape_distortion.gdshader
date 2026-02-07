@@ -16,7 +16,7 @@ uniform mediump float wave_speed : hint_range(0.0, 2.0, 0.1) = 0.5;
 uniform lowp float wave_freq : hint_range(2.0, 6.0, 0.5) = 2.0;
 uniform lowp int wave_thickness : hint_range(10, 100, 5) = 25;
 uniform highp float block_strength : hint_range(0.0, 0.05, 0.001) = 0.0;
-uniform mediump float block_speed : hint_range(0.0, 2.0, 0.1) = 1.0;
+uniform mediump float block_speed : hint_range(0.0, 4.0, 0.1) = 1.0;
 uniform lowp float block_freq : hint_range(1.0, 8.0, 0.5) = 4.0;
 
 // Hash function from https://www.shadertoy.com/view/MdcfDj

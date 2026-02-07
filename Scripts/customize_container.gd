@@ -1,5 +1,5 @@
 # Oscillody
-# Copyright (C) 2025 Akosmo
+# Copyright (C) 2025-present Akosmo
 
 # This file is part of Oscillody. Unless specified otherwise, it is under the license below:
 
@@ -24,6 +24,7 @@ extends ScrollContainer
 
 @onready var waveform_a_value: SpinBox = %WaveformAValue
 @onready var vertical_l_value: CheckButton = %VerticalLValue
+@onready var include_d_value: CheckButton = %IncludeDValue
 
 @onready var title_value: LineEdit = %TitleValue
 @onready var title_f_value: OptionButton = %TitleFValue
@@ -49,6 +50,7 @@ extends ScrollContainer
 
 @onready var divider_c_value: ColorPickerButton = %DividerCValue
 @onready var divider_c_value_2: ColorPickerButton = %DividerCValue2
+@onready var divider_c_value_3: ColorPickerButton = %DividerCValue3
 @onready var divider_t_value: SpinBox = %DividerTValue
 
 @onready var bg_t_value: OptionButton = %BGTValue
@@ -183,6 +185,7 @@ extends ScrollContainer
 @onready var vignette_sh_value: SpinBox = %VignetteShValue
 
 @onready var bloom_a_value: SpinBox = %BloomAValue
+@onready var bloom_b_m_value: OptionButton = %BloomBMValue
 
 @onready var grain_s_value: CheckButton = %GrainSValue
 @onready var grain_o_value: SpinBox = %GrainOValue
@@ -198,13 +201,16 @@ extends ScrollContainer
 @onready var icon_s_reaction_s_value: SpinBox = %IconSReactionSValue
 @onready var icon_r_reaction_s_value: SpinBox = %IconRReactionSValue
 @onready var c_a_s_reaction_s_value: SpinBox = %CASReactionSValue
-@onready var glitch_o_reaction_s_value: SpinBox = %GlitchOReactionSValue
+@onready var glitch_b_o_reaction_s_value: SpinBox = %GlitchBOReactionSValue
+@onready var glitch_p_o_reaction_s_value: SpinBox = %GlitchPOReactionSValue
 @onready var s_z_b_s_reaction_s_value: SpinBox = %SZBSReactionSValue
 @onready var vignette_s_reaction_s_value: SpinBox = %VignetteSReactionSValue
 @onready var bloom_a_reaction_s_value: SpinBox = %BloomAReactionSValue
 
 @onready var audio_r_m_db_value: SpinBox = %AudioRMdBValue
 @onready var audio_r_smoothing_a_value: SpinBox = %AudioRSmoothingAValue
+
+@onready var include_dividers: HBoxContainer = %IncludeDividers
 
 @onready var title_font: HBoxContainer = %TitleFont
 @onready var title_font_bold: HBoxContainer = %TitleFontBold
@@ -215,7 +221,7 @@ extends ScrollContainer
 @onready var title_shadow: VBoxContainer = %TitleShadow
 @onready var title_outline: HBoxContainer = %TitleOutline
 
-@onready var divider_colors: HBoxContainer = %DividerColors
+@onready var divider_colors: VBoxContainer = %DividerColors
 @onready var divider_thickness: HBoxContainer = %DividerThickness
 
 @onready var background_separator: HSeparator = %BackgroundSeparator
@@ -340,6 +346,7 @@ extends ScrollContainer
 @onready var vignette_sharpness: HBoxContainer = %VignetteSharpness
 
 @onready var bloom_amount: HBoxContainer = %BloomAmount
+@onready var bloom_blend_mode: HBoxContainer = %BloomBlendMode
 
 @onready var grain_static: HBoxContainer = %GrainStatic
 @onready var grain_opacity: HBoxContainer = %GrainOpacity
@@ -354,7 +361,8 @@ extends ScrollContainer
 @onready var icon_size_reaction_str: HBoxContainer = %IconSizeReactionStr
 @onready var icon_rotation_reaction_str: HBoxContainer = %IconRotationReactionStr
 @onready var chro_aber_str_reaction_str: HBoxContainer = %ChroAberStrReactionStr
-@onready var glitch_offset_reaction_str: HBoxContainer = %GlitchOffsetReactionStr
+@onready var glitch_block_offset_reaction_str: HBoxContainer = %GlitchBlockOffsetReactionStr
+@onready var glitch_pixel_offset_reaction_str: HBoxContainer = %GlitchPixelOffsetReactionStr
 @onready var spin_zoom_blur_str_reaction_str: HBoxContainer = %SpinZoomBlurStrReactionStr
 @onready var vignette_size_reaction_str: HBoxContainer = %VignetteSizeReactionStr
 @onready var bloom_amt_reaction_str: HBoxContainer = %BloomAmtReactionStr
@@ -401,10 +409,10 @@ func _ready() -> void:
 		GlobalVariables.AUDIO_REACTION_CONTROLS_IN_SELECTOR.find(GlobalVariables.audio_reaction_control)
 		)
 	
-	var file_iterable: int = 0
+	var preset_iterable: int = 0
 	for preset: String in GlobalVariables.presets_in_selector:
-		preset_value.add_item(GlobalVariables.presets_in_selector[file_iterable], file_iterable)
-		file_iterable += 1
+		preset_value.add_item(GlobalVariables.presets_in_selector[preset_iterable], preset_iterable)
+		preset_iterable += 1
 	if GlobalVariables.presets_in_selector.find(GlobalVariables.preset_name) >= 0:
 		preset_value.select(GlobalVariables.presets_in_selector.find(GlobalVariables.preset_name))
 		preset_value.item_selected.emit(GlobalVariables.presets_in_selector.find(GlobalVariables.preset_name))
@@ -418,6 +426,11 @@ func _ready() -> void:
 	update_customize()
 
 func update_customize() -> void:
+	if GlobalVariables.vertical_layout:
+		include_dividers.visible = true
+	else:
+		include_dividers.visible = false
+	
 	if GlobalVariables.title:
 		title_font.visible = true
 		title_font_bold.visible = true
@@ -437,7 +450,8 @@ func update_customize() -> void:
 		title_shadow.visible = false
 		title_outline.visible = false
 	
-	if GlobalVariables.number_of_stems > 1 and not GlobalVariables.vertical_layout:
+	if (GlobalVariables.number_of_stems > 1 and
+	(not GlobalVariables.vertical_layout or GlobalVariables.include_dividers)):
 		background_separator.visible = true
 		divider_colors.visible = true
 		divider_thickness.visible = true
@@ -445,10 +459,16 @@ func update_customize() -> void:
 		background_separator.visible = false
 		divider_colors.visible = false
 		divider_thickness.visible = false
-	if GlobalVariables.number_of_stems == 2:
-		divider_c_value_2.visible = false
-	else:
+	if (GlobalVariables.number_of_stems == 3 or
+	(GlobalVariables.number_of_stems == 4 and not GlobalVariables.vertical_layout)):
 		divider_c_value_2.visible = true
+		divider_c_value_3.visible = false
+	elif GlobalVariables.number_of_stems == 4 and GlobalVariables.vertical_layout:
+		divider_c_value_2.visible = true
+		divider_c_value_3.visible = true
+	else:
+		divider_c_value_2.visible = false
+		divider_c_value_3.visible = false
 	
 	if GlobalVariables.background_type == "Current Flow":
 		current_flow_main_color.visible = true
@@ -716,8 +736,10 @@ func update_customize() -> void:
 		vignette_sharpness.visible = false
 	if GlobalVariables.post_processing_type == "Bloom":
 		bloom_amount.visible = true
+		bloom_blend_mode.visible = true
 	else:
 		bloom_amount.visible = false
+		bloom_blend_mode.visible = false
 	if GlobalVariables.post_processing_type == "Grain":
 		grain_static.visible = true
 		grain_opacity.visible = true
@@ -751,45 +773,51 @@ func update_customize() -> void:
 		icon_rotation_reaction_str.visible = false
 	if GlobalVariables.audio_reaction_control == "Post-Processing":
 		chro_aber_str_reaction_str.visible = true
-		glitch_offset_reaction_str.visible = true
+		glitch_block_offset_reaction_str.visible = true
+		glitch_pixel_offset_reaction_str.visible = true
 		spin_zoom_blur_str_reaction_str.visible = true
 		vignette_size_reaction_str.visible = true
 		bloom_amt_reaction_str.visible = true
 	else:
 		chro_aber_str_reaction_str.visible = false
-		glitch_offset_reaction_str.visible = false
+		glitch_block_offset_reaction_str.visible = false
+		glitch_pixel_offset_reaction_str.visible = false
 		spin_zoom_blur_str_reaction_str.visible = false
 		vignette_size_reaction_str.visible = false
 		bloom_amt_reaction_str.visible = false
 
 func set_ui_values() -> void:
-	waveform_a_value.value = GlobalVariables.number_of_stems
+	var start_time: int = Time.get_ticks_msec()
+	
+	waveform_a_value.value = float(GlobalVariables.number_of_stems)
 	vertical_l_value.button_pressed = GlobalVariables.vertical_layout
+	include_d_value.button_pressed = GlobalVariables.include_dividers
 	
 	title_value.text = GlobalVariables.title
 	title_f_b_value.button_pressed = GlobalVariables.title_font_bold
 	title_f_i_value.button_pressed = GlobalVariables.title_font_italic
-	title_p_x_value.value = GlobalVariables.title_position.x
-	title_p_y_value.value = GlobalVariables.title_position.y
+	title_p_x_value.value = float(GlobalVariables.title_position.x)
+	title_p_y_value.value = float(GlobalVariables.title_position.y)
 	title_c_value.color = GlobalVariables.title_color
-	title_si_value.value = GlobalVariables.title_size
+	title_si_value.value = float(GlobalVariables.title_size)
 	title_s_c_value.color = GlobalVariables.title_shadow_color
-	title_s_x_value.value = GlobalVariables.title_shadow_position.x
-	title_s_y_value.value = GlobalVariables.title_shadow_position.y
+	title_s_x_value.value = float(GlobalVariables.title_shadow_position.x)
+	title_s_y_value.value = float(GlobalVariables.title_shadow_position.y)
 	title_o_c_value.color = GlobalVariables.title_outline_color
-	title_o_s_value.value = GlobalVariables.title_outline_size
+	title_o_s_value.value = float(GlobalVariables.title_outline_size)
 	
 	waveform_1_colors.color = GlobalVariables.waveform_colors[0]
 	waveform_2_colors.color = GlobalVariables.waveform_colors[1]
 	waveform_3_colors.color = GlobalVariables.waveform_colors[2]
 	waveform_4_colors.color = GlobalVariables.waveform_colors[3]
-	waveform_t_value.value = GlobalVariables.waveform_thickness
+	waveform_t_value.value = float(GlobalVariables.waveform_thickness)
 	waveform_h_value.value = GlobalVariables.waveform_height
 	waveform_aa_value.button_pressed = GlobalVariables.waveform_antialiasing
 	
 	divider_c_value.color = GlobalVariables.divider_colors[0]
 	divider_c_value_2.color = GlobalVariables.divider_colors[1]
-	divider_t_value.value = GlobalVariables.divider_thickness
+	divider_c_value_3.color = GlobalVariables.divider_colors[2]
+	divider_t_value.value = float(GlobalVariables.divider_thickness)
 	
 	c_f_main_c_value.color = GlobalVariables.current_flow_main_color
 	c_f_background_c_value.color = GlobalVariables.current_flow_background_color
@@ -803,7 +831,7 @@ func set_ui_values() -> void:
 	d_w_color_m_value.button_pressed = GlobalVariables.domain_warping_color_mix
 	d_w_invert_c_value.button_pressed = GlobalVariables.domain_warping_invert_colors
 	d_w_hue_s_value.value = GlobalVariables.domain_warping_hue_shift
-	d_w_oct_value.value = GlobalVariables.domain_warping_octaves
+	d_w_oct_value.value = float(GlobalVariables.domain_warping_octaves)
 	d_w_freq_f_value.value = GlobalVariables.domain_warping_frequency_factor
 	d_w_amp_value.value = GlobalVariables.domain_warping_amplitude
 	d_w_freq_i_value.value = GlobalVariables.domain_warping_frequency_increment
@@ -814,7 +842,7 @@ func set_ui_values() -> void:
 	e_background_c_value.color = GlobalVariables.echoes_background_color
 	e_fractal_uv_value.button_pressed = GlobalVariables.echoes_fractal_uv
 	e_change_o_value.button_pressed = GlobalVariables.echoes_change_origin
-	e_iterations_value.value = GlobalVariables.echoes_iterations
+	e_iterations_value.value = float(GlobalVariables.echoes_iterations)
 	e_uv_s_value.value = GlobalVariables.echoes_uv_scale
 	e_vector_s_1_value.value = GlobalVariables.echoes_vector_scale_1
 	e_iterator_f_1_value.value = GlobalVariables.echoes_iterator_factor_1
@@ -827,18 +855,18 @@ func set_ui_values() -> void:
 	e_pulse_f_value.value = GlobalVariables.echoes_pulse_frequency
 	e_line_t_value.value = GlobalVariables.echoes_line_thickness
 	e_iterator_f_4_value.value = GlobalVariables.echoes_iterator_factor_4
-	e_assignment_m_1_value.value = GlobalVariables.echoes_assignment_mode_1
-	e_thickness_v_value.value = GlobalVariables.echoes_thickness_variation
-	e_assignment_m_2_value.value = GlobalVariables.echoes_assignment_mode_2
+	e_assignment_m_1_value.value = float(GlobalVariables.echoes_assignment_mode_1)
+	e_thickness_v_value.value = float(GlobalVariables.echoes_thickness_variation)
+	e_assignment_m_2_value.value = float(GlobalVariables.echoes_assignment_mode_2)
 	e_thin_l_value.button_pressed = GlobalVariables.echoes_thin_lines
 	e_assignment_m_3_value.button_pressed = GlobalVariables.echoes_assignment_mode_3
 	e_assignment_m_4_value.button_pressed = GlobalVariables.echoes_assignment_mode_4
 	e_fractal_d_value.button_pressed = GlobalVariables.echoes_fractal_distance
 	e_speed_value.value = GlobalVariables.echoes_speed
 	
-	bg_img_s_value.value = GlobalVariables.image_size
-	bg_img_o_value.value = GlobalVariables.image_opacity
-	bg_img_b_value.value = GlobalVariables.image_blur
+	bg_img_s_value.value = float(GlobalVariables.image_size)
+	bg_img_o_value.value = float(GlobalVariables.image_opacity)
+	bg_img_b_value.value = float(GlobalVariables.image_blur)
 	
 	i_line_c_value.color = GlobalVariables.isolines_line_color
 	i_background_c_value.color = GlobalVariables.isolines_background_color
@@ -851,7 +879,7 @@ func set_ui_values() -> void:
 	
 	s_g_color_1_value.color = GlobalVariables.simple_gradient_color_1
 	s_g_color_2_value.color = GlobalVariables.simple_gradient_color_2
-	s_g_direction_value.value = GlobalVariables.simple_gradient_direction
+	s_g_direction_value.value = float(GlobalVariables.simple_gradient_direction)
 	
 	bg_1_colors.color = GlobalVariables.background_colors[0]
 	bg_2_colors.color = GlobalVariables.background_colors[1]
@@ -863,11 +891,11 @@ func set_ui_values() -> void:
 	t_color_m_value.button_pressed = GlobalVariables.tides_color_mix
 	t_invert_c_value.button_pressed = GlobalVariables.tides_invert_colors
 	t_hue_s_value.value = GlobalVariables.tides_hue_shift
-	t_iterations_value.value = GlobalVariables.tides_iterations
+	t_iterations_value.value = float(GlobalVariables.tides_iterations)
 	t_speed_value.value = GlobalVariables.tides_speed
 	
 	shader_brightness_value.value = GlobalVariables.shader_brightness
-	shader_blur_value.value = GlobalVariables.shader_blur
+	shader_blur_value.value = float(GlobalVariables.shader_blur)
 	
 	bg_shake_a_value.value = GlobalVariables.background_shake_amplitude
 	bg_shake_f_value.value = GlobalVariables.background_shake_frequency
@@ -889,7 +917,7 @@ func set_ui_values() -> void:
 	tape_d_w_s_value.value = GlobalVariables.tape_distortion_wave_strength
 	tape_d_w_sp_value.value = GlobalVariables.tape_distortion_wave_speed
 	tape_d_w_f_value.value = GlobalVariables.tape_distortion_wave_frequency
-	tape_d_w_t_value.value = GlobalVariables.tape_distortion_wave_thickness
+	tape_d_w_t_value.value = float(GlobalVariables.tape_distortion_wave_thickness)
 	tape_d_b_s_value.value = GlobalVariables.tape_distortion_block_strength
 	tape_d_b_sp_value.value = GlobalVariables.tape_distortion_block_speed
 	tape_d_b_f_value.value = GlobalVariables.tape_distortion_block_frequency
@@ -907,7 +935,7 @@ func set_ui_values() -> void:
 
 	gradient_o_c_1_value.color = GlobalVariables.gradient_overlay_color_1
 	gradient_o_c_2_value.color = GlobalVariables.gradient_overlay_color_2
-	gradient_o_d_value.value = GlobalVariables.gradient_overlay_direction
+	gradient_o_d_value.value = float(GlobalVariables.gradient_overlay_direction)
 	gradient_o_o_value.value = GlobalVariables.gradient_overlay_opacity
 	
 	vignette_c_value.color = GlobalVariables.vignette_color
@@ -915,9 +943,10 @@ func set_ui_values() -> void:
 	vignette_sh_value.value = GlobalVariables.vignette_sharpness
 	
 	bloom_a_value.value = GlobalVariables.bloom_amount
+	bloom_b_m_value.select(GlobalVariables.bloom_blend_mode)
 	
 	grain_s_value.button_pressed = GlobalVariables.grain_static
-	grain_o_value.value = GlobalVariables.grain_opacity
+	grain_o_value.value = float(GlobalVariables.grain_opacity)
 	
 	title_pos_reaction_s_value.value = GlobalVariables.title_position_reaction_strength
 	title_s_reaction_s_value.value = GlobalVariables.title_size_reaction_strength
@@ -929,22 +958,24 @@ func set_ui_values() -> void:
 	icon_s_reaction_s_value.value = GlobalVariables.icon_size_reaction_strength
 	icon_r_reaction_s_value.value = GlobalVariables.icon_rotation_reaction_strength
 	c_a_s_reaction_s_value.value = GlobalVariables.chromatic_aberration_strength_reaction_strength
-	glitch_o_reaction_s_value.value = GlobalVariables.glitch_offset_reaction_strength
+	glitch_b_o_reaction_s_value.value = GlobalVariables.glitch_block_offset_reaction_strength
+	glitch_p_o_reaction_s_value.value = GlobalVariables.glitch_pixel_offset_reaction_strength
 	s_z_b_s_reaction_s_value.value = GlobalVariables.spin_zoom_blur_strength_reaction_strength
 	vignette_s_reaction_s_value.value = GlobalVariables.vignette_size_reaction_strength
 	bloom_a_reaction_s_value.value = GlobalVariables.bloom_amount_reaction_strength
-	audio_r_m_db_value.value = GlobalVariables.audio_reaction_min_db_level
-	audio_r_smoothing_a_value.value = GlobalVariables.audio_reaction_smoothing_amount
+	audio_r_m_db_value.value = float(GlobalVariables.audio_reaction_min_db_level)
+	audio_r_smoothing_a_value.value = float(GlobalVariables.audio_reaction_smoothing_amount)
 	
-	MainUtils.logger("UI values set.")
+	var difference: int = Time.get_ticks_msec() - start_time
+	MainUtils.logger("UI values set in " + str(difference) + " ms.")
 
 func refresh_preset_list() -> void:
 	preset_value.clear()
 	
-	var file_iterable: int = 0
+	var preset_iterable: int = 0
 	for preset: String in GlobalVariables.presets_in_selector:
-		preset_value.add_item(GlobalVariables.presets_in_selector[file_iterable], file_iterable)
-		file_iterable += 1
+		preset_value.add_item(GlobalVariables.presets_in_selector[preset_iterable], preset_iterable)
+		preset_iterable += 1
 	preset_value.select(GlobalVariables.presets_in_selector.find(GlobalVariables.preset_name))
 	
 	MainUtils.logger("Preset list updated.")
@@ -996,6 +1027,11 @@ func _on_waveform_a_value_value_changed(value: float) -> void:
 
 func _on_vertical_l_value_toggled(toggled_on: bool) -> void:
 	GlobalVariables.vertical_layout = toggled_on
+	
+	MainUtils.update_visualizer.emit()
+
+func _on_include_d_value_toggled(toggled_on: bool) -> void:
+	GlobalVariables.include_dividers = toggled_on
 	
 	MainUtils.update_visualizer.emit()
 
@@ -1106,6 +1142,11 @@ func _on_divider_c_value_color_changed(color: Color) -> void:
 
 func _on_divider_c_value_2_color_changed(color: Color) -> void:
 	GlobalVariables.divider_colors[1] = color
+	
+	MainUtils.update_visualizer.emit()
+
+func _on_divider_c_value_3_color_changed(color: Color) -> void:
+	GlobalVariables.divider_colors[2] = color
 	
 	MainUtils.update_visualizer.emit()
 
@@ -1502,7 +1543,7 @@ func _on_icon_r_value_value_changed(value: float) -> void:
 	MainUtils.update_visualizer.emit()
 
 func _on_icon_s_value_value_changed(value: float) -> void:
-	GlobalVariables.icon_size = int(value)
+	GlobalVariables.icon_size = value
 	
 	MainUtils.update_visualizer.emit()
 
@@ -1661,6 +1702,11 @@ func _on_bloom_a_value_value_changed(value: float) -> void:
 	
 	MainUtils.update_visualizer.emit()
 
+func _on_bloom_bm_value_item_selected(index: int) -> void:
+	GlobalVariables.bloom_blend_mode = index
+	
+	MainUtils.update_visualizer.emit()
+
 func _on_grain_s_value_toggled(toggled_on: bool) -> void:
 	GlobalVariables.grain_static = toggled_on
 	
@@ -1726,8 +1772,13 @@ func _on_c_a_s_reaction_s_value_value_changed(value: float) -> void:
 	
 	MainUtils.update_visualizer.emit()
 
-func _on_glitch_o_reaction_s_value_value_changed(value: float) -> void:
-	GlobalVariables.glitch_offset_reaction_strength = value
+func _on_glitch_b_o_reaction_s_value_value_changed(value: float) -> void:
+	GlobalVariables.glitch_block_offset_reaction_strength = value
+	
+	MainUtils.update_visualizer.emit()
+
+func _on_glitch_p_o_reaction_s_value_value_changed(value: float) -> void:
+	GlobalVariables.glitch_pixel_offset_reaction_strength = value
 	
 	MainUtils.update_visualizer.emit()
 

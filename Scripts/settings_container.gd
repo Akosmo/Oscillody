@@ -1,5 +1,5 @@
 # Oscillody
-# Copyright (C) 2025 Akosmo
+# Copyright (C) 2025-present Akosmo
 
 # This file is part of Oscillody. Unless specified otherwise, it is under the license below:
 
@@ -23,7 +23,7 @@ extends ScrollContainer
 @onready var output_d_value: OptionButton = %OutputDValue
 @onready var buffer_q_s_value: SpinBox = %BufferQSValue
 @onready var low_s_m_value: CheckButton = %LowSMValue
-@onready var video_r_value: OptionButton = %VideoRValue
+@onready var export_r_value: OptionButton = %ExportRValue
 
 #endregion ##################################
 
@@ -40,11 +40,11 @@ func _ready() -> void:
 	
 	match MainUtils.video_resolution:
 		Vector2i(1280, 720):
-			video_r_value.select(0)
+			export_r_value.select(0)
 		Vector2i(1920, 1080):
-			video_r_value.select(1)
+			export_r_value.select(1)
 		Vector2i(2560, 1440):
-			video_r_value.select(2)
+			export_r_value.select(2)
 
 #region SETTINGS BUILT-IN SIGNAL FUNCTIONS ##################################
 
@@ -55,12 +55,14 @@ func _on_output_d_value_item_selected(index: int) -> void:
 	MainUtils.update_visualizer.emit()
 
 func _on_buffer_q_s_value_value_changed(value: float) -> void:
-	MainUtils.new_buffer_queue_size = int(value)
+	MainUtils.buffer_queue_size = int(value)
+	
+	MainUtils.update_visualizer.emit()
 
 func _on_low_s_m_value_toggled(toggled_on: bool) -> void:
 	MainUtils.load_low_specs_mode = toggled_on
 
-func _on_video_r_value_item_selected(index: int) -> void:
+func _on_export_r_value_item_selected(index: int) -> void:
 	match index:
 		0:
 			MainUtils.video_resolution = Vector2i(1280, 720)

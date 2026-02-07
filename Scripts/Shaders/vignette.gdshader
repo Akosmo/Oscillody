@@ -16,7 +16,8 @@ uniform lowp float vignette_sharpness : hint_range(0.0, 20.0, 1.0) = 12.0;
 void fragment() {
     highp vec2 uv = SCREEN_UV;
 
-    uv = 1.0 - (1.0 - uv) * uv; // 0 - 0.5 - 1 -> 1 - 0.75 - 1
+	// 0 - 0.5 - 1 -> 1 - 0.75 - 1 ; the smaller the difference, the rounder the vignette.
+    uv = 1.0 - (1.0 - uv) * uv;
     highp float vignette_mono = clamp(uv.x * uv.y * vignette_size, 0.0, 1.0);
     vignette_mono = pow(vignette_mono, vignette_sharpness);
     highp vec4 vignette = vec4(vignette_mono * vignette_color);

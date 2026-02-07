@@ -1,5 +1,5 @@
 # Oscillody
-# Copyright (C) 2025 Akosmo
+# Copyright (C) 2025-present Akosmo
 
 # This file is part of Oscillody. Unless specified otherwise, it is under the license below:
 
@@ -35,11 +35,18 @@ extends CanvasLayer
 
 #region POST-PROCESSING VARIABLES ##################################
 
-const REDUCE_STRENGTH_CHROMATIC_ABERRATION: float = 0.01
-const REDUCE_STRENGTH_GLITCH: float = 0.01
-const REDUCE_STRENGTH_SPIN_ZOOM_BLUR: float = 0.01
-const REDUCE_STRENGTH_LENS_DISTORTION: float = 0.1
-const REDUCE_STRENGTH_VIGNETTE: float = 0.1
+const MIN_TAPE_DIST_THICKNESS_ON_UI: float = 10
+const MAX_TAPE_DIST_THICKNESS_ON_UI: float = 100
+const MIN_LENS_DIST_ZOOM_ON_UI: float = 0.1
+const MAX_LENS_DIST_ZOOM_ON_UI: float = 2.0
+
+const DECREASE_STRENGTH_CHROMATIC_ABERRATION: float = 0.001
+const DECREASE_STRENGTH_GLITCH: float = 0.005
+const DECREASE_STRENGTH_SPIN_ZOOM_BLUR: float = 0.125
+const DECREASE_STRENGTH_LENS_DISTORTION: float = 0.1
+const DECREASE_STRENGTH_VIGNETTE: float = 0.025
+
+const DECREASE_TIME_INCREMENT: float = 0.002
 
 # Variable used to increment shader "frames". Used along with shader speed set by the user.
 var custom_time: float = 0.0
@@ -53,15 +60,46 @@ func _ready() -> void:
 	update_post_processing()
 
 func _process(_delta: float) -> void:
-	if visible:
+	if MainUtils.audio_playing:
 		if scanlines.visible:
-			custom_time = custom_time + 0.002 * GlobalVariables.scanlines_speed * 10.0
+			custom_time = custom_time + DECREASE_TIME_INCREMENT * GlobalVariables.scanlines_speed * 10.0
 			scanlines.get_material().set_shader_parameter("speed", custom_time)
+		
 		if (GlobalVariables.chromatic_aberration_strength_reaction_strength or
-		GlobalVariables.glitch_offset_reaction_strength or
+		GlobalVariables.glitch_block_offset_reaction_strength or
+		GlobalVariables.glitch_pixel_offset_reaction_strength or
 		GlobalVariables.spin_zoom_blur_strength_reaction_strength or
 		GlobalVariables.vignette_size_reaction_strength):
 			post_processing_reaction(MainUtils.cur_mag)
+	else:
+		if GlobalVariables.chromatic_aberration_strength_reaction_strength:
+			chromatic_aberration.get_material().set_shader_parameter(
+				"strength",
+				GlobalVariables.chromatic_aberration_strength * 0.001
+				)
+
+		if (GlobalVariables.glitch_block_offset_reaction_strength or
+		GlobalVariables.glitch_pixel_offset_reaction_strength):
+			glitch.get_material().set_shader_parameter(
+				"block_offset_amount",
+				GlobalVariables.glitch_block_offset_amount * 0.0005
+				)
+			glitch.get_material().set_shader_parameter(
+				"pixel_offset_amount",
+				GlobalVariables.glitch_pixel_offset_amount * 0.0005
+				)
+
+		if GlobalVariables.spin_zoom_blur_strength_reaction_strength:
+			spin_zoom_blur.get_material().set_shader_parameter(
+				"blur_strength",
+				GlobalVariables.spin_zoom_blur_strength * 0.1
+				)
+
+		if GlobalVariables.vignette_size_reaction_strength:
+			vignette.get_material().set_shader_parameter(
+				"vignette_size",
+				GlobalVariables.vignette_size * 0.1
+				)
 
 func update_post_processing() -> void:
 	if (GlobalVariables.chromatic_aberration_strength or
@@ -74,23 +112,42 @@ func update_post_processing() -> void:
 	GlobalVariables.scanlines_darkness or
 	GlobalVariables.lens_distortion_strength or
 	GlobalVariables.gradient_overlay_opacity or
-	GlobalVariables.vignette_size):
+	GlobalVariables.vignette_size or
+	GlobalVariables.chromatic_aberration_strength_reaction_strength or
+	GlobalVariables.glitch_block_offset_reaction_strength or
+	GlobalVariables.glitch_pixel_offset_reaction_strength or
+	GlobalVariables.spin_zoom_blur_strength_reaction_strength or
+	GlobalVariables.vignette_size_reaction_strength):
 		visible = true
-		set_process(true)
 	else:
 		visible = false
+	
+	# These statements should run, regardless of the root's visibility, because
+	# a CanvasLayer visibility doesn't propagate to underlying layers.
+	if (GlobalVariables.chromatic_aberration_strength_reaction_strength or
+	GlobalVariables.glitch_block_offset_reaction_strength or
+	GlobalVariables.glitch_pixel_offset_reaction_strength or
+	GlobalVariables.spin_zoom_blur_strength_reaction_strength or
+	GlobalVariables.vignette_size_reaction_strength or
+	GlobalVariables.scanlines_darkness):
+		set_process(true)
+	else:
 		set_process(false)
-		
-	if GlobalVariables.chromatic_aberration_strength:
+	
+	if (GlobalVariables.chromatic_aberration_strength or
+	GlobalVariables.chromatic_aberration_strength_reaction_strength):
 		chromatic_aberration.visible = true
 		chromatic_aberration.get_material().set_shader_parameter(
 			"strength",
-			remap(GlobalVariables.chromatic_aberration_strength, 0.0, 10.0, 0.0, 0.005)
+			GlobalVariables.chromatic_aberration_strength * 0.001
 			)
 	else:
 		chromatic_aberration.visible = false
 	
-	if GlobalVariables.glitch_block_offset_amount or GlobalVariables.glitch_pixel_offset_amount:
+	if (GlobalVariables.glitch_block_offset_amount or
+	GlobalVariables.glitch_pixel_offset_amount or
+	GlobalVariables.glitch_block_offset_reaction_strength or
+	GlobalVariables.glitch_pixel_offset_reaction_strength):
 		glitch.visible = true
 		glitch.get_material().set_shader_parameter(
 			"block_offset_amount",
@@ -107,7 +164,7 @@ func update_post_processing() -> void:
 	else:
 		glitch.visible = false
 	
-	if GlobalVariables.spin_zoom_blur_strength:
+	if GlobalVariables.spin_zoom_blur_strength or GlobalVariables.spin_zoom_blur_strength_reaction_strength:
 		spin_zoom_blur.visible = true
 		spin_zoom_blur.get_material().set_shader_parameter(
 			"zoom_mode",
@@ -149,7 +206,8 @@ func update_post_processing() -> void:
 			)
 		tape_distortion.get_material().set_shader_parameter(
 			"wave_thickness",
-			int(remap(float(GlobalVariables.tape_distortion_wave_thickness), 10.0, 100.0, 100.0, 10.0))
+			MAX_TAPE_DIST_THICKNESS_ON_UI \
+			- GlobalVariables.tape_distortion_wave_thickness + MIN_TAPE_DIST_THICKNESS_ON_UI
 			)
 		tape_distortion.get_material().set_shader_parameter(
 			"block_strength",
@@ -191,7 +249,7 @@ func update_post_processing() -> void:
 			)
 		lens_distortion.get_material().set_shader_parameter(
 			"zoom",
-			GlobalVariables.lens_distortion_zoom
+			MAX_LENS_DIST_ZOOM_ON_UI - GlobalVariables.lens_distortion_zoom + MIN_LENS_DIST_ZOOM_ON_UI
 			)
 		lens_distortion.get_material().set_shader_parameter(
 			"border",
@@ -240,79 +298,51 @@ func update_post_processing() -> void:
 		vignette.visible = false
 
 func post_processing_reaction(mag: float, strength: float = 0.0) -> void:
-	if MainUtils.audio_playing:
-		if GlobalVariables.chromatic_aberration_strength_reaction_strength:
-			strength = GlobalVariables.chromatic_aberration_strength_reaction_strength * 0.1
-			current_value_sent_to_shader = remap(
-				GlobalVariables.chromatic_aberration_strength,
-				0.0,
-				10.0,
-				0.0,
-				0.005
-				)
-			
-			chromatic_aberration.get_material().set_shader_parameter(
-				"strength",
-				current_value_sent_to_shader + mag * REDUCE_STRENGTH_CHROMATIC_ABERRATION * strength
-				)
+	mag = clampf(mag, 0.0, 1.0)
+	
+	if GlobalVariables.chromatic_aberration_strength_reaction_strength:
+		strength = GlobalVariables.chromatic_aberration_strength_reaction_strength
+		current_value_sent_to_shader = GlobalVariables.chromatic_aberration_strength * 0.001
 		
-		if GlobalVariables.glitch_offset_reaction_strength:
-			strength = GlobalVariables.glitch_offset_reaction_strength * 0.25
-			current_value_sent_to_shader = GlobalVariables.glitch_block_offset_amount * 0.0005
-			
-			if current_value_sent_to_shader > 0.0:
-				glitch.get_material().set_shader_parameter(
-					"block_offset_amount",
-					current_value_sent_to_shader + mag * REDUCE_STRENGTH_GLITCH * strength
-					)
-			
-			current_value_sent_to_shader = GlobalVariables.glitch_pixel_offset_amount * 0.0005
-			
-			if current_value_sent_to_shader > 0.0:
-				glitch.get_material().set_shader_parameter(
-					"pixel_offset_amount",
-					current_value_sent_to_shader + mag * REDUCE_STRENGTH_GLITCH * strength
-					)
+		chromatic_aberration.get_material().set_shader_parameter(
+			"strength",
+			current_value_sent_to_shader + mag * DECREASE_STRENGTH_CHROMATIC_ABERRATION * strength
+			)
+	
+	if (GlobalVariables.glitch_block_offset_reaction_strength or
+	GlobalVariables.glitch_pixel_offset_reaction_strength):
+		strength = GlobalVariables.glitch_block_offset_reaction_strength
+		current_value_sent_to_shader = GlobalVariables.glitch_block_offset_amount * 0.0005
 		
-		if GlobalVariables.spin_zoom_blur_strength_reaction_strength:
-			strength = GlobalVariables.spin_zoom_blur_strength_reaction_strength * 25.0
-			current_value_sent_to_shader = GlobalVariables.spin_zoom_blur_strength * 0.1
-			
-			spin_zoom_blur.get_material().set_shader_parameter(
-				"blur_strength",
-				current_value_sent_to_shader + mag * REDUCE_STRENGTH_SPIN_ZOOM_BLUR * strength
-				)
-		
-		if GlobalVariables.vignette_size_reaction_strength:
-			strength = GlobalVariables.vignette_size_reaction_strength * 0.25
-			current_value_sent_to_shader = GlobalVariables.vignette_size * 0.1
-			
-			vignette.get_material().set_shader_parameter(
-				"vignette_size",
-				current_value_sent_to_shader - mag * REDUCE_STRENGTH_VIGNETTE * strength
-				)
-	else:
-		if GlobalVariables.chromatic_aberration_strength_reaction_strength:
-			chromatic_aberration.get_material().set_shader_parameter(
-				"strength",
-				remap(GlobalVariables.chromatic_aberration_strength, 0.0, 10.0, 0.0, 0.005)
-				)
-		
-		if GlobalVariables.glitch_offset_reaction_strength:
+		if current_value_sent_to_shader > 0.0 or GlobalVariables.glitch_block_offset_reaction_strength:
 			glitch.get_material().set_shader_parameter(
 				"block_offset_amount",
-				GlobalVariables.glitch_block_offset_amount * 0.0005
+				current_value_sent_to_shader + mag * DECREASE_STRENGTH_GLITCH * strength
 				)
+		
+		strength = GlobalVariables.glitch_pixel_offset_reaction_strength
+		current_value_sent_to_shader = GlobalVariables.glitch_pixel_offset_amount * 0.0005
+		
+		if current_value_sent_to_shader > 0.0 or GlobalVariables.glitch_pixel_offset_reaction_strength:
 			glitch.get_material().set_shader_parameter(
 				"pixel_offset_amount",
-				GlobalVariables.glitch_pixel_offset_amount * 0.0005
+				current_value_sent_to_shader + mag * DECREASE_STRENGTH_GLITCH * strength
 				)
+	
+	if GlobalVariables.spin_zoom_blur_strength_reaction_strength:
+		strength = GlobalVariables.spin_zoom_blur_strength_reaction_strength
+		current_value_sent_to_shader = GlobalVariables.spin_zoom_blur_strength * 0.1
 		
-		if GlobalVariables.spin_zoom_blur_strength_reaction_strength:
-			spin_zoom_blur.get_material().set_shader_parameter(
-				"blur_strength",
-				GlobalVariables.spin_zoom_blur_strength * 0.1
-				)
+		spin_zoom_blur.get_material().set_shader_parameter(
+			"blur_strength",
+			current_value_sent_to_shader + mag * DECREASE_STRENGTH_SPIN_ZOOM_BLUR * strength
+			)
+	
+	if GlobalVariables.vignette_size_reaction_strength:
+		strength = GlobalVariables.vignette_size_reaction_strength
+		current_value_sent_to_shader = GlobalVariables.vignette_size * 0.1
 		
-		if GlobalVariables.vignette_size_reaction_strength:
-			vignette.get_material().set_shader_parameter("vignette_size", GlobalVariables.vignette_size * 0.1)
+		vignette.get_material().set_shader_parameter(
+			"vignette_size",
+			current_value_sent_to_shader - mag * DECREASE_STRENGTH_VIGNETTE * strength
+			)

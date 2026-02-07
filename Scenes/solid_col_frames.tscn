@@ -2,26 +2,6 @@
 
 [ext_resource type="Script" uid="uid://cseiday0obqii" path="res://Scripts/solid_col_frames.gd" id="1_1wyno"]
 
-[node name="SolidColFrames" type="Control"]
+[node name="SolidColFrames" type="Node2D"]
 visible = false
-layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
 script = ExtResource("1_1wyno")
-
-[node name="FrameOne" type="ColorRect" parent="."]
-visible = false
-layout_mode = 0
-
-[node name="FrameTwo" type="ColorRect" parent="."]
-visible = false
-layout_mode = 0
-
-[node name="FrameThree" type="ColorRect" parent="."]
-visible = false
-layout_mode = 0
-
-[node name="FrameFour" type="ColorRect" parent="."]
-visible = false
-layout_mode = 0

@@ -1,5 +1,5 @@
 # Oscillody
-# Copyright (C) 2025 Akosmo
+# Copyright (C) 2025-present Akosmo
 
 # This file is part of Oscillody. Unless specified otherwise, it is under the license below:
 
@@ -244,6 +244,10 @@ func _on_export_mp4_button_pressed() -> void:
 	export_file_dialog.popup()
 
 func _on_export_file_dialog_file_selected(path: String) -> void:
+	if OS.has_feature("editor"):
+		MainUtils.logger("Exporting is disabled while in the editor.", true)
+		return
+	
 	if MainUtils.ffmpeg_path == "":
 		MainUtils.logger("The FFmpeg executable must be selected in order to export your video.", true)
 		return

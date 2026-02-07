@@ -870,6 +870,10 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(1, 1, 1, 0)
 
+[node name="MouseTimer" type="Timer" parent="UIControls"]
+unique_name_in_owner = true
+one_shot = true
+
 [node name="PlayerControl" parent="UIControls" instance=ExtResource("3_xnxgx")]
 
 [node name="ButtonsContainerControl" type="Control" parent="UIControls"]
@@ -1104,6 +1108,7 @@ use_native_dialog = true
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
+scroll_vertical = 100
 script = ExtResource("4_nmswy")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer"]
@@ -1167,6 +1172,20 @@ layout_mode = 2
 text = "Vertical Layout:"
 
 [node name="VerticalLValue" type="CheckButton" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/VerticalLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="IncludeDividers" type="HBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 89
+alignment = 1
+
+[node name="IncludeDKey" type="Label" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/IncludeDividers"]
+layout_mode = 2
+text = "Include Dividers:"
+
+[node name="IncludeDValue" type="CheckButton" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/IncludeDividers"]
 unique_name_in_owner = true
 layout_mode = 2
 
@@ -1303,8 +1322,9 @@ text = "Size:"
 unique_name_in_owner = true
 layout_mode = 2
 min_value = 20.0
-max_value = 120.0
-value = 64.0
+max_value = 200.0
+step = 5.0
+value = 65.0
 rounded = true
 
 [node name="TitleShadow" type="VBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer"]
@@ -1369,7 +1389,7 @@ layout_mode = 2
 [node name="TitleOSValue" type="SpinBox" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/TitleOutline"]
 unique_name_in_owner = true
 layout_mode = 2
-max_value = 32.0
+max_value = 80.0
 rounded = true
 
 [node name="WaveformSeparator" type="HSeparator" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer"]
@@ -1446,7 +1466,7 @@ text = "Waveform Height:"
 [node name="WaveformHValue" type="SpinBox" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/WaveformHeight"]
 unique_name_in_owner = true
 layout_mode = 2
-min_value = 1.0
+min_value = 0.5
 max_value = 10.0
 step = 0.5
 value = 5.0
@@ -1469,27 +1489,39 @@ button_pressed = true
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 
-[node name="DividerColors" type="HBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer"]
+[node name="DividerColors" type="VBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
-theme_override_constants/separation = 18
 alignment = 1
 
 [node name="DividerCKey" type="Label" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/DividerColors"]
 layout_mode = 2
 text = "Divider Colors:"
+horizontal_alignment = 1
 
-[node name="DividerCValue" type="ColorPickerButton" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/DividerColors"]
+[node name="HBoxContainer" type="HBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/DividerColors"]
+layout_mode = 2
+theme_override_constants/separation = 50
+alignment = 1
+
+[node name="DividerCValue" type="ColorPickerButton" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/DividerColors/HBoxContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(50, 0)
+custom_minimum_size = Vector2(50, 30)
 layout_mode = 2
 color = Color(1, 1, 1, 1)
 
-[node name="DividerCValue2" type="ColorPickerButton" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/DividerColors"]
+[node name="DividerCValue2" type="ColorPickerButton" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/DividerColors/HBoxContainer"]
 unique_name_in_owner = true
 visible = false
-custom_minimum_size = Vector2(50, 0)
+custom_minimum_size = Vector2(50, 30)
+layout_mode = 2
+color = Color(1, 1, 1, 1)
+
+[node name="DividerCValue3" type="ColorPickerButton" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/DividerColors/HBoxContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(50, 30)
 layout_mode = 2
 color = Color(1, 1, 1, 1)
 
@@ -1606,8 +1638,8 @@ text = "UV Scale:"
 unique_name_in_owner = true
 layout_mode = 2
 min_value = 1.0
-max_value = 10.0
-step = 0.1
+max_value = 20.0
+step = 0.5
 value = 5.0
 
 [node name="CurrentFlowIterations" type="HBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer"]
@@ -1624,8 +1656,8 @@ text = "Iterations:"
 [node name="CFIterationsValue" type="SpinBox" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/CurrentFlowIterations"]
 unique_name_in_owner = true
 layout_mode = 2
-min_value = 4.0
-max_value = 14.0
+min_value = 3.0
+max_value = 16.0
 value = 10.0
 rounded = true
 
@@ -1667,7 +1699,7 @@ text = "Speed:"
 [node name="CFSpeedValue" type="SpinBox" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/CurrentFlowSpeed"]
 unique_name_in_owner = true
 layout_mode = 2
-max_value = 10.0
+max_value = 20.0
 step = 0.5
 value = 2.0
 
@@ -1755,7 +1787,7 @@ text = "Octaves:"
 unique_name_in_owner = true
 layout_mode = 2
 min_value = 1.0
-max_value = 6.0
+max_value = 10.0
 value = 6.0
 rounded = true
 
@@ -2308,7 +2340,7 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 2
 tooltip_text = "Imports image to be displayed behind the waveform.
-Use 16:9 aspect ratio, otherwise the image will be stretched.
+Use 16:9 aspect ratio, otherwise the image will be stretched when the window doesn't have the same ratio.
 
 Recommend resolution: at least the same resolution as your video export resolution."
 text = "Import Image..."
@@ -2457,10 +2489,8 @@ text = "Thickness Var.:"
 [node name="IThicknessVValue" type="SpinBox" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/IsolinesThicknessVariation"]
 unique_name_in_owner = true
 layout_mode = 2
-min_value = 0.5
-max_value = 1.1
-step = 0.01
-value = 0.5
+max_value = 1.0
+step = 0.05
 
 [node name="IsolinesLineAmount" type="HBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer"]
 unique_name_in_owner = true
@@ -2496,7 +2526,7 @@ text = "UV Scale:"
 unique_name_in_owner = true
 layout_mode = 2
 min_value = 1.0
-max_value = 10.0
+max_value = 20.0
 step = 0.5
 value = 5.0
 
@@ -2519,7 +2549,7 @@ text = "Speed:"
 [node name="ISpeedValue" type="SpinBox" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/IsolinesSpeed"]
 unique_name_in_owner = true
 layout_mode = 2
-max_value = 10.0
+max_value = 20.0
 step = 0.5
 value = 2.0
 
@@ -2904,9 +2934,9 @@ text = "Size:"
 unique_name_in_owner = true
 layout_mode = 2
 min_value = 1.0
-max_value = 20.0
+max_value = 10.0
+step = 0.1
 value = 4.0
-rounded = true
 
 [node name="PostProcessingSeparator" type="HSeparator" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer"]
 custom_minimum_size = Vector2(250, 0)
@@ -3133,7 +3163,7 @@ text = "Block Speed:"
 [node name="TapeDBSpValue" type="SpinBox" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/TapeDistBlockSpeed"]
 unique_name_in_owner = true
 layout_mode = 2
-max_value = 20.0
+max_value = 40.0
 value = 10.0
 rounded = true
 
@@ -3449,6 +3479,26 @@ layout_mode = 2
 max_value = 10.0
 step = 0.5
 
+[node name="BloomBlendMode" type="HBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 74
+alignment = 1
+
+[node name="BloomBMKey" type="Label" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/BloomBlendMode"]
+layout_mode = 2
+text = "Blend Mode:"
+
+[node name="BloomBMValue" type="OptionButton" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/BloomBlendMode"]
+unique_name_in_owner = true
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "Add"
+popup/item_0/id = 0
+popup/item_1/text = "Screen"
+popup/item_1/id = 1
+
 [node name="GrainStatic" type="HBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer"]
 unique_name_in_owner = true
 visible = false
@@ -3659,7 +3709,7 @@ unique_name_in_owner = true
 layout_mode = 2
 min_value = -10.0
 max_value = 10.0
-step = 0.5
+step = 0.1
 
 [node name="ChroAberStrReactionStr" type="HBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer"]
 unique_name_in_owner = true
@@ -3678,18 +3728,35 @@ layout_mode = 2
 max_value = 10.0
 step = 0.5
 
-[node name="GlitchOffsetReactionStr" type="HBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer"]
+[node name="GlitchBlockOffsetReactionStr" type="HBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
-theme_override_constants/separation = 60
+theme_override_constants/separation = 14
 alignment = 1
 
-[node name="GlitchOReactionSKey" type="Label" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/GlitchOffsetReactionStr"]
+[node name="GlitchBOReactionSKey" type="Label" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/GlitchBlockOffsetReactionStr"]
 layout_mode = 2
-text = "Glitch Offset:"
+text = "Glitch Block Offset:"
 
-[node name="GlitchOReactionSValue" type="SpinBox" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/GlitchOffsetReactionStr"]
+[node name="GlitchBOReactionSValue" type="SpinBox" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/GlitchBlockOffsetReactionStr"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 10.0
+step = 0.5
+
+[node name="GlitchPixelOffsetReactionStr" type="HBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="GlitchPOReactionSKey" type="Label" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/GlitchPixelOffsetReactionStr"]
+layout_mode = 2
+text = "Glitch Pixel Offset:"
+
+[node name="GlitchPOReactionSValue" type="SpinBox" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/GlitchPixelOffsetReactionStr"]
 unique_name_in_owner = true
 layout_mode = 2
 max_value = 10.0
@@ -3844,15 +3911,14 @@ allow_reselect = true
 [node name="BufferQueueSize" type="HBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer/VBoxContainer"]
 layout_mode = 2
 tooltip_text = "Sets the size of the audio sample history.
-By default, Oscillody tries to send 1024 samples per frame to the waveforms,
+Oscillody tries to send 1024 samples per frame to the waveforms (unless Low Specs Mode is enabled),
 That means the latest 1024 samples stay visible on screen for [size] amount of frames.
 The higher the size, the more samples are displayed in total.
 Example: 1024 * 4 (size) = 4096 samples on screen at all times, with 1024 new ones added every frame.
 
 Min: 1, Max: 32
 
-(!) Changes are only applied after restarting. This value is also set when starting a render
-before restarting. Keep in mind, this setting can be CPU-intensive."
+(!) Keep in mind, this setting can be CPU-intensive."
 theme_override_constants/separation = 34
 alignment = 1
 
@@ -3888,18 +3954,18 @@ text = "Low Specs Mode (!):"
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="VideoResolution" type="HBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer/VBoxContainer"]
+[node name="ExportResolution" type="HBoxContainer" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer/VBoxContainer"]
 layout_mode = 2
 tooltip_text = "Sets the resolution of the video to be exported.
 For best quality on YouTube, use 1440p. For faster rendering, use 1080p, or even 720p if needed."
-theme_override_constants/separation = 42
+theme_override_constants/separation = 35
 alignment = 1
 
-[node name="VideoRKey" type="Label" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer/VBoxContainer/VideoResolution"]
+[node name="ExportRKey" type="Label" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer/VBoxContainer/ExportResolution"]
 layout_mode = 2
-text = "Video Resolution:"
+text = "Export Resolution:"
 
-[node name="VideoRValue" type="OptionButton" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer/VBoxContainer/VideoResolution"]
+[node name="ExportRValue" type="OptionButton" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer/VBoxContainer/ExportResolution"]
 unique_name_in_owner = true
 layout_mode = 2
 selected = 0
@@ -3935,7 +4001,8 @@ layout_mode = 2
 [node name="LinksAndMore" type="RichTextLabel" parent="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer/VBoxContainer"]
 layout_mode = 2
 bbcode_enabled = true
-text = "[center][url=https://github.com/Akosmo/Oscillody/issues]Report Bugs/Send Suggestions[/url]
+text = "[center]ABOUT THE APP
+[url=https://github.com/Akosmo/Oscillody/issues]Report Bugs/Send Suggestions[/url]
 [url=https://akosmotunes.itch.io/oscillody]Check for Updates[/url]
 
 [url=https://github.com/Akosmo/Oscillody]Source Code[/url]
@@ -3944,9 +4011,9 @@ Made by [url=https://akosmo.carrd.co]Akosmo[/url]
 with the
 [url=https://godotengine.org]Godot Engine[/url]
 
-Copyright (C) 2025 Akosmo
+Copyright (C) 2025-present Akosmo
 Licensed under the [url=https://www.gnu.org/licenses/gpl-3.0.txt]GPL-3.0-or-later versions[/url]
-App version 2.0.0[/center]"
+App version 3.0.0 (dev)[/center]"
 fit_content = true
 scroll_active = false
 
@@ -4215,6 +4282,7 @@ dialog_text = "Are you sure you want to quit?
 Any unsaved changes will be lost."
 
 [connection signal="gui_input" from="UIControls/ReleaseFocus" to="." method="_on_release_focus_gui_input"]
+[connection signal="timeout" from="UIControls/MouseTimer" to="." method="_on_mouse_timer_timeout"]
 [connection signal="pressed" from="UIControls/ButtonsContainerControl/ButtonsContainer/FilesButton" to="." method="_on_files_button_pressed"]
 [connection signal="pressed" from="UIControls/ButtonsContainerControl/ButtonsContainer/CustomizeButton" to="." method="_on_customize_button_pressed"]
 [connection signal="pressed" from="UIControls/ButtonsContainerControl/ButtonsContainer/SettingsButton" to="." method="_on_settings_button_pressed"]
@@ -4239,6 +4307,7 @@ Any unsaved changes will be lost."
 [connection signal="pressed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/SavePresetButton" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_save_preset_button_pressed"]
 [connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/WaveformAmount/WaveformAValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_waveform_a_value_value_changed"]
 [connection signal="toggled" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/VerticalLayout/VerticalLValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_vertical_l_value_toggled"]
+[connection signal="toggled" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/IncludeDividers/IncludeDValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_include_d_value_toggled"]
 [connection signal="text_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/Title/TitleValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_title_value_text_changed"]
 [connection signal="item_selected" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/TitleFont/TitleFValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_title_f_value_item_selected"]
 [connection signal="toggled" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/TitleFontBold/TitleFBValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_title_f_b_value_toggled"]
@@ -4259,8 +4328,9 @@ Any unsaved changes will be lost."
 [connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/WaveformThickness/WaveformTValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_waveform_t_value_value_changed"]
 [connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/WaveformHeight/WaveformHValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_waveform_h_value_value_changed"]
 [connection signal="toggled" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/WaveformAntialias/WaveformAAValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_waveform_aa_value_toggled"]
-[connection signal="color_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/DividerColors/DividerCValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_divider_c_value_color_changed"]
-[connection signal="color_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/DividerColors/DividerCValue2" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_divider_c_value_2_color_changed"]
+[connection signal="color_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/DividerColors/HBoxContainer/DividerCValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_divider_c_value_color_changed"]
+[connection signal="color_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/DividerColors/HBoxContainer/DividerCValue2" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_divider_c_value_2_color_changed"]
+[connection signal="color_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/DividerColors/HBoxContainer/DividerCValue3" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_divider_c_value_3_color_changed"]
 [connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/DividerThickness/DividerTValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_divider_t_value_value_changed"]
 [connection signal="item_selected" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/BackgroundType/BGTValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_bg_t_value_item_selected"]
 [connection signal="color_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/CurrentFlowMainColor/CFMainCValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_c_f_main_c_value_color_changed"]
@@ -4373,6 +4443,7 @@ Any unsaved changes will be lost."
 [connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/VignetteSize/VignetteSValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_vignette_s_value_value_changed"]
 [connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/VignetteSharpness/VignetteShValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_vignette_sh_value_value_changed"]
 [connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/BloomAmount/BloomAValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_bloom_a_value_value_changed"]
+[connection signal="item_selected" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/BloomBlendMode/BloomBMValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_bloom_bm_value_item_selected"]
 [connection signal="toggled" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/GrainStatic/GrainSValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_grain_s_value_toggled"]
 [connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/GrainOpacity/GrainOValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_grain_o_value_value_changed"]
 [connection signal="item_selected" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/AudioReactionControls/AudioRCValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_audio_r_c_value_item_selected"]
@@ -4386,7 +4457,8 @@ Any unsaved changes will be lost."
 [connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/IconSizeReactionStr/IconSReactionSValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_icon_s_reaction_s_value_value_changed"]
 [connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/IconRotationReactionStr/IconRReactionSValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_icon_r_reaction_s_value_value_changed"]
 [connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/ChroAberStrReactionStr/CASReactionSValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_c_a_s_reaction_s_value_value_changed"]
-[connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/GlitchOffsetReactionStr/GlitchOReactionSValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_glitch_o_reaction_s_value_value_changed"]
+[connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/GlitchBlockOffsetReactionStr/GlitchBOReactionSValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_glitch_b_o_reaction_s_value_value_changed"]
+[connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/GlitchPixelOffsetReactionStr/GlitchPOReactionSValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_glitch_p_o_reaction_s_value_value_changed"]
 [connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/SpinZoomBlurStrReactionStr/SZBSReactionSValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_s_z_b_s_reaction_s_value_value_changed"]
 [connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/VignetteSizeReactionStr/VignetteSReactionSValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_vignette_s_reaction_s_value_value_changed"]
 [connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer/VBoxContainer/BloomAmtReactionStr/BloomAReactionSValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/CustomizeContainer" method="_on_bloom_a_reaction_s_value_value_changed"]
@@ -4396,7 +4468,7 @@ Any unsaved changes will be lost."
 [connection signal="item_selected" from="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer/VBoxContainer/OutputDevice/OutputDValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer" method="_on_output_d_value_item_selected"]
 [connection signal="value_changed" from="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer/VBoxContainer/BufferQueueSize/BufferQSValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer" method="_on_buffer_q_s_value_value_changed"]
 [connection signal="toggled" from="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer/VBoxContainer/LowSpecsMode/LowSMValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer" method="_on_low_s_m_value_toggled"]
-[connection signal="item_selected" from="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer/VBoxContainer/VideoResolution/VideoRValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer" method="_on_video_r_value_item_selected"]
+[connection signal="item_selected" from="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer/VBoxContainer/ExportResolution/ExportRValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer" method="_on_export_r_value_item_selected"]
 [connection signal="toggled" from="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer/VBoxContainer/FreeUpSpace/FreeUpSValue" to="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer" method="_on_free_up_s_value_toggled"]
 [connection signal="meta_clicked" from="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer/VBoxContainer/LinksAndMore" to="UIControls/SidePanelControl/SidePanel/MarginContainer/SettingsContainer" method="_on_links_and_more_meta_clicked"]
 [connection signal="pressed" from="UIControls/Greetings/Control/GreetingsPanelContainer/MarginContainer/VBoxContainer/CreateButton" to="." method="_on_create_button_pressed"]

@@ -1,5 +1,5 @@
 # Oscillody
-# Copyright (C) 2025 Akosmo
+# Copyright (C) 2025-present Akosmo
 
 # This file is part of Oscillody. Unless specified otherwise, it is under the license below:
 
@@ -63,6 +63,7 @@ func on_pid_opened() -> void:
 	
 	MainUtils.logger("New process ID for render found, and new thread started.")
 
+# New thread where render process is running on, calls `finished_render()` on main thread when it closes.
 func thread_func() -> void:
 	while OS.is_process_running(MainUtils.process_id):
 		continue
@@ -101,7 +102,9 @@ func finished_render() -> void:
 		# -b:a sets Constant Bit Rate (CBR) (256kbps should be transparent)
 		# -ar sets sample rate (it's impossible to change sample rate in runtime)
 		# -channel_layout is self explanatory, though FFmpeg still guesses the layout
+		# -movflags sets muxer values
 		# +faststart moves audio stream to beginning of file for faster playback (maybe not needed)
+		# the sign indicates FFmpeg should set additional values set by the MOV/MP4 muxer
 		# -preset sets encoding speed (slower = better compression)
 		# -crf sets Constant Rate Factor (basically quality)
 		# -pix_fmt sets pixel format (used for "dumb players")

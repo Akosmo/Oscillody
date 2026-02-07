@@ -21,10 +21,10 @@ void fragment() {
 	if (interlaced_scan) {
 		uv.x -= sin(uv.y * 1024.0 + speed) * 0.001;
 	}
-	
+
 	highp vec4 screen_tex = texture(SCREEN_TEXTURE, uv);
-	
+
 	highp float scanlines = abs(sin(uv.y * amount_of_lines + speed) * darkness);
-	
+
 	COLOR = vec4(mix(screen_tex.rgb, vec3(0.0), scanlines), 1.0);
 }

@@ -1,5 +1,5 @@
 // Oscillody
-// Copyright (C) 2025 Akosmo
+// Copyright (C) 2025-present Akosmo
 
 // This file (domain_warping.gdshader) is under the MIT (especifically Expat) License.
 // "Software" in the license text refers to this single script only.
@@ -28,7 +28,7 @@ uniform mediump vec4 noise_color : source_color = vec4(1.0);
 uniform bool color_mix = false;
 uniform bool invert_colors = false;
 uniform mediump float hue_shift_amt : hint_range(-3.14, 3.14, 0.01) = 0.0;
-uniform lowp int octaves : hint_range(1, 6) = 6; // Amount of noise layers
+uniform lowp int octaves : hint_range(1, 10) = 6; // Amount of noise layers
 uniform mediump float frequency_factor : hint_range(0.5, 6.0, 0.5) = 2.0;
 uniform mediump float amplitude : hint_range(0.1, 1.0, 0.05) = 0.5;
 uniform mediump float frequency_increment : hint_range(1.0, 4.0, 0.5) = 2.0;

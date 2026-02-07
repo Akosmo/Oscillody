@@ -20,10 +20,10 @@ float hash(in highp vec2 seed) {
 	highp uvec2 a = uvec2(seed);
 	highp uint m1 = 1597334677U;
 	highp uint m2 = 3812015801U;
-	
+
 	a *= uvec2(m1, m2);
 	highp uint b = (a.x ^ a.y) * m1;
-	
+
 	return float(b) * (1.0/float(0xffffffffU));
 }
 
@@ -63,10 +63,10 @@ vec3 soft_light_opacity(highp vec3 base, highp vec3 blend, mediump float _opacit
 
 void fragment() {
 	highp vec4 screen_tex = texture(SCREEN_TEXTURE, SCREEN_UV);
-	
+
 	highp vec3 noise = vec3(hash(FRAGCOORD.xy + TIME * 8192.0));
-	
+
 	highp vec3 output_color = soft_light_opacity(screen_tex.rgb, noise, opacity);
-	
+
 	COLOR = vec4(vec3(output_color), 1.0);
 }

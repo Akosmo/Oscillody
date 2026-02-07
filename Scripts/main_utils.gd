@@ -1,5 +1,5 @@
 # Oscillody
-# Copyright (C) 2025 Akosmo
+# Copyright (C) 2025-present Akosmo
 
 # This file is part of Oscillody. Unless specified otherwise, it is under the license below:
 
@@ -97,7 +97,7 @@ var temp_path: String = OS.get_executable_path().get_base_dir() + "/Temp/"
 # from small framerate variations. Causes negligible stutters.
 const SAMPLE_AMOUNT_FIXED: int = 1024
 # To be used if user's FPS is under 50 FPS.
-var sample_amount_variable: int
+var sample_amount_dynamic: int
 
 var sample_amount: int = SAMPLE_AMOUNT_FIXED:
 	set(new_sample_amount):
@@ -108,12 +108,14 @@ var low_specs_mode: bool = false
 var load_low_specs_mode: bool = false
 
 var buffer_queue_size: int = 4
-var new_buffer_queue_size: int = 4
 
-# 3D Array.
-var buffer_queue_list: Array[Array] = [[], [], [], [], []]
-# 3D Array. Master One Stem is idx 4
-var audio_frame_buffers: Array = [[], [], [], [], []]
+# 3D Array. Temporary copy of `audio_sample_buffers` to optimize `load_buffers()` by removing
+# chunks of samples at once.
+var temporary_buffers: Array[Array] = [[], [], [], [], []]
+# 3D Array. Each index inside this one is a waveform, and each index
+# inside each waveform, are samples split in `buffer_queue_size`, corresponding to 1 visual frame.
+# Master One Stem is index 4, the last one.
+var audio_sample_buffers: Array[Array] = [[], [], [], [], []]
 
 #endregion ##################################
 
@@ -206,14 +208,13 @@ func _ready() -> void:
 			)
 	else:
 		logger("Session started (main process).")
-	
-	if not OS.has_feature("movie"):
+		
 		logger(
 			"== SYSTEM INFO ==" \
 + "\nOutput Devices: " + str(AudioServer.get_output_device_list()) \
 + "\nAudio Server's Mix Rate: " + str(AudioServer.get_mix_rate()) \
 + "\nAudio Driver: " + str(AudioServer.get_driver_name()) \
-+ "\nOutput Latency: " + str(AudioServer.get_output_latency()) \
++ "\nOutput Latency (at launch only): " + str(AudioServer.get_output_latency()) \
 + "\nCPU: " + OS.get_processor_name() \
 + "\nOS: " + OS.get_name() + " " + OS.get_version() \
 + "\nGPU: " + RenderingServer.get_video_adapter_name() \
@@ -239,9 +240,6 @@ func _ready() -> void:
 	
 	update_visualizer.connect(update_utils)
 	
-	if buffer_queue_size != new_buffer_queue_size:
-		buffer_queue_size = new_buffer_queue_size
-	
 	if load_low_specs_mode and not OS.has_feature("movie"):
 		low_specs_mode = true
 	
@@ -259,7 +257,7 @@ func _ready() -> void:
 		logger("FFmpeg path is now invalid. Select the FFmpeg executable again.", true)
 	
 	if low_specs_mode:
-		sample_amount_variable = roundi(AudioServer.get_mix_rate() / Engine.get_frames_per_second())
+		sample_amount_dynamic = roundi(AudioServer.get_mix_rate() / Engine.get_frames_per_second())
 	
 	audio_spectrum_inst = AudioServer.get_bus_effect_instance(6, 0)
 	cur_mag = 0.0
@@ -276,9 +274,9 @@ func _process(_delta: float) -> void:
 			window_size = Vector2i(video_resolution.x, video_resolution.y)
 	
 	if low_specs_mode:
-		sample_amount_variable = roundi(AudioServer.get_mix_rate() / Engine.get_frames_per_second())
-		if sample_amount_variable != sample_amount:
-			sample_amount = sample_amount_variable
+		sample_amount_dynamic = roundi(AudioServer.get_mix_rate() / Engine.get_frames_per_second())
+		if sample_amount_dynamic != sample_amount:
+			sample_amount = sample_amount_dynamic
 	
 	load_buffers()
 	
@@ -292,62 +290,58 @@ func update_copies() -> void:
 	vertical_layout = GlobalVariables.vertical_layout
 
 func load_buffers() -> void:
+	# Each buffer index is a waveform here.
 	for buffer_idx: int in number_of_stems:
 		if number_of_stems > 1:
 			buffer_idx += 1
 		else:
 			buffer_idx = 5
+		
 		var audio_capture: AudioEffectCapture = AudioServer.get_bus_effect(buffer_idx, 0)
 		
 		if audio_capture.can_get_buffer(sample_amount):
-			var temp_buffer: PackedVector2Array = audio_capture.get_buffer(sample_amount)
-			var audio_frame_buffer_averaged: PackedFloat32Array
-			audio_frame_buffer_averaged.resize(sample_amount)
+			var temp_vec2_buffer: PackedVector2Array = audio_capture.get_buffer(sample_amount)
+			var audio_sample_buffer_averaged: PackedFloat32Array
+			audio_sample_buffer_averaged.resize(sample_amount)
+			var point_idx: int = 0
+			for sample: Vector2 in temp_vec2_buffer:
+				var avg_sample: float = (sample.x + sample.y) * 0.5
+				audio_sample_buffer_averaged[point_idx] = avg_sample
+				point_idx += 1
 			match buffer_idx:
 				1:
-					audio_frame_buffers[buffer_idx - 1] = add_to_queue(
-						buffer_idx,
-						temp_buffer,
-						audio_frame_buffer_averaged
+					audio_sample_buffers[buffer_idx - 1] = add_to_history(
+						buffer_idx, audio_sample_buffer_averaged
 						)
 				2:
-					audio_frame_buffers[buffer_idx - 1] = add_to_queue(
-						buffer_idx,
-						temp_buffer,
-						audio_frame_buffer_averaged
+					audio_sample_buffers[buffer_idx - 1] = add_to_history(
+						buffer_idx, audio_sample_buffer_averaged
 						)
 				3:
-					audio_frame_buffers[buffer_idx - 1] = add_to_queue(
-						buffer_idx,
-						temp_buffer,
-						audio_frame_buffer_averaged
+					audio_sample_buffers[buffer_idx - 1] = add_to_history(
+						buffer_idx, audio_sample_buffer_averaged
 						)
 				4:
-					audio_frame_buffers[buffer_idx - 1] = add_to_queue(
-						buffer_idx,
-						temp_buffer,
-						audio_frame_buffer_averaged
+					audio_sample_buffers[buffer_idx - 1] = add_to_history(
+						buffer_idx, audio_sample_buffer_averaged
 						)
 				5:
-					audio_frame_buffers[buffer_idx - 1] = add_to_queue(
-						buffer_idx,
-						temp_buffer,
-						audio_frame_buffer_averaged
+					audio_sample_buffers[buffer_idx - 1] = add_to_history(
+						buffer_idx, audio_sample_buffer_averaged
 						)
 
-# Adds audio samples to a queue, so that sample history is shown on the waveform.
-# The higher the buffer queue size, the longer the history stays on screen.
-func add_to_queue(buffer_idx: int, temporary_buffer: PackedVector2Array, averaged: PackedFloat32Array) -> Array:
+# Adds audio samples to a history, so that older samples are shown on the waveform.
+# The higher the buffer queue size, the longer the history.
+func add_to_history(buffer_idx: int, new_samples: PackedFloat32Array) -> Array:
 	buffer_idx -= 1
-	var point_idx: int = 0
-	for frame: Vector2 in temporary_buffer:
-		var avg_frame: float = (frame.x + frame.y) / 2.0
-		averaged[point_idx] = avg_frame
-		point_idx += 1
-	buffer_queue_list[buffer_idx].append_array([averaged.duplicate()])
-	if buffer_queue_list[buffer_idx].size() > buffer_queue_size:
-		buffer_queue_list[buffer_idx].remove_at(0)
-	return buffer_queue_list[buffer_idx]
+	if buffer_queue_size < temporary_buffers[buffer_idx].size():
+		# In theory, removing at the beginning is preferable, but this avoids a loop,
+		# plus it goes back to normal without issue.
+		temporary_buffers[buffer_idx].resize(buffer_queue_size)
+	temporary_buffers[buffer_idx].append_array([new_samples.duplicate()])
+	if temporary_buffers[buffer_idx].size() > buffer_queue_size:
+		temporary_buffers[buffer_idx].remove_at(0)
+	return temporary_buffers[buffer_idx]
 
 # Converts audio file into playable object, using the file's bytes.
 func convert_to_playable(audio_path: String) -> AudioStream:
@@ -382,7 +376,7 @@ func update_utils() -> void:
 # and how far apart the points of each waveform line has to be to fit the screen.
 func find_x_spacing(waveform: int) -> float:
 	var window_width: float = window_size.x / float(sample_amount * buffer_queue_size - 1)
-	var half_window_width: float = (window_size.x / 2.0) / float(sample_amount * buffer_queue_size - 1)
+	var half_window_width: float = (window_size.x * 0.5) / float(sample_amount * buffer_queue_size - 1)
 	
 	if not vertical_layout:
 		if number_of_stems <= 2:
@@ -397,7 +391,7 @@ func find_x_spacing(waveform: int) -> float:
 func find_y_position(waveform: int) -> int:
 	var top_of_screen: int = window_size.y / 4
 	var bottom_of_screen: int = window_size.y / 4 * 3
-	var screen_divs: int = int(window_size.y / float(number_of_stems))
+	var screen_divs: int = int(window_size.y / number_of_stems)
 	var y_pos_per_waveform: int = screen_divs * (waveform + 1) - (screen_divs / 2)
 	
 	if not vertical_layout:
@@ -413,7 +407,7 @@ func find_y_position(waveform: int) -> int:
 
 # Gets magnitude within a specific frequency range.
 func spectrum() -> void:
-	min_db = float(GlobalVariables.audio_reaction_min_db_level * -1.0)
+	min_db = float(GlobalVariables.audio_reaction_min_db_level * -1.0) # Flip to positive
 	smoothing_amount = remap(GlobalVariables.audio_reaction_smoothing_amount, 1.0, 10.0, 0.1, 0.01)
 	
 	# This method has a known issue of returning jittered values. https://github.com/godotengine/godot/issues/67650
@@ -421,10 +415,13 @@ func spectrum() -> void:
 	magnitude_vec2 = audio_spectrum_inst.get_magnitude_for_frequency_range(
 		BEGIN_RANGE, END_RANGE, AudioEffectSpectrumAnalyzerInstance.MAGNITUDE_MAX
 		)
-	magnitude = float(magnitude_vec2.x + magnitude_vec2.y) / 2.0
-	# Makes energy have values above 0 if magnitude (in dB) + minimum dB is lesser than min dB.
-	# Example: 10 (calculated as positive here) + -29.999999 (0.001 linear) = -19.999999 -> / 10 = < 0.0
-	# 90 + -29.999999 = 60.00001 -> / 90 = > 0.0
+	magnitude = float(magnitude_vec2.x + magnitude_vec2.y) * 0.5
+	# Makes energy have values above 0 if magnitude (in dB) + minimum dB is lesser than min dB, before division.
+	# Example: 10 (calculated as positive here) + -29.999999 (0.001 linear) = -19.999999 -> / 10 = <0.0
+	# 90 + -29.999999 = 60.00001 -> / 90 = >0.0
+	# We need something that goes from 0 to 1. In this case, x / min_db. But linear_to_db(magnitude)
+	# reaches 0 at most. To make that equal min_db, we just add min_db. The entire expression would be
+	# 0 if linear_to_db(magnitude) = min_db.
 	energy = clampf(float((min_db + linear_to_db(magnitude))) / min_db, 0.0, 1.0)
 	cur_mag = energy
 	
@@ -477,7 +474,7 @@ func save_settings(path: String = settings_path) -> void:
 		"can_check_updates": can_check_updates,
 		"update_last_checked": update_last_checked,
 		"disabled_greetings": disabled_greetings,
-		"new_buffer_queue_size": new_buffer_queue_size,
+		"buffer_queue_size": buffer_queue_size,
 		"load_low_specs_mode": load_low_specs_mode,
 		"ffmpeg_path": ffmpeg_path,
 		"video_resolution": video_resolution
@@ -513,7 +510,7 @@ func load_settings(settings: String = SETTINGS_FILE) -> void:
 		can_check_updates = save_data["can_check_updates"]
 		update_last_checked = save_data["update_last_checked"]
 		disabled_greetings = save_data["disabled_greetings"]
-		new_buffer_queue_size = save_data["new_buffer_queue_size"]
+		buffer_queue_size = save_data["buffer_queue_size"]
 		ffmpeg_path = save_data["ffmpeg_path"]
 		if not OS.has_feature("movie"):
 			load_low_specs_mode = save_data["load_low_specs_mode"]

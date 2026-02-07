@@ -1,5 +1,5 @@
 # Oscillody
-# Copyright (C) 2025 Akosmo
+# Copyright (C) 2025-present Akosmo
 
 # This file is part of Oscillody. Unless specified otherwise, it is under the license below:
 
@@ -14,35 +14,37 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-extends Control
+extends Node2D
 
 # This script handles the solid color background.
 
-#region NODES ##################################
-
-@onready var frame_one: ColorRect = $FrameOne
-@onready var frame_two: ColorRect = $FrameTwo
-@onready var frame_three: ColorRect = $FrameThree
-@onready var frame_four: ColorRect = $FrameFour
-
-#endregion ##################################
-
 #region SOLID COLOR VARIABLES ##################################
 
-var v_layout_sizes: Array[Vector2i] = [
-	MainUtils.window_size,
-	Vector2i(MainUtils.window_size.x, MainUtils.window_size.y / 2),
-	Vector2i(MainUtils.window_size.x, MainUtils.window_size.y / 3),
-	Vector2i(MainUtils.window_size.x, MainUtils.window_size.y / 4)
+var normal_layout_pos_zero_x_zero_y: Vector2 = Vector2.ZERO
+var normal_layout_pos_half_x_zero_y: Vector2 = Vector2(float(MainUtils.window_size.x) * 0.5, 0)
+var normal_layout_pos_zero_x_half_y: Vector2 = Vector2(0, float(MainUtils.window_size.y) * 0.5)
+var normal_layout_pos_half_x_half_y: Vector2 = Vector2(MainUtils.window_size * 0.5)
+var v_layout_positions: Array[Vector2] = [
+	Vector2.ZERO,
+	Vector2(0.0, float(MainUtils.window_size.y) * 0.5),
+	Vector2(0.0, float(MainUtils.window_size.y) * (1.0 / 3.0)),
+	Vector2(0.0, float(MainUtils.window_size.y) * (2.0 / 3.0)),
+	Vector2(0.0, float(MainUtils.window_size.y) * (1.0 / 4.0)),
+	Vector2(0.0, float(MainUtils.window_size.y) * (2.0 / 4.0)),
+	Vector2(0.0, float(MainUtils.window_size.y) * (3.0 / 4.0)),
 	]
-var full_screen_size: Vector2i = MainUtils.window_size
-var half_y_screen_size: Vector2i = Vector2i(MainUtils.window_size.x, MainUtils.window_size.y / 2)
-var half_screen_size: Vector2i = MainUtils.window_size / 2
 
-var frame_one_pos_normal_layout: Vector2i = Vector2i.ZERO
-var frame_two_pos_normal_layout: Vector2i = Vector2i(MainUtils.window_size.x / 2, 0)
-var frame_three_pos_normal_layout: Vector2i = Vector2i(0, MainUtils.window_size.y / 2)
-var frame_four_pos_normal_layout: Vector2i = MainUtils.window_size / 2
+var full_screen_size: Vector2 = Vector2(MainUtils.window_size)
+var half_y_screen_size: Vector2 = Vector2(float(MainUtils.window_size.x), float(MainUtils.window_size.y) * 0.5)
+var half_screen_size: Vector2 = Vector2(MainUtils.window_size) * 0.5
+var v_layout_sizes: Array[Vector2] = [
+	Vector2(MainUtils.window_size),
+	Vector2(float(MainUtils.window_size.x), float(MainUtils.window_size.y) / 2.0),
+	Vector2(float(MainUtils.window_size.x), float(MainUtils.window_size.y) / 3.0),
+	Vector2(float(MainUtils.window_size.x), float(MainUtils.window_size.y) / 4.0)
+	]
+
+var rect: Rect2
 
 #endregion ##################################
 
@@ -50,87 +52,88 @@ func _ready() -> void:
 	MainUtils.update_visualizer.connect(update_solid_col_frames)
 	update_solid_col_frames()
 
+func _draw() -> void:
+	if not GlobalVariables.vertical_layout:
+		match GlobalVariables.number_of_stems:
+			1:
+				rect = Rect2(normal_layout_pos_zero_x_zero_y, full_screen_size)
+				draw_rect(rect, GlobalVariables.background_colors[0])
+			2:
+				rect = Rect2(normal_layout_pos_zero_x_zero_y, half_y_screen_size)
+				draw_rect(rect, GlobalVariables.background_colors[0])
+				rect = Rect2(normal_layout_pos_zero_x_half_y, half_y_screen_size)
+				draw_rect(rect, GlobalVariables.background_colors[1])
+			3:
+				rect = Rect2(normal_layout_pos_zero_x_zero_y, half_screen_size)
+				draw_rect(rect, GlobalVariables.background_colors[0])
+				rect = Rect2(normal_layout_pos_half_x_zero_y, half_screen_size)
+				draw_rect(rect, GlobalVariables.background_colors[1])
+				rect = Rect2(normal_layout_pos_zero_x_half_y, half_y_screen_size)
+				draw_rect(rect, GlobalVariables.background_colors[2])
+			4:
+				rect = Rect2(normal_layout_pos_zero_x_zero_y, half_screen_size)
+				draw_rect(rect, GlobalVariables.background_colors[0])
+				rect = Rect2(normal_layout_pos_half_x_zero_y, half_screen_size)
+				draw_rect(rect, GlobalVariables.background_colors[1])
+				rect = Rect2(normal_layout_pos_zero_x_half_y, half_screen_size)
+				draw_rect(rect, GlobalVariables.background_colors[2])
+				rect = Rect2(normal_layout_pos_half_x_half_y, half_screen_size)
+				draw_rect(rect, GlobalVariables.background_colors[3])
+	else:
+		match GlobalVariables.number_of_stems:
+			1:
+				rect = Rect2(v_layout_positions[0], v_layout_sizes[0])
+				draw_rect(rect, GlobalVariables.background_colors[0])
+			2:
+				rect = Rect2(v_layout_positions[0], v_layout_sizes[1])
+				draw_rect(rect, GlobalVariables.background_colors[0])
+				rect = Rect2(v_layout_positions[1], v_layout_sizes[1])
+				draw_rect(rect, GlobalVariables.background_colors[1])
+			3:
+				rect = Rect2(v_layout_positions[0], v_layout_sizes[2])
+				draw_rect(rect, GlobalVariables.background_colors[0])
+				rect = Rect2(v_layout_positions[2], v_layout_sizes[2])
+				draw_rect(rect, GlobalVariables.background_colors[1])
+				rect = Rect2(v_layout_positions[3], v_layout_sizes[2])
+				draw_rect(rect, GlobalVariables.background_colors[2])
+			4:
+				rect = Rect2(v_layout_positions[0], v_layout_sizes[3])
+				draw_rect(rect, GlobalVariables.background_colors[0])
+				rect = Rect2(v_layout_positions[4], v_layout_sizes[3])
+				draw_rect(rect, GlobalVariables.background_colors[1])
+				rect = Rect2(v_layout_positions[5], v_layout_sizes[3])
+				draw_rect(rect, GlobalVariables.background_colors[2])
+				rect = Rect2(v_layout_positions[6], v_layout_sizes[3])
+				draw_rect(rect, GlobalVariables.background_colors[3])
+
 func update_solid_col_frames() -> void:
-	var visibility: Array[bool] = [false, false, false, false]
-	
 	if GlobalVariables.background_type == "Solid Colors":
 		visible = true
 		
+		normal_layout_pos_zero_x_zero_y = Vector2.ZERO
+		normal_layout_pos_half_x_zero_y = Vector2(float(MainUtils.window_size.x) * 0.5, 0)
+		normal_layout_pos_zero_x_half_y = Vector2(0, float(MainUtils.window_size.y) * 0.5)
+		normal_layout_pos_half_x_half_y = Vector2(MainUtils.window_size * 0.5)
+		v_layout_positions = [
+			Vector2.ZERO,
+			Vector2(0.0, float(MainUtils.window_size.y) * 0.5),
+			Vector2(0.0, float(MainUtils.window_size.y) * (1.0 / 3.0)),
+			Vector2(0.0, float(MainUtils.window_size.y) * (2.0 / 3.0)),
+			Vector2(0.0, float(MainUtils.window_size.y) * (1.0 / 4.0)),
+			Vector2(0.0, float(MainUtils.window_size.y) * (2.0 / 4.0)),
+			Vector2(0.0, float(MainUtils.window_size.y) * (3.0 / 4.0)),
+			]
+		
+		full_screen_size = Vector2(MainUtils.window_size)
+		half_y_screen_size = Vector2(float(MainUtils.window_size.x), float(MainUtils.window_size.y) * 0.5)
+		half_screen_size = Vector2(MainUtils.window_size) * 0.5
 		v_layout_sizes = [
-			MainUtils.window_size,
-			Vector2i(MainUtils.window_size.x, MainUtils.window_size.y / 2),
-			Vector2i(MainUtils.window_size.x, MainUtils.window_size.y / 3),
-			Vector2i(MainUtils.window_size.x, MainUtils.window_size.y / 4)
-		]
+			Vector2(MainUtils.window_size),
+			Vector2(float(MainUtils.window_size.x), float(MainUtils.window_size.y) / 2.0),
+			Vector2(float(MainUtils.window_size.x), float(MainUtils.window_size.y) / 3.0),
+			Vector2(float(MainUtils.window_size.x), float(MainUtils.window_size.y) / 4.0)
+			]
 		
-		for waveform: int in GlobalVariables.number_of_stems:
-			visibility[waveform] = true
-			
-		frame_one.visible = visibility[0]
-		frame_two.visible = visibility[1]
-		frame_three.visible = visibility[2]
-		frame_four.visible = visibility[3]
-		
-		frame_one.color = GlobalVariables.background_colors[0]
-		frame_two.color = GlobalVariables.background_colors[1]
-		frame_three.color = GlobalVariables.background_colors[2]
-		frame_four.color = GlobalVariables.background_colors[3]
-		
-		full_screen_size = MainUtils.window_size
-		half_y_screen_size = Vector2i(MainUtils.window_size.x, MainUtils.window_size.y / 2)
-		half_screen_size = MainUtils.window_size / 2
-		
-		frame_one_pos_normal_layout = Vector2i.ZERO
-		frame_two_pos_normal_layout = Vector2i(MainUtils.window_size.x / 2, 0)
-		frame_three_pos_normal_layout = Vector2i(0, MainUtils.window_size.y / 2)
-		frame_four_pos_normal_layout = MainUtils.window_size / 2
-		
-		if not GlobalVariables.vertical_layout:
-			match GlobalVariables.number_of_stems:
-				1:
-					frame_one.size = full_screen_size
-				2:
-					if not GlobalVariables.vertical_layout:
-						frame_one.size = half_y_screen_size
-						frame_two.size = half_y_screen_size
-						frame_two.position = frame_three_pos_normal_layout
-				3:
-					if not GlobalVariables.vertical_layout:
-						frame_one.size = half_screen_size
-						frame_two.size = half_screen_size
-						frame_two.position = frame_two_pos_normal_layout
-						frame_three.size = half_y_screen_size
-						frame_three.position = frame_three_pos_normal_layout
-				4:
-					if not GlobalVariables.vertical_layout:
-						frame_one.size = half_screen_size
-						frame_two.size = half_screen_size
-						frame_two.position = frame_two_pos_normal_layout
-						frame_three.size = half_screen_size
-						frame_three.position = frame_three_pos_normal_layout
-						frame_four.size = half_screen_size
-						frame_four.position = frame_four_pos_normal_layout
-		else:
-			match GlobalVariables.number_of_stems:
-				1:
-					frame_one.size = v_layout_sizes[0]
-				2:
-					frame_one.size = v_layout_sizes[1]
-					frame_two.size = v_layout_sizes[1]
-					frame_two.position = Vector2i(0, MainUtils.window_size.y / 2)
-				3:
-					frame_one.size = v_layout_sizes[2]
-					frame_two.size = v_layout_sizes[2]
-					frame_two.position = Vector2i(0, MainUtils.window_size.y / 3)
-					frame_three.size = v_layout_sizes[2]
-					frame_three.position = Vector2i(0, (MainUtils.window_size.y / 3) * 2)
-				4:
-					frame_one.size = v_layout_sizes[3]
-					frame_two.size = v_layout_sizes[3]
-					frame_two.position = Vector2i(0, MainUtils.window_size.y / 4)
-					frame_three.size = v_layout_sizes[3]
-					frame_three.position = Vector2i(0, (MainUtils.window_size.y / 4) * 2)
-					frame_four.size = v_layout_sizes[3]
-					frame_four.position = Vector2i(0, (MainUtils.window_size.y / 4) * 3)
+		queue_redraw()
 	else:
 		visible = false

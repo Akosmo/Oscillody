@@ -13,8 +13,7 @@ visible = false
 script = ExtResource("1_efq5t")
 
 [node name="ImageRect" type="TextureRect" parent="."]
-offset_right = 3840.0
-offset_bottom = 2160.0
+visible = false
 
 [node name="Blur" type="ColorRect" parent="."]
 visible = false

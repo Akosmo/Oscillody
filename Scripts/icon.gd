@@ -1,5 +1,5 @@
 # Oscillody
-# Copyright (C) 2025 Akosmo
+# Copyright (C) 2025-present Akosmo
 
 # This file is part of Oscillody. Unless specified otherwise, it is under the license below:
 
@@ -20,13 +20,15 @@ extends TextureRect
 
 #region ICON VARIABLES ##################################
 
+const INCREASE_STRENGTH_ROTATION: int = 9
+
 var icon_image_ratio: float
 var icon_image_size: Vector2
 var icon_image_scale_factor: float = remap(
 	float(GlobalVariables.icon_size),
 	1.0,
-	20.0,
-	0.1,
+	10.0,
+	0.05,
 	1.0
 	)
 var icon_image_scale: Vector2
@@ -42,27 +44,34 @@ func _ready() -> void:
 	update_icon()
 
 func _process(_delta: float) -> void:
-	if (visible and
-	(GlobalVariables.icon_position_reaction_strength or
-	GlobalVariables.icon_size_reaction_strength or
-	GlobalVariables.icon_rotation_reaction_strength)):
+	if MainUtils.audio_playing:
 		icon_reaction(MainUtils.cur_mag)
+	else:
+		position = difference * -1.0
+		set_scale(icon_image_scale)
+		set_rotation_degrees(GlobalVariables.icon_rotation)
 
 func update_icon() -> void:
 	visible = GlobalVariables.icon_enabled
 	if visible:
-		set_process(true)
+		if (GlobalVariables.icon_position_reaction_strength or
+		GlobalVariables.icon_rotation_reaction_strength or
+		GlobalVariables.icon_size_reaction_strength):
+			set_process(true)
+		else:
+			set_process(false)
 		
 		icon_image_scale_factor = remap(
-			float(GlobalVariables.icon_size),
+			GlobalVariables.icon_size,
 			1.0,
-			20.0,
+			10.0,
 			0.05,
 			1.0
 			)
+		
+		# Avoid edge cases where one of the window's values = 0.
 		if mini(MainUtils.window_size.x, MainUtils.window_size.y) > 0:
 			window_ratio = MainUtils.window_size.x / MainUtils.window_size.y
-		
 		# Scaling to different axis depending on the aspect ratio.
 		if window_ratio <= icon_image_ratio:
 			icon_image_scale = Vector2(
@@ -79,35 +88,35 @@ func update_icon() -> void:
 		
 		size = icon_image_size
 		
-		pivot_offset = size / 2.0
+		pivot_offset = size * 0.5
 		
 		set_scale(icon_image_scale)
 		
 		set_rotation_degrees(GlobalVariables.icon_rotation)
 		
+		# Repositioning image, since it is placed with its top-left corner at origin point.
 		# Difference from middle of icon image to middle of window.
 		difference = Vector2(
-			size.x / 2.0 - float(MainUtils.window_size.x) / 2.0,
-			size.y / 2.0 - float(MainUtils.window_size.y) / 2.0
+			pivot_offset.x - float(MainUtils.window_size.x) * 0.5,
+			pivot_offset.y - float(MainUtils.window_size.y) * 0.5
 			)
 		position = difference * -1.0
 	else:
 		set_process(false)
 
 func icon_reaction(mag: float, strength: float = 0.0) -> void:
+	mag = clampf(mag, 0.0, 1.0)
+	
 	if GlobalVariables.icon_position_reaction_strength:
 		strength = GlobalVariables.icon_position_reaction_strength * 5.0
 		
 		position = difference * -1.0
 		
-		if MainUtils.audio_playing:
-			icon_shake_energy = Vector2(
-				randf_range(-mag, mag) * strength,
-				randf_range(-mag, mag) * strength
-				)
-			position += icon_shake_energy
-		else:
-			position = difference * -1.0
+		icon_shake_energy = Vector2(
+			randf_range(-mag, mag) * strength,
+			randf_range(-mag, mag) * strength
+			)
+		position += icon_shake_energy
 	
 	if GlobalVariables.icon_size_reaction_strength:
 		strength = GlobalVariables.icon_size_reaction_strength * 0.1
@@ -116,17 +125,11 @@ func icon_reaction(mag: float, strength: float = 0.0) -> void:
 			icon_image_scale.x * (1 + mag * strength),
 			icon_image_scale.y * (1 + mag * strength)
 			))
-		
-		if scale < icon_image_scale or not MainUtils.audio_playing:
-			set_scale(icon_image_scale)
 	
 	if GlobalVariables.icon_rotation_reaction_strength:
-		strength = GlobalVariables.icon_rotation_reaction_strength * 5.0
+		strength = GlobalVariables.icon_rotation_reaction_strength * INCREASE_STRENGTH_ROTATION
 		
 		set_rotation_degrees(GlobalVariables.icon_rotation + mag * strength)
-		
-		if scale < icon_image_scale or not MainUtils.audio_playing:
-			set_rotation_degrees(GlobalVariables.icon_rotation)
 
 func load_icon() -> void:
 	if GlobalVariables.icon_path == "":

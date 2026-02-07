@@ -1,5 +1,5 @@
 # Oscillody
-# Copyright (C) 2025 Akosmo
+# Copyright (C) 2025-present Akosmo
 
 # This file is part of Oscillody. Unless specified otherwise, it is under the license below:
 
@@ -32,7 +32,7 @@ extends Node
 
 #region AUDIO PLAYER VARIABLES ##################################
 
-var new_position_on_audio_stopped: bool = false
+var new_position_on_audio_stopped: bool = false # Changes when user seeks while audio is stopped
 
 #endregion ##################################
 
@@ -71,50 +71,32 @@ func seek_audio_pos() -> void:
 	seek_audio_nodes(MainUtils.new_audio_pos_from_seek)
 
 func pause_audio_nodes(pause: bool) -> void:
-	master_player.set_stream_paused(pause)
-	master_one_stem.set_stream_paused(pause)
-	stem_player_one.set_stream_paused(pause)
-	stem_player_two.set_stream_paused(pause)
-	stem_player_three.set_stream_paused(pause)
-	stem_player_four.set_stream_paused(pause)
-	spectrum_data.set_stream_paused(pause)
+	for player: AudioStreamPlayer in get_children():
+		player.set_stream_paused(pause)
 	
 	MainUtils.audio_playing = false
 
 func play_audio_nodes(from_pos: float = 0.0) -> void:
-	master_player.play(from_pos)
-	master_one_stem.play(from_pos)
-	stem_player_one.play(from_pos)
-	stem_player_two.play(from_pos)
-	stem_player_three.play(from_pos)
-	stem_player_four.play(from_pos)
-	if not OS.has_feature("movie"):
-		spectrum_data.play(from_pos)
+	for player: AudioStreamPlayer in get_children():
+		if OS.has_feature("movie") and player.name == "SpectrumData":
+			continue
+		player.play(from_pos)
 	
 	MainUtils.audio_playing = true
 
+# Needs to play separatedly when rendering to match with waveform.
 func play_audio_spectrum_data_node() -> void:
 	spectrum_data.play()
 
 func stop_audio_nodes() -> void:
-	master_player.stop()
-	master_one_stem.stop()
-	stem_player_one.stop()
-	stem_player_two.stop()
-	stem_player_three.stop()
-	stem_player_four.stop()
-	spectrum_data.stop()
+	for player: AudioStreamPlayer in get_children():
+		player.stop()
 	
 	MainUtils.audio_playing = false
 
 func seek_audio_nodes(new_pos: float) -> void:
-	master_player.seek(new_pos)
-	master_one_stem.seek(new_pos)
-	stem_player_one.seek(new_pos)
-	stem_player_two.seek(new_pos)
-	stem_player_three.seek(new_pos)
-	stem_player_four.seek(new_pos)
-	spectrum_data.seek(new_pos)
+	for player: AudioStreamPlayer in get_children():
+		player.seek(new_pos)
 	
 	if not MainUtils.audio_playing:
 		new_position_on_audio_stopped = true

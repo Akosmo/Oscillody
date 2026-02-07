@@ -1,5 +1,5 @@
 # Oscillody
-# Copyright (C) 2025 Akosmo
+# Copyright (C) 2025-present Akosmo
 
 # This file is part of Oscillody. Unless specified otherwise, it is under the license below:
 
@@ -29,6 +29,10 @@ extends CanvasLayer
 
 const MAX_OPACITY_IN_UI: float = 100.0
 
+const DECREASE_STRENGTH_SIZE: float = 0.1
+const INCREASE_AMPLITUDE: int = 2
+
+var difference: Vector2
 var image_size: Vector2
 var image_scale_factor: float = remap(
 	float(GlobalVariables.image_size),
@@ -39,54 +43,113 @@ var image_scale_factor: float = remap(
 	)
 var image_scale: Vector2 = Vector2(MainUtils.window_size) / image_size * image_scale_factor
 
+var image_size_reaction_factor: float = 1.0
+
 var noise: FastNoiseLite = FastNoiseLite.new()
-var custom_time: float = 0.0
-var time_factor: float = 50.0
-var amplitude_factor: float = 5.0
-var center: Vector2 = Vector2.ZERO
-var zoom_for_amplitude: Vector2 = Vector2.ZERO
-var addend_from_amp_reaction: Vector2 = Vector2.ZERO
-var size_reaction_factor: float = 1.0
-var modified_image_scale: Vector2
+# Variable used to increment noise position. Used along with shake frequency and amplitude set by the user.
+var noise_scroll: float = 0.0
+var noise_position: Vector2 = Vector2.ZERO
+var scale_for_amplitude: Vector2 = Vector2.ZERO
+var amplitude_factor: float = 1.0
+var frequency_factor: float = 1.0
+# Variable used in place of `GlobalVariables.background_shake_amplitude` and
+# `GlobalVariables.background_shake_frequency` to allow reaction strengths to have effect.
+var mag_for_zero_default_shake: float = 0.0
 
 #endregion ##################################
 
 func _ready() -> void:
 	noise.fractal_octaves = 2
-	noise.frequency = 0.00001
+	noise.frequency = 0.0005
 	
 	MainUtils.update_visualizer.connect(update_image)
 	MainUtils.image_file_selected.connect(load_image)
 	update_image()
 
 func _process(_delta: float) -> void:
-	if visible:
-		if ((GlobalVariables.background_image_size_reaction_strength or
-		GlobalVariables.shake_amplitude_reaction_strength or
-		GlobalVariables.shake_frequency_reaction_strength) and
-		MainUtils.audio_playing):
-			image_reaction(MainUtils.cur_mag)
+	if ((GlobalVariables.background_image_size_reaction_strength or
+	GlobalVariables.shake_amplitude_reaction_strength or
+	GlobalVariables.shake_frequency_reaction_strength) and
+	MainUtils.audio_playing):
+		image_reaction(MainUtils.cur_mag)
+	else:
+		image_size_reaction_factor = 1.0
+		amplitude_factor = 1.0
+		frequency_factor = 1.0
+	
+	if (GlobalVariables.background_shake_frequency or
+	GlobalVariables.shake_amplitude_reaction_strength and
+	(GlobalVariables.background_shake_frequency or GlobalVariables.shake_frequency_reaction_strength)):
+		if GlobalVariables.background_shake_frequency != 0.0:
+			noise_scroll += GlobalVariables.background_shake_frequency * frequency_factor
 		else:
-			size_reaction_factor = 1.0
-			amplitude_factor = 5.0
-			addend_from_amp_reaction = Vector2.ZERO
-			time_factor = 50.0
+			noise_scroll += GlobalVariables.shake_frequency_reaction_strength * 5.0 \
+			* mag_for_zero_default_shake * frequency_factor
 		
-		if GlobalVariables.background_shake_amplitude and GlobalVariables.background_shake_frequency:
-			custom_time = custom_time + time_factor * GlobalVariables.background_shake_frequency
+		# Scale the image a bit, to avoid showing past the edges.
+		# We figure how much needs to be added to scale by checking how many pixels we need on both
+		# top and bottom to move Amp amount of pixels, considering Y axis since it has less pixels,
+		# and dividing by the size of the image in the same axis.
+		# At max amplitude, we need 100 extra pixels on top and 100 extra on the bottom, which
+		# equals 200 pixels. The image needs to be scaled by an amount that would give us that,
+		# which is what we find first below.
+		# We're only multiplying by 4 because amplitude is later multiplied by 2.
+		if GlobalVariables.background_shake_amplitude != 0.0:
+			scale_for_amplitude = Vector2(
+				GlobalVariables.background_shake_amplitude * 4.0 * amplitude_factor / image_size.y,
+				GlobalVariables.background_shake_amplitude * 4.0 * amplitude_factor / image_size.y
+				)
 			
-			image_rect.position.x = center.x \
-			+ noise.get_noise_2d(custom_time, 0.0) \
-			* GlobalVariables.background_shake_amplitude * 0.5 * amplitude_factor
-			image_rect.position.y = center.y \
-			+ noise.get_noise_2d(0.0, custom_time) \
-			* GlobalVariables.background_shake_amplitude * 0.5 * amplitude_factor
+			noise_position = Vector2(
+				noise.get_noise_2d(noise_scroll, 0.0) \
+				* GlobalVariables.background_shake_amplitude * INCREASE_AMPLITUDE * amplitude_factor,
+				noise.get_noise_2d(0.0, noise_scroll) \
+				* GlobalVariables.background_shake_amplitude * INCREASE_AMPLITUDE * amplitude_factor
+				)
 		else:
-			image_rect.position = center
+			scale_for_amplitude = Vector2(
+				GlobalVariables.shake_amplitude_reaction_strength * mag_for_zero_default_shake \
+				* 4.0 * amplitude_factor / image_size.y,
+				GlobalVariables.shake_amplitude_reaction_strength * mag_for_zero_default_shake \
+				* 4.0 * amplitude_factor / image_size.y
+				)
 			
-		zoom_for_amplitude = Vector2(
-			GlobalVariables.background_shake_amplitude * 0.005,
-			GlobalVariables.background_shake_amplitude * 0.005
+			noise_position = Vector2(
+				noise.get_noise_2d(noise_scroll, 0.0) \
+				* GlobalVariables.shake_amplitude_reaction_strength * mag_for_zero_default_shake \
+				* INCREASE_AMPLITUDE * amplitude_factor,
+				noise.get_noise_2d(0.0, noise_scroll) \
+				* GlobalVariables.shake_amplitude_reaction_strength * mag_for_zero_default_shake \
+				* INCREASE_AMPLITUDE * amplitude_factor
+				)
+	else:
+		scale_for_amplitude = Vector2.ZERO
+		noise_position = Vector2.ZERO
+	
+	# Repositioning image based on 2D noise. 
+	image_rect.position = difference * -1.0 + noise_position
+	
+	image_scale = Vector2(MainUtils.window_size) / image_size * image_scale_factor \
+	* image_size_reaction_factor + scale_for_amplitude
+	image_rect.set_scale(image_scale)
+
+func update_image() -> void:
+	if GlobalVariables.background_type == "Image":
+		visible = true
+		# A CanvasLayer visibility doesn't propagate to underlying layers.
+		image_rect.visible = true
+		set_process(true)
+		
+		image_rect.set_self_modulate(Color(1.0, 1.0, 1.0, float(GlobalVariables.image_opacity \
+		/ MAX_OPACITY_IN_UI)))
+		
+		# Repositioning image, since it is placed with its top-left corner at origin point.
+		image_rect.size = image_size
+		image_rect.pivot_offset = image_rect.size * 0.5
+		# Difference from middle of background image to middle of window.
+		difference = Vector2(
+			image_rect.pivot_offset.x - float(MainUtils.window_size.x) * 0.5,
+			image_rect.pivot_offset.y - float(MainUtils.window_size.y) * 0.5
 			)
 		
 		image_scale_factor = remap(
@@ -96,31 +159,6 @@ func _process(_delta: float) -> void:
 			1.0,
 			2.0
 			)
-		image_scale = Vector2(MainUtils.window_size) / image_size * image_scale_factor
-		
-		modified_image_scale = (image_scale + zoom_for_amplitude + addend_from_amp_reaction) * size_reaction_factor
-		image_rect.set_scale(modified_image_scale)
-		
-		if image_rect.scale < image_scale:
-			image_rect.set_scale(image_scale)
-
-func update_image() -> void:
-	if GlobalVariables.background_type == "Image":
-		visible = true
-		set_process(true)
-		
-		image_rect.set_self_modulate(Color(1.0, 1.0, 1.0, float(GlobalVariables.image_opacity \
-		/ MAX_OPACITY_IN_UI)))
-		
-		image_rect.size = image_size
-		image_rect.pivot_offset = image_rect.size / 2.0
-		# Difference from middle of icon image to middle of window.
-		var difference: Vector2 = Vector2(
-			image_rect.size.x / 2.0 - float(MainUtils.window_size.x) / 2.0,
-			image_rect.size.y / 2.0 - float(MainUtils.window_size.y) / 2.0
-			)
-		image_rect.position = difference * -1.0
-		center = image_rect.position
 		
 		if GlobalVariables.image_blur > 0:
 			blur.visible = true
@@ -131,30 +169,35 @@ func update_image() -> void:
 			blur.visible = false
 	else:
 		visible = false
+		image_rect.visible = false
 		set_process(false)
 
 func image_reaction(mag: float, strength: float = 0.0) -> void:
+	mag = clampf(mag, 0.0, 1.0)
+	mag_for_zero_default_shake = mag
+	
 	if (GlobalVariables.background_image_size_reaction_strength and
 	not GlobalVariables.shake_amplitude_reaction_strength):
-		strength = GlobalVariables.background_image_size_reaction_strength * 0.1
-		size_reaction_factor = 1.0 + mag * strength
+		strength = GlobalVariables.background_image_size_reaction_strength * DECREASE_STRENGTH_SIZE
+		# Prefer a factor than an addend, since it reacts the same way regardless of image size.
+		image_size_reaction_factor = 1.0 + mag * strength
 	else:
-		size_reaction_factor = 1.0
+		image_size_reaction_factor = 1.0
 	
-	if (GlobalVariables.shake_amplitude_reaction_strength and
-	GlobalVariables.background_shake_amplitude):
-		strength = GlobalVariables.shake_amplitude_reaction_strength * 0.1
-		amplitude_factor = 5.0 + mag * (strength * 0.1)
-		addend_from_amp_reaction = Vector2(mag * strength / 2.5, mag * strength / 2.5)
-	else:
-		amplitude_factor = 5.0
-		addend_from_amp_reaction = Vector2.ZERO
-	
-	if GlobalVariables.shake_frequency_reaction_strength:
-		strength = GlobalVariables.shake_frequency_reaction_strength * 200.0
-		time_factor = 50.0 + mag * strength
-	else:
-		time_factor = 50.0
+	if (GlobalVariables.background_shake_frequency or
+	GlobalVariables.shake_amplitude_reaction_strength and
+	(GlobalVariables.background_shake_frequency or GlobalVariables.shake_frequency_reaction_strength)):
+		if GlobalVariables.shake_amplitude_reaction_strength:
+			strength = GlobalVariables.shake_amplitude_reaction_strength
+			amplitude_factor = 1.0 + mag * strength
+		else:
+			amplitude_factor = 1.0
+		
+		if GlobalVariables.shake_frequency_reaction_strength:
+			strength = GlobalVariables.shake_frequency_reaction_strength
+			frequency_factor = 1.0 + mag * strength
+		else:
+			frequency_factor = 1.0
 
 func load_image() -> void:
 	if GlobalVariables.image_path == "":

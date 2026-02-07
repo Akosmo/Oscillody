@@ -1,5 +1,5 @@
 # Oscillody
-# Copyright (C) 2025 Akosmo
+# Copyright (C) 2025-present Akosmo
 
 # This file is part of Oscillody. Unless specified otherwise, it is under the license below:
 
@@ -23,6 +23,8 @@ extends Node2D
 @onready var ui_controls: CanvasLayer = $UIControls
 
 @onready var fps_counter: Label = %FPSCounter
+
+@onready var mouse_timer: Timer = %MouseTimer
 
 @onready var buttons_container_control: Control = %ButtonsContainerControl
 @onready var buttons_container: HBoxContainer = %ButtonsContainer
@@ -70,7 +72,10 @@ func _ready() -> void:
 	MainUtils.close_requested.connect(on_close_requested)
 	
 	if MainUtils.can_check_updates:
-		var err: Error = update_checker.request("https://api.github.com/repos/akosmo/oscillody/releases/latest")
+		var err: Error = update_checker.request(
+			"https://api.github.com/repos/akosmo/oscillody/releases/latest",
+			["User-Agent: Oscillody"]
+			)
 		if err:
 			MainUtils.logger("Could not check for latest release. Check your internet connection.", true, true)
 	
@@ -78,6 +83,21 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	fps_counter.text = "Preview - FPS: " + str(int(Engine.get_frames_per_second()))
+	
+	if not ui_controls.visible:
+		if (Input.get_last_mouse_velocity() == Vector2.ZERO and
+		mouse_timer.is_stopped() and
+		DisplayServer.mouse_get_mode() == DisplayServer.MouseMode.MOUSE_MODE_VISIBLE and
+		not close_popup.visible):
+			mouse_timer.start()
+		elif Input.get_last_mouse_velocity() != Vector2.ZERO:
+			mouse_timer.stop()
+			if DisplayServer.mouse_get_mode() == DisplayServer.MouseMode.MOUSE_MODE_HIDDEN:
+				DisplayServer.mouse_set_mode(DisplayServer.MOUSE_MODE_VISIBLE)
+	else:
+		mouse_timer.stop()
+		if DisplayServer.mouse_get_mode() == DisplayServer.MouseMode.MOUSE_MODE_HIDDEN:
+			DisplayServer.mouse_set_mode(DisplayServer.MOUSE_MODE_VISIBLE)
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event.is_action_pressed("fullscreen") and not is_fullscreen:
@@ -113,6 +133,11 @@ func on_close_requested() -> void:
 
 func _on_disable_greetings_value_toggled(toggled_on: bool) -> void:
 	MainUtils.disabled_greetings = toggled_on
+
+func _on_mouse_timer_timeout() -> void:
+	print("Stpped on ui vs")
+	if DisplayServer.mouse_get_mode() == DisplayServer.MouseMode.MOUSE_MODE_VISIBLE:
+		DisplayServer.mouse_set_mode(DisplayServer.MOUSE_MODE_HIDDEN)
 
 func _on_files_button_pressed() -> void:
 	if not files_container.visible:

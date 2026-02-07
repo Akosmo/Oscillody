@@ -1,5 +1,5 @@
 // Oscillody
-// Copyright (C) 2025 Akosmo
+// Copyright (C) 2025-present Akosmo
 
 // This file (echoes.gdshader) is under the MIT (especifically Expat) License.
 // "Software" in the license text refers to this single script only.

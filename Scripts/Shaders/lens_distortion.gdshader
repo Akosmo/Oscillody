@@ -9,10 +9,10 @@ shader_type canvas_item;
 
 // This shader creates a lens distortion effect.
 
-uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
+uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear;
 
-uniform mediump float strength : hint_range(-0.5, 1.5, 0.05) = 0.0;
-uniform mediump float zoom : hint_range(0.1, 2.0, 0.1) = 1.0;
+uniform highp float strength : hint_range(-0.5, 1.5, 0.05) = 0.0;
+uniform highp float zoom : hint_range(0.1, 2.0, 0.1) = 1.0;
 uniform bool border = true;
 uniform mediump vec4 border_color : source_color = vec4(vec3(0.0), 1.0);
 uniform mediump float chromatic_aberration_strength : hint_range(0.0, 6.0, 0.1) = 0.0;

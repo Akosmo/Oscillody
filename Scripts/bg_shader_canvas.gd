@@ -1,5 +1,5 @@
 # Oscillody
-# Copyright (C) 2025 Akosmo
+# Copyright (C) 2025-present Akosmo
 
 # This file is part of Oscillody. Unless specified otherwise, it is under the license below:
 
@@ -33,12 +33,8 @@ extends CanvasLayer
 
 #region BACKGROUND SHADER VARIABLES ##################################
 
-@onready var domain_warping_material: ShaderMaterial = domain_warping.get_material()
-@onready var tides_material: ShaderMaterial = tides.get_material()
-@onready var echoes_material: ShaderMaterial = echoes.get_material()
-@onready var isolines_material: ShaderMaterial = isolines.get_material()
-@onready var current_flow_material: ShaderMaterial = current_flow.get_material()
-@onready var simple_gradient_material: ShaderMaterial = simple_gradient.get_material()
+const INCREASE_AMPLITUDE: int = 2
+const DECREASE_TIME_INCREMENT: float = 0.002
 
 # Variable used to increment shader "frames". Used along with shader speed set by the user.
 var custom_time: float = 0.0
@@ -47,161 +43,134 @@ var current_speed_on_shader: float
 var new_user_speed: float
 
 var noise: FastNoiseLite = FastNoiseLite.new()
-var noise_time: float = 0.0
-var noise_time_factor: float = 50.0
-var amplitude_factor: float = 5.0
-var center: Vector2 = Vector2.ZERO
-var zoom_for_amplitude: Vector2 = Vector2.ZERO
-var addend_from_amp_reaction: Vector2 = Vector2.ZERO
-var modified_shader_scale: Vector2
+# Variable used to increment noise position. Used along with shake frequency and amplitude set by the user.
+var noise_scroll: float = 0.0
+var noise_position: Vector2 = Vector2.ZERO
+var scale_for_amplitude: Vector2 = Vector2.ZERO
+var amplitude_factor: float = 1.0
+var frequency_factor: float = 1.0
+# Variable used in place of `GlobalVariables.background_shake_amplitude` and
+# `GlobalVariables.background_shake_frequency` to allow reaction strengths to have effect.
+var mag_for_zero_default_shake: float = 0.0
+
+@onready var domain_warping_material: ShaderMaterial = domain_warping.get_material()
+@onready var tides_material: ShaderMaterial = tides.get_material()
+@onready var echoes_material: ShaderMaterial = echoes.get_material()
+@onready var isolines_material: ShaderMaterial = isolines.get_material()
+@onready var current_flow_material: ShaderMaterial = current_flow.get_material()
+@onready var simple_gradient_material: ShaderMaterial = simple_gradient.get_material()
 
 #endregion ##################################
 
 func _ready() -> void:
 	noise.fractal_octaves = 2
-	noise.frequency = 0.00001
+	noise.frequency = 0.0005
 	
 	MainUtils.update_visualizer.connect(update_bg_shader_canvas)
 	update_bg_shader_canvas()
 
 func _process(_delta: float) -> void:
-	if visible:
-		if ((GlobalVariables.background_shader_speed_reaction_strength or
-		GlobalVariables.shake_amplitude_reaction_strength or
-		GlobalVariables.shake_frequency_reaction_strength) and
-		MainUtils.audio_playing):
-			bg_shader_reaction(MainUtils.cur_mag)
+	if ((GlobalVariables.background_shader_speed_reaction_strength or
+	GlobalVariables.shake_amplitude_reaction_strength or
+	GlobalVariables.shake_frequency_reaction_strength) and
+	MainUtils.audio_playing):
+		bg_shader_reaction(MainUtils.cur_mag)
+	else:
+		amplitude_factor = 1.0
+		frequency_factor = 1.0
+	
+	match GlobalVariables.background_type:
+		"Domain Warping":
+			custom_time = custom_time + DECREASE_TIME_INCREMENT * GlobalVariables.domain_warping_speed
+			domain_warping_material.set_shader_parameter("speed", custom_time)
+		"Tides":
+			custom_time = custom_time + DECREASE_TIME_INCREMENT * GlobalVariables.tides_speed
+			tides_material.set_shader_parameter("speed", custom_time)
+		"Echoes":
+			custom_time = custom_time + DECREASE_TIME_INCREMENT * GlobalVariables.echoes_speed
+			echoes_material.set_shader_parameter("speed", custom_time)
+		"Isolines":
+			custom_time = custom_time + DECREASE_TIME_INCREMENT * GlobalVariables.isolines_speed
+			isolines_material.set_shader_parameter("speed", custom_time)
+		"Current Flow":
+			custom_time = custom_time + DECREASE_TIME_INCREMENT * GlobalVariables.current_flow_speed
+			current_flow_material.set_shader_parameter("speed", custom_time)
+	
+	if (GlobalVariables.background_shake_frequency or
+	GlobalVariables.shake_amplitude_reaction_strength and
+	(GlobalVariables.background_shake_frequency or GlobalVariables.shake_frequency_reaction_strength)):
+		if GlobalVariables.background_shake_frequency != 0.0:
+			noise_scroll += GlobalVariables.background_shake_frequency * frequency_factor
 		else:
-			amplitude_factor = 5.0
-			addend_from_amp_reaction = Vector2.ZERO
-			noise_time_factor = 50.0
+			noise_scroll += GlobalVariables.shake_frequency_reaction_strength * 5.0 \
+			* mag_for_zero_default_shake * frequency_factor
 		
-		match GlobalVariables.background_type:
-			"Domain Warping":
-				custom_time = custom_time + 0.002 * GlobalVariables.domain_warping_speed
-				domain_warping_material.set_shader_parameter("speed", custom_time)
-			"Tides":
-				custom_time = custom_time + 0.002 * GlobalVariables.tides_speed
-				tides_material.set_shader_parameter("speed", custom_time)
-			"Echoes":
-				custom_time = custom_time + 0.002 * GlobalVariables.echoes_speed
-				echoes_material.set_shader_parameter("speed", custom_time)
-			"Isolines":
-				custom_time = custom_time + 0.002 * GlobalVariables.isolines_speed
-				isolines_material.set_shader_parameter("speed", custom_time)
-			"Current Flow":
-				custom_time = custom_time + 0.002 * GlobalVariables.current_flow_speed
-				current_flow_material.set_shader_parameter("speed", custom_time)
-		
-		if GlobalVariables.background_shake_amplitude:
-			noise_time = noise_time + noise_time_factor * GlobalVariables.background_shake_frequency
+		# Scale the shader a bit, to avoid showing past the edges.
+		# We figure how much needs to be added to scale by checking how many pixels we need on both
+		# top and bottom to move Amp amount of pixels, considering Y axis since it has less pixels,
+		# and dividing by the size of the shader/window in the same axis.
+		# At max amplitude, we need 100 extra pixels on top and 100 extra on the bottom, which
+		# equals 200 pixels. The shader needs to be scaled by an amount that would give us that,
+		# which is what we find first below.
+		# We're only multiplying by 4 because amplitude is later multiplied by 2.
+		if GlobalVariables.background_shake_amplitude != 0.0:
+			scale_for_amplitude = Vector2(
+				GlobalVariables.background_shake_amplitude * 4.0 * amplitude_factor / MainUtils.window_size.y,
+				GlobalVariables.background_shake_amplitude * 4.0 * amplitude_factor / MainUtils.window_size.y
+				)
 			
-		match GlobalVariables.background_type:
-			"Domain Warping":
-				if (GlobalVariables.background_shake_amplitude and
-				GlobalVariables.background_shake_frequency):
-					domain_warping.position.x = center.x \
-					+ noise.get_noise_2d(noise_time, 0.0) \
-					* GlobalVariables.background_shake_amplitude * amplitude_factor
-					domain_warping.position.y = center.y \
-					+ noise.get_noise_2d(0.0, noise_time) \
-					* GlobalVariables.background_shake_amplitude * amplitude_factor
-				else:
-					domain_warping.position = center
-			"Tides":
-				if (GlobalVariables.background_shake_amplitude and
-				GlobalVariables.background_shake_frequency):
-					tides.position.x = center.x \
-					+ noise.get_noise_2d(noise_time, 0.0) \
-					* GlobalVariables.background_shake_amplitude * amplitude_factor
-					tides.position.y = center.y \
-					+ noise.get_noise_2d(0.0, noise_time) \
-					* GlobalVariables.background_shake_amplitude * amplitude_factor
-				else:
-					tides.position = center
-			"Echoes":
-				if (GlobalVariables.background_shake_amplitude and
-				GlobalVariables.background_shake_frequency):
-					echoes.position.x = center.x \
-					+ noise.get_noise_2d(noise_time, 0.0) \
-					* GlobalVariables.background_shake_amplitude * amplitude_factor
-					echoes.position.y = center.y \
-					+ noise.get_noise_2d(0.0, noise_time) \
-					* GlobalVariables.background_shake_amplitude * amplitude_factor
-				else:
-					echoes.position = center
-			"Isolines":
-				if (GlobalVariables.background_shake_amplitude and
-				GlobalVariables.background_shake_frequency):
-					isolines.position.x = center.x \
-					+ noise.get_noise_2d(noise_time, 0.0) \
-					* GlobalVariables.background_shake_amplitude * amplitude_factor
-					isolines.position.y = center.y \
-					+ noise.get_noise_2d(0.0, noise_time) \
-					* GlobalVariables.background_shake_amplitude * amplitude_factor
-				else:
-					isolines.position = center
-			"Current Flow":
-				if (GlobalVariables.background_shake_amplitude and
-				GlobalVariables.background_shake_frequency):
-					current_flow.position.x = center.x \
-					+ noise.get_noise_2d(noise_time, 0.0) \
-					* GlobalVariables.background_shake_amplitude * amplitude_factor
-					current_flow.position.y = center.y \
-					+ noise.get_noise_2d(0.0, noise_time) \
-					* GlobalVariables.background_shake_amplitude * amplitude_factor
-				else:
-					current_flow.position = center
-			"Simple Gradient":
-				if (GlobalVariables.background_shake_amplitude and
-				GlobalVariables.background_shake_frequency):
-					simple_gradient.position.x = center.x \
-					+ noise.get_noise_2d(noise_time, 0.0) \
-					* GlobalVariables.background_shake_amplitude * amplitude_factor
-					simple_gradient.position.y = center.y \
-					+ noise.get_noise_2d(0.0, noise_time) \
-					* GlobalVariables.background_shake_amplitude * amplitude_factor
-				else:
-					simple_gradient.position = center
+			noise_position = Vector2(
+				noise.get_noise_2d(noise_scroll, 0.0) \
+				* GlobalVariables.background_shake_amplitude * INCREASE_AMPLITUDE * amplitude_factor,
+				noise.get_noise_2d(0.0, noise_scroll) \
+				* GlobalVariables.background_shake_amplitude * INCREASE_AMPLITUDE * amplitude_factor
+				)
+		else:
+			scale_for_amplitude = Vector2(
+				GlobalVariables.shake_amplitude_reaction_strength * mag_for_zero_default_shake \
+				* 4.0 * amplitude_factor / MainUtils.window_size.y,
+				GlobalVariables.shake_amplitude_reaction_strength * mag_for_zero_default_shake \
+				* 4.0 * amplitude_factor / MainUtils.window_size.y
+				)
 			
-		zoom_for_amplitude = Vector2(
-			GlobalVariables.background_shake_amplitude * 0.025,
-			GlobalVariables.background_shake_amplitude * 0.025
-			)
-		
-		modified_shader_scale = Vector2(1.0, 1.0) + zoom_for_amplitude + addend_from_amp_reaction
-		
-		match GlobalVariables.background_type:
-			"Domain Warping":
-				domain_warping.pivot_offset = domain_warping.size / 2.0
-				domain_warping.set_scale(modified_shader_scale)
-				if domain_warping.scale < Vector2(1.0, 1.0):
-					domain_warping.set_scale(Vector2(1.0, 1.0))
-			"Tides":
-				tides.pivot_offset = tides.size / 2.0
-				tides.set_scale(modified_shader_scale)
-				if tides.scale < Vector2(1.0, 1.0):
-					tides.set_scale(Vector2(1.0, 1.0))
-			"Echoes":
-				echoes.pivot_offset = echoes.size / 2.0
-				echoes.set_scale(modified_shader_scale)
-				if echoes.scale < Vector2(1.0, 1.0):
-					echoes.set_scale(Vector2(1.0, 1.0))
-			"Isolines":
-				isolines.pivot_offset = isolines.size / 2.0
-				isolines.set_scale(modified_shader_scale)
-				if isolines.scale < Vector2(1.0, 1.0):
-					isolines.set_scale(Vector2(1.0, 1.0))
-			"Current Flow":
-				current_flow.pivot_offset = current_flow.size / 2.0
-				current_flow.set_scale(modified_shader_scale)
-				if current_flow.scale < Vector2(1.0, 1.0):
-					current_flow.set_scale(Vector2(1.0, 1.0))
-			"Simple Gradient":
-				simple_gradient.pivot_offset = simple_gradient.size / 2.0
-				simple_gradient.set_scale(modified_shader_scale)
-				if simple_gradient.scale < Vector2(1.0, 1.0):
-					simple_gradient.set_scale(Vector2(1.0, 1.0))
+			noise_position = Vector2(
+				noise.get_noise_2d(noise_scroll, 0.0) \
+				* GlobalVariables.shake_amplitude_reaction_strength * mag_for_zero_default_shake \
+				* INCREASE_AMPLITUDE * amplitude_factor,
+				noise.get_noise_2d(0.0, noise_scroll) \
+				* GlobalVariables.shake_amplitude_reaction_strength * mag_for_zero_default_shake \
+				* INCREASE_AMPLITUDE * amplitude_factor
+				)
+	else:
+		scale_for_amplitude = Vector2.ZERO
+		noise_position = Vector2.ZERO
+	
+	# Scaling and repositioning image based on 2D noise.
+	match GlobalVariables.background_type:
+		"Domain Warping":
+			domain_warping.position = noise_position
+			domain_warping.pivot_offset = domain_warping.size * 0.5
+			domain_warping.set_scale(Vector2.ONE + scale_for_amplitude)
+		"Tides":
+			tides.position = noise_position
+			tides.pivot_offset = tides.size * 0.5
+			tides.set_scale(Vector2.ONE + scale_for_amplitude)
+		"Echoes":
+			echoes.position = noise_position
+			echoes.pivot_offset = echoes.size * 0.5
+			echoes.set_scale(Vector2.ONE + scale_for_amplitude)
+		"Isolines":
+			isolines.position = noise_position
+			isolines.pivot_offset = isolines.size * 0.5
+			isolines.set_scale(Vector2.ONE + scale_for_amplitude)
+		"Current Flow":
+			current_flow.position = noise_position
+			current_flow.pivot_offset = current_flow.size * 0.5
+			current_flow.set_scale(Vector2.ONE + scale_for_amplitude)
+		"Simple Gradient":
+			simple_gradient.position = noise_position
+			simple_gradient.pivot_offset = simple_gradient.size * 0.5
+			simple_gradient.set_scale(Vector2.ONE + scale_for_amplitude)
 
 func update_bg_shader_canvas() -> void:
 	if (not GlobalVariables.background_type == "Solid Colors" and
@@ -388,8 +357,9 @@ func update_bg_shader_canvas() -> void:
 					"line_thickness", GlobalVariables.isolines_line_thickness
 					)
 				isolines_material.set_shader_parameter(
-					"thickness_variation", GlobalVariables.isolines_thickness_variation
-					)
+					"thickness_variation",
+					lerp(0.5, 1.2, 1.0 - pow(2.0, -10.0 * GlobalVariables.isolines_thickness_variation))
+					) # Exponential curve
 				isolines_material.set_shader_parameter(
 					"line_amount", GlobalVariables.isolines_line_amount
 					)
@@ -462,6 +432,9 @@ func update_bg_shader_canvas() -> void:
 		set_process(false)
 
 func bg_shader_reaction(mag: float, strength: float = 0.0) -> void:
+	mag = clampf(mag, 0.0, 1.0)
+	mag_for_zero_default_shake = mag
+	
 	strength = GlobalVariables.background_shader_speed_reaction_strength * 0.005
 	match GlobalVariables.background_type:
 		"Domain Warping":
@@ -490,17 +463,17 @@ func bg_shader_reaction(mag: float, strength: float = 0.0) -> void:
 			
 			custom_time = new_user_speed
 	
-	if (GlobalVariables.shake_amplitude_reaction_strength and
-	GlobalVariables.background_shake_amplitude):
-		strength = GlobalVariables.shake_amplitude_reaction_strength * 0.1
-		amplitude_factor = 5.0 + mag * (strength * 5.0)
-		addend_from_amp_reaction = Vector2(mag * strength / 2.0, mag * strength / 2.0)
-	else:
-		amplitude_factor = 5.0
-		addend_from_amp_reaction = Vector2.ZERO
-	
-	if GlobalVariables.shake_frequency_reaction_strength:
-		strength = GlobalVariables.shake_frequency_reaction_strength * 200.0
-		noise_time_factor = 50.0 + mag * strength
-	else:
-		noise_time_factor = 50.0
+	if (GlobalVariables.background_shake_frequency or
+	GlobalVariables.shake_amplitude_reaction_strength and
+	(GlobalVariables.background_shake_frequency or GlobalVariables.shake_frequency_reaction_strength)):
+		if GlobalVariables.shake_amplitude_reaction_strength:
+			strength = GlobalVariables.shake_amplitude_reaction_strength
+			amplitude_factor = 1.0 + mag * strength
+		else:
+			amplitude_factor = 1.0
+		
+		if GlobalVariables.shake_frequency_reaction_strength:
+			strength = GlobalVariables.shake_frequency_reaction_strength
+			frequency_factor = 1.0 + mag * strength
+		else:
+			frequency_factor = 1.0

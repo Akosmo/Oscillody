@@ -1,5 +1,5 @@
 # Oscillody
-# Copyright (C) 2025 Akosmo
+# Copyright (C) 2025-present Akosmo
 
 # This file is part of Oscillody. Unless specified otherwise, it is under the license below:
 
@@ -83,7 +83,7 @@ func update_title() -> void:
 		
 		font_type.set_font_italic(GlobalVariables.title_font_italic)
 		
-		center_of_text = title.size / 2.0
+		center_of_text = title.size * 0.5
 		title.pivot_offset = center_of_text
 		max_resolution = DisplayServer.screen_get_size()
 		title_scale = Vector2(MainUtils.window_size) / max_resolution
@@ -104,12 +104,15 @@ func update_title() -> void:
 		set_process(false)
 
 func title_reaction(mag: float, strength: float = 0.0) -> void:
+	mag = clampf(mag, 0.0, 1.0)
+	
 	if GlobalVariables.title_position_reaction_strength:
 		strength = GlobalVariables.title_position_reaction_strength
 		
 		title_shake_energy = Vector2(randf_range(-mag, mag) * strength, randf_range(-mag, mag) * strength)
 	
 	if GlobalVariables.title_size_reaction_strength:
-		strength = GlobalVariables.title_size_reaction_strength * 10.0
+		strength = GlobalVariables.title_size_reaction_strength * 40.0 \
+		* remap(GlobalVariables.title_size, 20.0, 200.0, 0.1, 1.0)
 		
 		title_size_reaction_addend = int(mag * strength)

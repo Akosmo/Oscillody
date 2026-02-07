@@ -9,7 +9,7 @@ shader_type canvas_item;
 
 // This shader is used for applying the soft light blend mode.
 
-uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
+uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear;
 
 uniform mediump float opacity : hint_range(0.0, 1.0, 0.05) = 0.0;
 
@@ -52,10 +52,10 @@ void fragment() {
 	uv.y = 1.0 - uv.y;
 	highp vec4 screen_tex = texture(SCREEN_TEXTURE, SCREEN_UV);
 	highp vec4 noise_texture = texture(TEXTURE, UV);
-	
+
 	highp vec3 noise_v3 = noise_texture.rgb;
-	
+
 	highp vec3 output_color = soft_light_opacity(screen_tex.rgb, noise_v3, opacity);
-	
+
 	COLOR = vec4(vec3(output_color), 1.0);
 }

@@ -1,5 +1,5 @@
 // Oscillody
-// Copyright (C) 2025 Akosmo
+// Copyright (C) 2025-present Akosmo
 
 // This file (tides.gdshader) is under the MIT (especifically Expat) License.
 // "Software" in the license text refers to this single script only.
@@ -40,7 +40,7 @@ vec3 to_yiq(highp vec3 col) {
 		vec3(0.599, -0.2773, -0.3217),
 		vec3(0.213, -0.5251, 0.3121)
 		);
-	
+
 	return col * to_yiq_conversion_matrix;
 }
 
@@ -50,21 +50,21 @@ vec3 to_rgb(highp vec3 col) {
 		vec3(1.0, -0.2748, -0.6357),
 		vec3(1.0, -1.1, 1.7)
 		);
-	
+
 	return col * to_rgb_conversion_matrix;
 }
 
 // Rotating hue.
 vec3 hue_shift_yiq(highp vec3 col) {
 	highp vec3 color_in_yiq = to_yiq(col);
-	
+
 	mediump mat2 rotation_matrix = mat2(
 		vec2(cos(hue_shift_amt), -sin(hue_shift_amt)),
 		vec2(sin(hue_shift_amt), cos(hue_shift_amt))
 		);
-	
+
 	color_in_yiq.yz *= rotation_matrix;
-	
+
 	return to_rgb(color_in_yiq);
 }
 
@@ -72,15 +72,15 @@ void fragment() {
 	highp vec2 uv = UV;
 	uv.y = 1.0 - uv.y; // Invert Y coord
 	uv.x *= 16.0 / 9.0; // Adjust ratio
-	
+
 	// Distorting UV.
 	for (lowp int i = 1; i <= iterations; i++) {
 		uv.x += cos(speed + uv.y * (float(i) * 0.8));
 		uv.y += cos(speed - uv.x * (float(i) * 0.8));
 	}
-	
+
 	highp vec3 output_color = vec3(0.0);
-	
+
 	if (!color_mix) {
 		output_color = sin(uv.x - uv.y) * wave_color.rgb + tint.rgb;
 	}
@@ -89,14 +89,14 @@ void fragment() {
 		output_color.g = cos(uv.x - uv.y) * wave_color.g + tint.g;
 		output_color.b = sin(uv.y - uv.x) * wave_color.b + tint.b;
 	}
-	
+
 	if (invert_colors) {
 		output_color = vec3(1.0) - output_color;
 	}
-	
+
 	if (abs(hue_shift_amt) > 0.0) {
 		output_color = hue_shift_yiq(output_color);
 	}
-	
+
 	COLOR = vec4(output_color, 1.0);
 }

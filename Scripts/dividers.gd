@@ -1,5 +1,5 @@
 # Oscillody
-# Copyright (C) 2025 Akosmo
+# Copyright (C) 2025-present Akosmo
 
 # This file is part of Oscillody. Unless specified otherwise, it is under the license below:
 
@@ -14,48 +14,92 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-extends Control
+extends Node2D
 
-# This script handles the dividers/separators that appear on screen with 2 waveforms or more (no vertical layout).
-
-#region NODES ##################################
-
-@onready var divider_one: ColorRect = $DividerOne
-@onready var divider_two: ColorRect = $DividerTwo
-
-#endregion ##################################
+# This script handles the dividers that appear on screen with 2 waveforms or more.
 
 func _ready() -> void:
 	MainUtils.update_visualizer.connect(update_dividers)
 	update_dividers()
 
-func update_dividers() -> void:
-	divider_one.color = GlobalVariables.divider_colors[0]
-	divider_two.color = GlobalVariables.divider_colors[1]
-	
-	if GlobalVariables.number_of_stems == 1 or GlobalVariables.vertical_layout:
-		visible = false
-	else:
-		visible = true
-	
-	divider_one.position = Vector2i(0, MainUtils.window_size.y / 2 - GlobalVariables.divider_thickness / 2)
-	divider_two.position = Vector2i(MainUtils.window_size.x / 2 - GlobalVariables.divider_thickness / 2, 0)
-	
-	var divider_one_length: Vector2i = Vector2i(MainUtils.window_size.x, GlobalVariables.divider_thickness)
-	var divider_two_half_length: Vector2i = Vector2i(GlobalVariables.divider_thickness, MainUtils.window_size.y / 2)
-	var divider_two_full_length: Vector2i = Vector2i(GlobalVariables.divider_thickness, MainUtils.window_size.y)
-	
+func _draw() -> void:
 	if not GlobalVariables.vertical_layout:
 		if GlobalVariables.number_of_stems > 1:
-			divider_one.size = divider_one_length
 			if GlobalVariables.number_of_stems == 3:
-				divider_two.size = divider_two_half_length
+				draw_line(
+					Vector2(float(MainUtils.window_size.x) * 0.5, 0.0),
+					Vector2(float(MainUtils.window_size.x) * 0.5, float(MainUtils.window_size.y) * 0.5),
+					GlobalVariables.divider_colors[1],
+					GlobalVariables.divider_thickness,
+					true
+					)
 			elif GlobalVariables.number_of_stems == 4:
-				divider_two.size = divider_two_full_length
-			else:
-				divider_two.size = Vector2i.ZERO
-		else:
-			divider_one.size = Vector2i.ZERO
+				draw_line(
+					Vector2(float(MainUtils.window_size.x) * 0.5, 0.0),
+					Vector2(float(MainUtils.window_size.x) * 0.5, float(MainUtils.window_size.y)),
+					GlobalVariables.divider_colors[1],
+					GlobalVariables.divider_thickness,
+					true
+					)
+			draw_line(
+				Vector2(0.0, float(MainUtils.window_size.y) * 0.5),
+				Vector2(float(MainUtils.window_size.x), float(MainUtils.window_size.y) * 0.5),
+				GlobalVariables.divider_colors[0],
+				GlobalVariables.divider_thickness,
+				true
+				)
 	else:
-		divider_one.size = Vector2i.ZERO
-		divider_two.size = Vector2i.ZERO
+		match GlobalVariables.number_of_stems:
+			2:
+				draw_line(
+					Vector2(0.0, float(MainUtils.window_size.y) * 0.5),
+					Vector2(float(MainUtils.window_size.x), float(MainUtils.window_size.y) * 0.5),
+					GlobalVariables.divider_colors[0],
+					GlobalVariables.divider_thickness,
+					true
+					)
+			3:
+				draw_line(
+					Vector2(0.0, float(MainUtils.window_size.y) * (1.0 / 3.0)),
+					Vector2(float(MainUtils.window_size.x), float(MainUtils.window_size.y) * (1.0 / 3.0)),
+					GlobalVariables.divider_colors[0],
+					GlobalVariables.divider_thickness,
+					true
+					)
+				draw_line(
+					Vector2(0.0, float(MainUtils.window_size.y) * (2.0 / 3.0)),
+					Vector2(float(MainUtils.window_size.x), float(MainUtils.window_size.y) * (2.0 / 3.0)),
+					GlobalVariables.divider_colors[1],
+					GlobalVariables.divider_thickness,
+					true
+					)
+			4:
+				draw_line(
+					Vector2(0.0, float(MainUtils.window_size.y) * (1.0 / 4.0)),
+					Vector2(float(MainUtils.window_size.x), float(MainUtils.window_size.y) * (1.0 / 4.0)),
+					GlobalVariables.divider_colors[0],
+					GlobalVariables.divider_thickness,
+					true
+					)
+				draw_line(
+					Vector2(0.0, float(MainUtils.window_size.y) * (2.0 / 4.0)),
+					Vector2(float(MainUtils.window_size.x), float(MainUtils.window_size.y) * (2.0 / 4.0)),
+					GlobalVariables.divider_colors[1],
+					GlobalVariables.divider_thickness,
+					true
+					)
+				draw_line(
+					Vector2(0.0, float(MainUtils.window_size.y) * (3.0 / 4.0)),
+					Vector2(float(MainUtils.window_size.x), float(MainUtils.window_size.y) * (3.0 / 4.0)),
+					GlobalVariables.divider_colors[2],
+					GlobalVariables.divider_thickness,
+					true
+					)
+
+func update_dividers() -> void:
+	if (GlobalVariables.number_of_stems > 1 and
+	(not GlobalVariables.vertical_layout or GlobalVariables.include_dividers)):
+		visible = true
+		queue_redraw()
+	else:
+		visible = false
