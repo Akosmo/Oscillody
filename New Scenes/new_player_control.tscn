@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://d1oevod46vgin"]
+
+[node name="PlayerControlContainer" type="PanelContainer" unique_id=1498337296]
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1873984990]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=1134130833]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="MarginContainer/HBoxContainer" unique_id=1160707606]
+layout_mode = 2
+text = "PLAY"
+
+[node name="Button2" type="Button" parent="MarginContainer/HBoxContainer" unique_id=887003186]
+layout_mode = 2
+text = "STOP"
+
+[node name="Button3" type="Button" parent="MarginContainer/HBoxContainer" unique_id=723381350]
+layout_mode = 2
+text = "LOOP"
+
+[node name="HSlider" type="HSlider" parent="MarginContainer/HBoxContainer" unique_id=1585166395]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer" unique_id=442053107]
+layout_mode = 2
+text = "100%"
+horizontal_alignment = 1
+
+[node name="HSlider2" type="HSlider" parent="MarginContainer/HBoxContainer" unique_id=88055961]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Label2" type="Label" parent="MarginContainer/HBoxContainer" unique_id=10301230]
+layout_mode = 2
+text = "000:00"
+horizontal_alignment = 2

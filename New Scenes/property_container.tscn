@@ -1,0 +1,71 @@
+[gd_scene format=3 uid="uid://bfv2ne33xxlso"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jtfbr"]
+
+[node name="PanelContainer" type="PanelContainer" unique_id=803774841]
+custom_minimum_size = Vector2(0, 39)
+offset_right = 8.0
+offset_bottom = 39.0
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_jtfbr")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1597294885]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=1985752979]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer" unique_id=1523211957]
+layout_mode = 2
+text = "PROPERTY TEXT"
+
+[node name="Button" type="Button" parent="MarginContainer/HBoxContainer" unique_id=779598649]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 10
+text = "R"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=1197491246]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_constants/separation = 10
+
+[node name="HSlider" type="HSlider" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=172949341]
+visible = false
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1948135684]
+visible = false
+layout_mode = 2
+
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1053394272]
+visible = false
+layout_mode = 2
+update_on_text_changed = true
+
+[node name="OptionButton" type="OptionButton" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1932618024]
+visible = false
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+fit_to_longest_item = false
+
+[node name="CheckButton" type="CheckButton" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1432791718]
+visible = false
+layout_mode = 2
+
+[node name="Button" type="Button" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=594840813]
+visible = false
+layout_mode = 2
+text = "EDIT"
+
+[node name="ColorPickerButton" type="ColorPickerButton" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=840115404]
+visible = false
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+color = Color(1, 1, 1, 1)

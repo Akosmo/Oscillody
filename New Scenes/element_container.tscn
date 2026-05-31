@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://bpi6qpn388std"]
+
+[ext_resource type="Script" uid="uid://0n0ridgq2fbd" path="res://New Scripts/element_container.gd" id="1_x0yx2"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_dmp8d"]
+
+[node name="PanelContainer" type="PanelContainer" unique_id=1113906445]
+theme_override_styles/panel = SubResource("StyleBoxEmpty_dmp8d")
+script = ExtResource("1_x0yx2")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=107188826]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=1579386774]
+layout_mode = 2
+
+[node name="DeleteButton" type="Button" parent="MarginContainer/HBoxContainer" unique_id=699517842]
+unique_name_in_owner = true
+layout_mode = 2
+text = "DE"
+
+[node name="DuplicateButton" type="Button" parent="MarginContainer/HBoxContainer" unique_id=2050310513]
+unique_name_in_owner = true
+layout_mode = 2
+text = "DU"
+
+[node name="RenameButton" type="Button" parent="MarginContainer/HBoxContainer" unique_id=2118501890]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "RE"
+
+[node name="ElementNameButton" type="Button" parent="MarginContainer/HBoxContainer" unique_id=846296998]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ELEMENT_NAME"
