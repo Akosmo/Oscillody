@@ -1,7 +1,8 @@
 # Oscillody
 # Copyright (C) 2025-present Akosmo
 
-# visualizer_elements.gd is part of Oscillody. Unless specified otherwise, it is under the license below:
+# visualizer_elements.gd is part of Oscillody.
+# Unless specified otherwise, it is under the license below:
 
 # Oscillody is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free Software Foundation,
@@ -22,204 +23,184 @@ extends Node
 ##
 ## Elements are the parts of a visualizer. This class can be used to create, modify,
 ## and delete elements and properties.[br]
-## Most methods in this class interact with [member _elements], and triggers [signal update_visualizer].[br]
+## Most methods in this class interact with [member _elements], and triggers [signal elements_updated].[br]
 ## UI controls and preset files set values. Elements get values from this class.
 
 ## Emitted whenever [member _elements] is modified, and triggers relevant changes to the visualizer.
-signal update_visualizer
-
-## Holds all elements of the visualizer, along with their properties.
-## Whenever modified, [signal update_visualizer] is emitted.[br]
-## [b]Note:[/b] This member should [b]NOT[/b] be accessed directly.
-static var _elements: Dictionary[StringName, Dictionary]
+signal elements_updated
 
 ## Base type for elements.
 enum ElementType {
-	## An audio analyzer element, such as a waveform. Must be linked to [constant AUDIO] to work.
-	ANALYZER,
-	## An audio element. Used for analyzers, reaction, and most importantly, Making the visualizer work.
-	AUDIO,
-	## A background element, such as images, gradients, and shaders.
-	BACKGROUND,
-	## An empty element. Only contains [constant TYPE] and [constant LAYER] as part of its properties.
+	## An empty element. Only contains [constant NAME],
+	## [constant TYPE], and [constant LAYER] as properties.
 	## Used when an element is created.
 	EMPTY = -1,
-	## A foreground element, such as images, shapes, and post-processing effects.
-	FOREGROUND = 3,
+	## An audio analyzer element, such as a waveform. Must be linked to an audio track to work.
+	ANALYZER,
+	## A 2-point gradient element.
+	GRADIENT,
+	## An image element.
+	IMAGE,
+	## A post-processing element.
+	POST_PROCESSING,
+	## A shader element.
+	SHADER,
+	## A shape element.
+	SHAPE,
+	## A solid color element.
+	SOLID_COLOR,
 	## A text element.
-	TEXT = 4
+	TEXT
 }
 
-#TODO: Add more.
-## Key name for the element's type.
+const NAME: StringName = &"Name"
 const TYPE: StringName = &"Type"
-## Key name for the element's layer.
 const LAYER: StringName = &"Layer"
-## Key name for the element's visibility.
-const VISIBILITY: StringName = &"Visibility"
-## Key name for the element's position.
-const POSITION: StringName = &"Position"
-## Key name for the element's size.
-const SIZE: StringName = &"Size"
-## Key name for the element's scale.
-const SCALE: StringName = &"Scale"
-## Key name for the element's color.
-const COLOR: StringName = &"Color"
-## Key name for the element's speed.
-const SPEED: StringName = &"Speed"
+const VISIBILITY: StringName = &"Visibility" # Use this.
+
+# TODO: Also make a public method to return a ControlNode value to be used by PropertyContainer.
+# This method should check a given property's key and type of the value.
+enum ControlNode {
+	BUTTON,
+	CHECK_BUTTON,
+	COLOR_PICKER_BUTTON,
+	LINE_EDIT,
+	NONE,
+	NUMERICAL,
+	OPTION_BUTTON,
+	TEXT_EDIT
+}
+
+## Holds all elements of the visualizer, along with their properties.
+## Whenever modified, [signal elements_updated] is emitted.[br]
+## [b]Note:[/b] This member should [b]NOT[/b] be accessed directly.
+static var _elements: Dictionary[int, Dictionary]
+
+## The unique ID (UID) for the last created element during run-time.
+## Initializes at [code]-1[/code], but first created element will have an UID of [code]0[/code].
+static var _element_uid: int = -1
+
+## The UID of the element currently selected to show its properties in the UI.
+## This will be used if instances of properties won't be created and deleted every time and element is selected.
+## @experimental
+static var _selected_element: int = _element_uid
 
 func _init() -> void:
-	var err_updated_elements: Error = update_visualizer.connect(_updated_elements) as Error
+	var err_updated_elements: Error = elements_updated.connect(_updated_elements) as Error
 	if err_updated_elements:
 		printerr("Could not connect \"_updated_elements\" signal.")
 
 ## Returns a deep copy of [member _elements].
-func get_elements() -> Dictionary[StringName, Dictionary]:
+func get_elements() -> Dictionary[int, Dictionary]:
 	return _elements.duplicate_deep(Resource.DeepDuplicateMode.DEEP_DUPLICATE_ALL)
 
-func get_element_keys_sorted() -> Array[StringName]:
-	var r_dict: Array[StringName] = _elements.keys()
-	# Better sorting. Array element `a` is compared to `b` and put behind if less than 0 (returns a `true`).
-	# Behavior of `sort()`: "1, 10, 11, 12...19, 2, 20, 21...".
-	r_dict.sort_custom(func(a: StringName, b: StringName) -> bool: return a.naturalnocasecmp_to(b) < 0)
-	return r_dict
-
 ## Alias for [method set_element_properties],
-## internally creates a property dictionary with [constant ElementType.EMPTY] and the next available layer.
-func create_element() -> void:
-	set_element_properties(
-		_get_available_name(),
-		{TYPE: ElementType.EMPTY, LAYER: _get_available_layer()} as Dictionary[StringName, Variant]
+## internally creates a property dictionary with
+## [code]"Empty_"[/code] appended with the next available UID,
+## [constant ElementType.EMPTY], and the next available layer,
+## for [constant NAME], [constant TYPE], and [constant LAYER], respectively.[br]
+## Returns the unique ID for the created element. If element could not be created, returns [code]-1[/code].
+func create_element() -> int:
+	var err: Error = set_element_properties(
+		_get_available_uid(),
+		{
+			NAME: _get_available_name(),
+			TYPE: ElementType.EMPTY,
+			LAYER: _get_available_layer(),
+			VISIBILITY: true
+		} as Dictionary[StringName, Variant]
 	)
+	if err:
+		return -1
+	
+	return _element_uid
 
 ## Alias for [method set_element_properties],
 ## internally uses an empty property dictionary for deletion.
-func delete_element(p_name: StringName) -> void:
+func delete_element(p_uid: int) -> Error:
 	var empty_dict: Dictionary[StringName, Variant] = {}
-	if not element_exists(p_name):
-		return
-	set_element_properties(p_name, empty_dict)
-
-# TODO: Account for layer prefix.
-## Sets the name of element [param p_from] to [param p_to]. Can be used to rename an element.
-func set_element_name(p_from: StringName, p_to: StringName) -> void:
-	if not element_exists(p_from):
-		return
-	if not _is_valid_builtin_type(p_to, TYPE_STRING_NAME):
-		return
-	if _is_null_or_empty(p_to):
-		return
+	if not element_exists(p_uid):
+		return FAILED
 	
-	var err: Error = _rename_element(p_from, p_to)
-	if err:
-		printerr("Could not set element name.")
-	
-	update_visualizer.emit()
+	return set_element_properties(p_uid, empty_dict)
 
-## Checks if the element [param p_name] exists.
-func element_exists(p_name: StringName) -> bool:
-	if not _is_valid_name(p_name):
+## Checks if the element [param p_uid] exists.
+func element_exists(p_uid: int) -> bool:
+	if not _is_valid_uid(p_uid):
 		return false
 	
-	if not _elements.has(p_name):
-		print("Warning: Element \"{name}\" does not exist.".format({"name": p_name}))
+	if not _elements.has(p_uid):
 		return false
 	
 	return true
 
-## Creates an element property dictionary. Must contain at least a valid [param p_type].
-## This method should be used when creating a new element, or setting an existing element's value.[br]
-## [b]Note:[/b] This method returns an empty dictionary if there is an error.
-## @deprecated: Call [method create_element].
-func create_property_dictionary(
-	p_type: ElementType,
-	p_other: Dictionary[StringName, Variant] = {}
-) -> Dictionary[StringName, Variant]:
-	var r_dict: Dictionary[StringName, Variant] = {}
-	
-	if p_type is not ElementType:
-		printerr("Invalid type ({type}).".format({"type": p_type}))
-		return r_dict
-	
-	if not _is_element_property_dict_valid(p_other, false):
-		return r_dict
-	
-	r_dict = {TYPE: p_type, LAYER: _get_available_layer()}
-	
-	for key: StringName in p_other.keys():
-		var err_bool: bool = r_dict.set(key, p_other.get(key))
-		if err_bool:
-			printerr(
-				"Can't set property {property} with value {value}.".format(
-					{"property": key, "value": p_other[key]}
-				)
-			)
-			break
-	
-	if not _is_element_property_dict_valid(r_dict):
-		r_dict.clear()
-		return r_dict
-	
-	return r_dict
-
-## Sets a property dictionary to element [param p_name]. Deletes the element if [param p_properties] is empty.
+## Sets a property dictionary to element [param p_uid]. Deletes the element if [param p_properties] is empty.
 ## If that's the purpose, consider using [method delete_element]. See also [method create_element].[br]
 ## [b]Note:[/b] [param p_properties] should have the correct type, even if it's empty.
-func set_element_properties(p_name: StringName, p_properties: Dictionary[StringName, Variant]) -> void:
+func set_element_properties(p_uid: int, p_properties: Dictionary[StringName, Variant]) -> Error:
 	if not _is_element_property_dict_valid(p_properties, false):
-		return
+		return FAILED
 	
-	if _is_null_or_empty(_elements.get(p_name)):
+	if element_exists(p_uid) and _is_null_or_empty(_elements.get(p_uid)):
 		print("Warning: Element already has properties. Setting anyway.")
 	
 	if _is_null_or_empty(p_properties):
-		var err_bool: bool = _elements.erase(p_name)
+		var err_bool: bool = _elements.erase(p_uid)
 		if not err_bool:
-			printerr("Could not delete \"{name}\" element".format({"name": p_name}))
-			return
-		_ensure_gapless_layers()
+			printerr("Could not delete \"{UID}\" element".format({"UID": p_uid}))
+			return FAILED
+		var err: Error = _ensure_gapless_layers()
+		if err:
+			printerr("Could not ensure gapless layers.")
+			return FAILED
 	else:
 		if not _is_element_property_dict_valid(p_properties):
-			return
-		var err_bool: bool = _elements.set(p_name, p_properties)
+			return FAILED
+		var err_bool: bool = _elements.set(p_uid, p_properties)
 		if not err_bool:
-			printerr("Could not set to \"{name}\" element".format({"name": p_name}))
-			return
+			printerr("Could not set to \"{UID}\" element".format({"UID": p_uid}))
+			return FAILED
 	
-	update_visualizer.emit()
+	elements_updated.emit()
+	
+	return OK
 
-## Returns the property dictionary for element [param p_name]. See also [method create_property_dictionary].[br]
-## [b]Note:[/b] If [param p_name] does not exist, returns an empty dictionary.
-func get_element_properties(p_name: StringName) -> Dictionary[StringName, Variant]:
+## Returns the property dictionary for element [param p_uid].[br]
+## [b]Note:[/b] If [param p_uid] does not exist, returns an empty dictionary.
+func get_element_properties(p_uid: int) -> Dictionary[StringName, Variant]:
 	var r_dict: Dictionary[StringName, Variant] = {}
 	
-	if not element_exists(p_name):
+	if not element_exists(p_uid):
 		return r_dict
 	
-	return _elements.get(p_name, r_dict)
+	return _elements.get(p_uid, r_dict)
 
 ## Sets the [param p_property] of [param p_element] to [param p_value].
 ## See also [method get_element_properties].
-func set_element_property(p_element: StringName, p_property: StringName, p_value: Variant) -> void:
-	if not property_exists(p_element, p_property):
-		return
-	if _is_null_or_empty(p_value):
-		return
+func set_element_property(p_element: int, p_property: StringName, p_value: Variant) -> Error:
+	#if not property_exists(p_element, p_property):
+		#return FAILED
+	#if p_property == NAME and _is_null_or_empty(p_value):
+		#printerr("Name can not be empty.")
+		#return FAILED
 	
 	var element: Dictionary[StringName, Variant] = _elements.get(p_element)
 	var err_bool: bool = element.set(p_property, p_value)
 	if not err_bool:
 		printerr(
-			"Can't set property {property} with value {value}.".format(
-				{"property": p_property, "value": p_value}
+			"Can't set property {property} with value {value} in {element}.".format(
+				{"property": p_property, "value": p_value, "element": p_element}
 			)
 		)
+		return FAILED
 	
-	update_visualizer.emit()
+	elements_updated.emit()
+	
+	return OK
 
 ## Returns the value of [param p_property] of [param  p_element]. See also [method property_exists].[br]
 ## [b]Note:[/b] if property does not exist, returns [code]null[/code].
-func get_element_property(p_element: StringName, p_property: StringName) -> Variant:
+func get_element_property(p_element: int, p_property: StringName) -> Variant:
 	if not property_exists(p_element, p_property):
 		return null
 	
@@ -227,8 +208,9 @@ func get_element_property(p_element: StringName, p_property: StringName) -> Vari
 	
 	return element.get(p_property)
 
+# TODO: Might be incorrect?
 ## Checks if the property [param p_name] exists in [param p_element].
-func property_exists(p_element: StringName, p_name: StringName) -> bool:
+func property_exists(p_element: int, p_name: StringName) -> bool:
 	if not element_exists(p_element):
 		return false
 	if not _is_valid_name(p_name):
@@ -240,136 +222,143 @@ func property_exists(p_element: StringName, p_name: StringName) -> bool:
 	
 	return true
 
-# TODO: There's probably a better way to write this.
-## Returns a name that's available for a newly created element.
-func _get_available_name() -> StringName:
-	#return StringName(str(_elements.keys().size())) + &"_Element"
-	
-	var element_name: StringName = &"0_Element"
-	var inc: int = 0
-	for key: StringName in _elements.keys():
-		if key == element_name:
-			inc += 1
-			element_name = StringName(str(inc)) + &"_Element"
-	
-	return element_name
-
-# TODO: There's probably a better way to write this.
-## Returns the next available layer number.
-func _get_available_layer() -> int:
-	#_elements.sort()
-	
-	if _elements.keys().size() == 0:
-		return 0
-	else:
-		# FIXME:
-		var previous_layer: int = 0
-		for dict: Dictionary[StringName, Variant] in _elements.values():
-			if dict.has(LAYER):
-				if dict.get(LAYER) - previous_layer > 1:
-					_ensure_gapless_layers()
-					break
-		
-		var highest_layer: int = 0
-		for dict: Dictionary[StringName, Variant] in _elements.values():
-			if dict.has(LAYER):
-				if dict.get(LAYER) > highest_layer:
-					highest_layer = dict.get(LAYER)
-		return highest_layer + 1
-	
-	#return _elements.keys()[_elements.keys().size()] + 1 if _elements.keys().size() >= 1 else 0
-
-## Ensures the element dictionary has no gaps in regards to layers.
-func _ensure_gapless_layers() -> void:
-	var new_dict: Dictionary[StringName, Dictionary] = {}
-	var inc: int = 0
-	for key: StringName in get_element_keys_sorted():
-		var new_name: StringName = StringName(str(inc)) + key.lstrip(str(_get_layer_from_name(key)))
-		var err_bool: bool = new_dict.set(new_name, get_element_properties(key))
-		if not err_bool:
-			printerr("Could not ensure gapless layers.")
-	
-	_elements = new_dict
-	
-	#_elements.sort()
-	
-	#var inc: int = 0
-	#for key: StringName in _elements.keys():
-		#var err: Error = _rename_element(key, StringName(str(inc)) + key.lstrip(str(_get_layer_from_name(key))))
-		#if err:
-			#printerr("Could not remove gaps from element dictionary.")
-		#inc += 0
-	#inc = 0
-	#for dict: Dictionary[StringName, Variant] in _elements.values():
-		#if dict.has(LAYER):
-			#var err_bool: bool = dict.set(LAYER, inc)
-			#if not err_bool:
-				#printerr("Could not remove gaps from element dictionary.")
-			#inc += 1
-	
-	#update_visualizer.emit()
-	
-	#var previous_layer: int = -1
-	#for key: StringName in _elements.keys():
-		#if _get_layer_from_name(key) - previous_layer > 
+func get_control_node_for_property(p_element_uid: int, p_property: StringName) -> ControlNode:
+	match typeof(get_element_property(p_element_uid, p_property)):
+		TYPE_BOOL:
+			return ControlNode.CHECK_BUTTON
+		TYPE_INT:
+			if p_property == TYPE:
+				return ControlNode.OPTION_BUTTON
+			else:
+				return ControlNode.NUMERICAL
+		TYPE_FLOAT:
+			return ControlNode.NUMERICAL
+		TYPE_STRING:
+			if p_property == NAME:
+				return ControlNode.LINE_EDIT
+			else:
+				return ControlNode.TEXT_EDIT
+		TYPE_COLOR:
+			return ControlNode.COLOR_PICKER_BUTTON
+		_:
+			return ControlNode.NONE
 
 # TODO: Sort all these private helper methods, based on the order they appear,
 # or alphabetical (easier to maintain).
 
-## Renames an element. For instances of this class, use [method set_element_name].
-func _rename_element(p_from: StringName, p_to: StringName) -> Error:
-	var err_set: bool = _elements.set(p_to, _elements.get(p_from))
-	if err_set:
-		printerr("Mismatching arguments.")
-		return FAILED
-	var err_erase: bool = _elements.erase(p_from)
-	if err_erase:
-		printerr("Key does not exist.")
-		return FAILED
+## Returns the next available unique ID for [member _elements].
+func _get_available_uid() -> int:
+	_element_uid += 1
+	return _element_uid
+
+## Returns the next available default name. [b]Must[/b] be used after [method _get_available_uid] is called.
+func _get_available_name() -> String:
+	return "Empty_" + str(_element_uid)
+
+## Returns the next available layer number.
+func _get_available_layer() -> int:
+	var max_layer: int = -1
+	for dict: Dictionary[StringName, Variant] in _elements.values():
+		if dict.has(LAYER) and dict.get(LAYER) > max_layer:
+			max_layer = dict.get(LAYER)
+		else:
+			printerr("Property dictionary has no LAYER key.")
+			return -1
+	
+	if _elements.keys().size() - 1 < max_layer:
+		var err: Error = _ensure_gapless_layers()
+		if err:
+			printerr("Could not ensure gapless layers.")
+			return -1
+	
+	return _elements.size()
+
+## Ensures the element dictionary has no gaps in regards to layers.
+func _ensure_gapless_layers() -> Error:
+	var all_layers: Array[int]
+	for dict: Dictionary[StringName, Variant] in _elements.values():
+		if dict.has(LAYER):
+			all_layers.append(dict.get(LAYER))
+	
+	var all_layers_sorted: Array[int] = all_layers.duplicate()
+	all_layers_sorted.sort()
+	
+	for dict: Dictionary[StringName, Variant] in _elements.values():
+		if dict.has(LAYER):
+			var err_bool: bool = dict.set(LAYER, all_layers_sorted.find(dict.get(LAYER)))
+			if not err_bool:
+				return FAILED
 	
 	return OK
 
-## Returns the layer of an element from its name.
-## @deprecated
-func _get_layer_from_name(p_name: StringName) -> int:
-	return p_name.split("_")[0].to_int()
-
-## Checks if a property dictionary is valid, by checking its type. See also [method create_property_dictionary].
+## Checks if a property dictionary is valid, by checking its type.
 ## If [param full_check] is [code]true[/code], keys are also checked, to an extent.
-## @deprecated: [method create_property_dictionary] is no longer in use.
 func _is_element_property_dict_valid(
 	p_properties: Dictionary[StringName, Variant], full_check: bool = true
 ) -> bool:
 	if p_properties is not Dictionary[StringName, Variant]:
-		printerr(
-			"Given dictionary is not the correct type: {type}".format(
-				{"type": type_string(typeof(p_properties))}
-			)
-		)
+		printerr("Given dictionary is not the correct type.")
 		return false
 	if full_check:
+		if not p_properties.has(NAME):
+			printerr("NAME key does not exist.")
+			return false
+		else:
+			if not _is_valid_builtin_type(p_properties.get(NAME), TYPE_STRING):
+				printerr("NAME key is not a String.")
+				return false
+			else:
+				@warning_ignore("unsafe_method_access")
+				if p_properties.get(NAME).is_empty():
+					printerr("NAME key is empty.")
+					return false
 		if not p_properties.has(TYPE):
 			printerr("TYPE key does not exist.")
 			return false
 		else:
 			if p_properties.get(TYPE) is not ElementType:
-				printerr("TYPE key is not ElementType.")
+				printerr("TYPE key is not an ElementType.")
 				return false
+		if not p_properties.has(LAYER):
+			printerr("LAYER key does not exist.")
+			return false
+		else:
+			if not _is_valid_builtin_type(p_properties.get(LAYER), TYPE_INT):
+				printerr("LAYER key is not an int.")
+				return false
+			else:
+				if p_properties.get(LAYER) < 0:
+					printerr("LAYER key is invalid.")
+					return false
+		
 		for key: StringName in p_properties.keys():
 			if _is_null_or_empty(key):
+				printerr("A property key is null.")
 				return false
-			if _is_null_or_empty(p_properties.get(key)):
+			if p_properties.get(key) == null:
+				printerr("A property ")
 				return false
 	
 	return true
 
-## Checks if [param p_name] is valid for elements.
+## Checks if [param p_uid] is valid for elements.
+func _is_valid_uid(p_uid: int) -> bool:
+	if not _is_valid_builtin_type(p_uid, TYPE_INT):
+		return false
+	
+	if _is_null_or_empty(p_uid):
+		printerr("{UID} is empty.".format({"uid": p_uid}))
+		return false
+	
+	return true
+
+## Checks if [param p_name] is valid for properties.
 func _is_valid_name(p_name: StringName) -> bool:
 	if not _is_valid_builtin_type(p_name, TYPE_STRING_NAME):
 		return false
 	
 	if _is_null_or_empty(p_name):
-		printerr("Given name is empty.".format({"name": p_name}))
+		printerr("{name} is empty.".format({"name": p_name}))
 		return false
 	
 	return true
@@ -392,13 +381,13 @@ func _is_null_or_empty(p_var: Variant) -> bool:
 		TYPE_DICTIONARY, TYPE_STRING, TYPE_STRING_NAME, TYPE_ARRAY:
 			@warning_ignore("unsafe_method_access")
 			if p_var.is_empty():
-				print("Warning: Variable is empty.")
 				return true
 	if p_var == null:
-		print("Warning: Variable is null.")
 		return true
 	
 	return false
 
+## Prints [member _elements].
+## @experimental: Debug only.
 func _updated_elements() -> void:
 	print(get_elements())

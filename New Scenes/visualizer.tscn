@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bo8typ4f1m1v4"]
 
-[ext_resource type="Script" uid="uid://ddvb3ka4oqpv0" path="res://New Scripts/visualizer_viewport.gd" id="1_sqg7h"]
+[ext_resource type="Script" uid="uid://ddvb3ka4oqpv0" path="res://New Scripts/visualizer_subviewport.gd" id="1_sqg7h"]
 [ext_resource type="Texture2D" uid="uid://cfte3tflqvapr" path="res://Images/Oscillody Logo BG.png" id="1_ufxbh"]
 
 [node name="Visualizer" type="SubViewportContainer" unique_id=1006372309]

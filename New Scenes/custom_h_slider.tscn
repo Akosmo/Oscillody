@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://dmhreh16g5u1n"]
+
+[ext_resource type="Script" uid="uid://6wpjkwqp0flt" path="res://New Scripts/custom_h_slider.gd" id="1_vxyw0"]
+
+[node name="CustomHSlider" type="HBoxContainer" unique_id=1116808900]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_vxyw0")
+
+[node name="HSlider" type="HSlider" parent="." unique_id=1036197257]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Label" type="Label" parent="." unique_id=949838969]
+layout_mode = 2

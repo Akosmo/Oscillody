@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bgh2vemoru38h"]
 
 [ext_resource type="PackedScene" uid="uid://cb0u36yyf40f1" path="res://New Scenes/custom_panel.tscn" id="1_t468s"]
+[ext_resource type="Script" uid="uid://vi4x6vawkfqw" path="res://New Scripts/files_container.gd" id="2_0at2v"]
 [ext_resource type="PackedScene" uid="uid://bfv2ne33xxlso" path="res://New Scenes/property_container.tscn" id="2_jtfbr"]
 [ext_resource type="PackedScene" uid="uid://bo8typ4f1m1v4" path="res://New Scenes/visualizer.tscn" id="2_kx00h"]
 [ext_resource type="PackedScene" uid="uid://d1oevod46vgin" path="res://New Scenes/new_player_control.tscn" id="2_titj8"]
@@ -34,15 +35,15 @@ split_offset = 550
 
 [node name="TabContainer" type="TabContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer" unique_id=61823410]
 layout_mode = 2
-current_tab = 1
+current_tab = 0
 tab_0/title = "Files"
 tab_1/title = "Visualizer"
 tab_2/title = "Settings"
 tab_3/title = "Help"
 
 [node name="FilesContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer" unique_id=1985883545 instance=ExtResource("1_t468s")]
-visible = false
 layout_mode = 2
+script = ExtResource("2_0at2v")
 metadata/_tab_index = 0
 metadata/_tab_name = "Files"
 
@@ -51,12 +52,13 @@ visible = false
 text = ""
 
 [node name="PresetContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1985883545, 998451736) index="0" unique_id=803774841 instance=ExtResource("2_jtfbr")]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="Label" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/PresetContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(803774841, 1985752979) index="0" unique_id=1523211957]
 text = "Preset"
 
-[node name="OptionButton" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/PresetContainer/MarginContainer/HBoxContainer/HBoxContainer" parent_id_path=PackedInt32Array(803774841, 1197491246) index="3" unique_id=1932618024]
+[node name="OptionButton" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/PresetContainer/MarginContainer/HBoxContainer/HBoxContainer" parent_id_path=PackedInt32Array(803774841, 1197491246) index="6" unique_id=1932618024]
 visible = true
 
 [node name="PresetMoreContainer" type="MarginContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1985883545, 998451736) index="1" unique_id=1881009102]
@@ -69,33 +71,99 @@ theme_override_constants/margin_bottom = 4
 [node name="HBoxContainer" type="HBoxContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/PresetMoreContainer" unique_id=1027580108]
 layout_mode = 2
 
-[node name="Button" type="Button" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/PresetMoreContainer/HBoxContainer" unique_id=335381486]
+[node name="SavePresetButton" type="Button" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/PresetMoreContainer/HBoxContainer" unique_id=2110234434]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Save"
+
+[node name="RefreshPresetButton" type="Button" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/PresetMoreContainer/HBoxContainer" unique_id=335381486]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Refresh"
 
-[node name="Button2" type="Button" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/PresetMoreContainer/HBoxContainer" unique_id=126376929]
+[node name="DeletePresetButton" type="Button" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/PresetMoreContainer/HBoxContainer" unique_id=126376929]
+unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Delete"
 
-[node name="Button3" type="Button" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/PresetMoreContainer/HBoxContainer" unique_id=183482611]
+[node name="OpenPresetFolderButton" type="Button" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/PresetMoreContainer/HBoxContainer" unique_id=183482611]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Open Folder"
 
-[node name="MarginContainer" type="MarginContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1985883545, 998451736) index="2" unique_id=1755605812]
+[node name="MarginContainer2" type="MarginContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1985883545, 998451736) index="2" unique_id=1274384087]
 layout_mode = 2
 theme_override_constants/margin_left = 4
 theme_override_constants/margin_top = 4
 theme_override_constants/margin_right = 4
 theme_override_constants/margin_bottom = 4
 
-[node name="ExportButton" type="Button" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/MarginContainer" unique_id=1865413894]
+[node name="HSeparator" type="HSeparator" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/MarginContainer2" unique_id=294984739]
 layout_mode = 2
-text = "Export"
+
+[node name="MarginContainer4" type="MarginContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1985883545, 998451736) index="3" unique_id=1042744892]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="ImportAudioButton" type="Button" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/MarginContainer4" unique_id=1703241676]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Import Audio..."
+
+[node name="ImportAudioFileDialog" type="FileDialog" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/MarginContainer4/ImportAudioButton" unique_id=730410148]
+unique_name_in_owner = true
+title = "Open File(s)"
+initial_position = 1
+dialog_hide_on_ok = true
+file_mode = 1
+display_mode = 1
+access = 2
+filters = PackedStringArray("*.mp3, *.wav, *.ogg ; Supported Formats")
+use_native_dialog = true
+
+[node name="MasterContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1985883545, 998451736) index="4" unique_id=1358979536 instance=ExtResource("2_jtfbr")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/MasterContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(1358979536, 1985752979) index="0" unique_id=1523211957]
+text = "Master"
+
+[node name="OptionButton" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/MasterContainer/MarginContainer/HBoxContainer/HBoxContainer" parent_id_path=PackedInt32Array(1358979536, 1197491246) index="6" unique_id=1932618024]
+visible = true
+custom_minimum_size = Vector2(180, 0)
+clip_text = true
+
+[node name="MarginContainer3" type="MarginContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1985883545, 998451736) index="5" unique_id=1005808437]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="HSeparator" type="HSeparator" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/MarginContainer3" unique_id=975300959]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1985883545, 998451736) index="6" unique_id=1755605812]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="ExportVideoButton" type="Button" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/MarginContainer" unique_id=1865413894]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Export Video..."
 
 [node name="VisualizerContainer" type="VSplitContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer" unique_id=559918955]
+visible = false
 layout_mode = 2
 split_offsets = PackedInt32Array(225)
 split_offset = 225
@@ -143,7 +211,7 @@ layout_mode = 2
 [node name="Label" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/InputDeviceContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(1580903313, 1985752979) index="0" unique_id=1523211957]
 text = "Input Device"
 
-[node name="OptionButton" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/InputDeviceContainer/MarginContainer/HBoxContainer/HBoxContainer" parent_id_path=PackedInt32Array(1580903313, 1197491246) index="3" unique_id=1932618024]
+[node name="OptionButton" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/InputDeviceContainer/MarginContainer/HBoxContainer/HBoxContainer" parent_id_path=PackedInt32Array(1580903313, 1197491246) index="6" unique_id=1932618024]
 visible = true
 
 [node name="OutputDeviceContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="1" unique_id=601412527 instance=ExtResource("2_jtfbr")]
@@ -152,7 +220,7 @@ layout_mode = 2
 [node name="Label" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/OutputDeviceContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(601412527, 1985752979) index="0" unique_id=1523211957]
 text = "Output Device"
 
-[node name="OptionButton" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/OutputDeviceContainer/MarginContainer/HBoxContainer/HBoxContainer" parent_id_path=PackedInt32Array(601412527, 1197491246) index="3" unique_id=1932618024]
+[node name="OptionButton" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/OutputDeviceContainer/MarginContainer/HBoxContainer/HBoxContainer" parent_id_path=PackedInt32Array(601412527, 1197491246) index="6" unique_id=1932618024]
 visible = true
 
 [node name="ExportResolutionContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="2" unique_id=287350813 instance=ExtResource("2_jtfbr")]
@@ -161,7 +229,7 @@ layout_mode = 2
 [node name="Label" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/ExportResolutionContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(287350813, 1985752979) index="0" unique_id=1523211957]
 text = "Export Resolution"
 
-[node name="OptionButton" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/ExportResolutionContainer/MarginContainer/HBoxContainer/HBoxContainer" parent_id_path=PackedInt32Array(287350813, 1197491246) index="3" unique_id=1932618024]
+[node name="OptionButton" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/ExportResolutionContainer/MarginContainer/HBoxContainer/HBoxContainer" parent_id_path=PackedInt32Array(287350813, 1197491246) index="6" unique_id=1932618024]
 visible = true
 
 [node name="ThemeContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="3" unique_id=2138609664 instance=ExtResource("2_jtfbr")]
@@ -170,7 +238,7 @@ layout_mode = 2
 [node name="Label" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/ThemeContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(2138609664, 1985752979) index="0" unique_id=1523211957]
 text = "Theme"
 
-[node name="OptionButton" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/ThemeContainer/MarginContainer/HBoxContainer/HBoxContainer" parent_id_path=PackedInt32Array(2138609664, 1197491246) index="3" unique_id=1932618024]
+[node name="OptionButton" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/ThemeContainer/MarginContainer/HBoxContainer/HBoxContainer" parent_id_path=PackedInt32Array(2138609664, 1197491246) index="6" unique_id=1932618024]
 visible = true
 
 [node name="SwitchToSlidersContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="4" unique_id=1258595353 instance=ExtResource("2_jtfbr")]
@@ -179,7 +247,7 @@ layout_mode = 2
 [node name="Label" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/SwitchToSlidersContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(1258595353, 1985752979) index="0" unique_id=1523211957]
 text = "Switch To Sliders"
 
-[node name="CheckButton" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/SwitchToSlidersContainer/MarginContainer/HBoxContainer/HBoxContainer" parent_id_path=PackedInt32Array(1258595353, 1197491246) index="4" unique_id=1432791718]
+[node name="CheckButton" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/SwitchToSlidersContainer/MarginContainer/HBoxContainer/HBoxContainer" parent_id_path=PackedInt32Array(1258595353, 1197491246) index="1" unique_id=1432791718]
 visible = true
 
 [node name="HelpContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer" unique_id=1383400275 instance=ExtResource("1_t468s")]
@@ -270,13 +338,21 @@ layout_mode = 2
 
 [editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer"]
 [editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/PresetContainer"]
+[editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/PresetContainer/MarginContainer/HBoxContainer/HBoxContainer/CustomHSlider"]
+[editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/MasterContainer"]
+[editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/MasterContainer/MarginContainer/HBoxContainer/HBoxContainer/CustomHSlider"]
 [editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/PanelContainer"]
 [editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/PanelContainer2"]
 [editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer"]
 [editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/InputDeviceContainer"]
+[editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/InputDeviceContainer/MarginContainer/HBoxContainer/HBoxContainer/CustomHSlider"]
 [editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/OutputDeviceContainer"]
+[editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/OutputDeviceContainer/MarginContainer/HBoxContainer/HBoxContainer/CustomHSlider"]
 [editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/ExportResolutionContainer"]
+[editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/ExportResolutionContainer/MarginContainer/HBoxContainer/HBoxContainer/CustomHSlider"]
 [editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/ThemeContainer"]
+[editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/ThemeContainer/MarginContainer/HBoxContainer/HBoxContainer/CustomHSlider"]
 [editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/SwitchToSlidersContainer"]
+[editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/SwitchToSlidersContainer/MarginContainer/HBoxContainer/HBoxContainer/CustomHSlider"]
 [editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/HelpContainer"]
 [editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TooltipsPanel"]

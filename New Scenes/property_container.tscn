@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://bfv2ne33xxlso"]
 
+[ext_resource type="PackedScene" uid="uid://dmhreh16g5u1n" path="res://New Scenes/custom_h_slider.tscn" id="2_8q6o3"]
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jtfbr"]
 
 [node name="PanelContainer" type="PanelContainer" unique_id=803774841]
@@ -34,14 +36,24 @@ layout_mode = 2
 size_flags_horizontal = 10
 theme_override_constants/separation = 10
 
-[node name="HSlider" type="HSlider" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=172949341]
+[node name="Button" type="Button" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=594840813]
 visible = false
-custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
-size_flags_vertical = 4
+text = "EDIT"
 
-[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1948135684]
+[node name="CheckButton" type="CheckButton" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1432791718]
 visible = false
+layout_mode = 2
+
+[node name="ColorPickerButton" type="ColorPickerButton" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=840115404]
+visible = false
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+color = Color(1, 1, 1, 1)
+
+[node name="LineEdit" type="LineEdit" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=804155128]
+visible = false
+custom_minimum_size = Vector2(128, 0)
 layout_mode = 2
 
 [node name="SpinBox" type="SpinBox" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1053394272]
@@ -49,23 +61,22 @@ visible = false
 layout_mode = 2
 update_on_text_changed = true
 
+[node name="CustomHSlider" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1116808900 instance=ExtResource("2_8q6o3")]
+visible = false
+layout_mode = 2
+
+[node name="HSlider" parent="MarginContainer/HBoxContainer/HBoxContainer/CustomHSlider" index="0" unique_id=1036197257]
+custom_minimum_size = Vector2(100, 0)
+
 [node name="OptionButton" type="OptionButton" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1932618024]
 visible = false
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 fit_to_longest_item = false
 
-[node name="CheckButton" type="CheckButton" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1432791718]
+[node name="TextEdit" type="TextEdit" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1358945300]
 visible = false
+custom_minimum_size = Vector2(128, 64)
 layout_mode = 2
 
-[node name="Button" type="Button" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=594840813]
-visible = false
-layout_mode = 2
-text = "EDIT"
-
-[node name="ColorPickerButton" type="ColorPickerButton" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=840115404]
-visible = false
-custom_minimum_size = Vector2(32, 0)
-layout_mode = 2
-color = Color(1, 1, 1, 1)
+[editable path="MarginContainer/HBoxContainer/HBoxContainer/CustomHSlider"]

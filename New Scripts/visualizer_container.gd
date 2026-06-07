@@ -1,7 +1,8 @@
 # Oscillody
 # Copyright (C) 2025-present Akosmo
 
-# visualizer_container.gd is part of Oscillody. Unless specified otherwise, it is under the license below:
+# visualizer_container.gd is part of Oscillody.
+# Unless specified otherwise, it is under the license below:
 
 # Oscillody is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free Software Foundation,
@@ -14,14 +15,22 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
+# TODO: Make members private if not used outside the class. And document this class.
+
 extends VSplitContainer
 
 var element_container: PackedScene = preload("res://New Scenes/element_container.tscn")
+var property_container: PackedScene = preload("res://New Scenes/property_container.tscn")
+var element_property_container_script: Script = preload("res://New Scripts/element_property_container.gd")
 #var undo_redo: UndoRedo = UndoRedo.new()
 var elements: VisualizerElements = VisualizerElements.new()
 
 @onready var add_element_button: Button = %AddElementButton
-@onready var v_box_container: VBoxContainer = $PanelContainer/MarginContainer/ScrollContainer/VBoxContainer
+@onready var element_box_container: VBoxContainer = \
+$PanelContainer/MarginContainer/ScrollContainer/VBoxContainer
+@onready var properties_box_container: VBoxContainer = \
+$PanelContainer2/MarginContainer/ScrollContainer/VBoxContainer
+
 
 func _ready() -> void:
 	var err_on_add_element_pressed: Error =  add_element_button.connect(&"pressed", _on_add_element_pressed)
@@ -42,113 +51,29 @@ func _ready() -> void:
 
 func _on_add_element_pressed() -> void:
 	var element_node: ElementContainer = element_container.instantiate()
-	v_box_container.add_child(element_node)
+	element_node.elements = elements
+	element_box_container.add_child(element_node)
+	var err_display_element_properties: Error = element_node.connect(
+		"display_element_properties", _display_element_properties
+	)
+	if err_display_element_properties:
+		printerr("Could not connect \"_display_element_properties\".")
+
+func _display_element_properties(p_element_uid: int) -> void:
+	# TODO: Removing and instantiating properties all the time is messy, and maybe not performance friendly.
+	# Prefer hiding properties once instantiated.
+	if properties_box_container.get_child_count():
+		for node: PropertyContainer in properties_box_container.get_children():
+			properties_box_container.remove_child(node)
 	
-	#undo_redo.create_action("Add element")
-	#undo_redo.add_do_method(v_box_container.add_child.bind(element_node))
-	#undo_redo.add_do_reference(element_node)
-	#undo_redo.add_undo_method(v_box_container.remove_child.bind(element_node))
-	#undo_redo.commit_action()
-
-
-
-
-
-
-
-
-
-
-
-#extends VSplitContainer
-#
-#var element_container: PackedScene = preload("res://New Scenes/element_container.tscn")
-#
-#@onready var add_element_button: Button = %AddElementButton
-#@onready var v_box_container: VBoxContainer = $PanelContainer/MarginContainer/ScrollContainer/VBoxContainer
-#
-#func _ready() -> void:
-	#var err_add_element: Error = add_element_button.connect("pressed", _add_element)
-	#if err_add_element:
-		#printerr("Could not connect add_element signal")
-#
-#func _add_element() -> void:
-	#ActionUtils.undo_redo.create_action("Add element")
-	#
-	#var element_node: ElementContainer = element_container.instantiate()
-	#
-	#ActionUtils.undo_redo.add_do_method(v_box_container.add_child.bind(element_node))
-	#
-	#ActionUtils.undo_redo.add_do_method(element_node.connect.bind("delete_element", _delete_element))
-	#ActionUtils.undo_redo.add_do_method(element_node.connect.bind("duplicate_element", _duplicate_element))
-	#ActionUtils.undo_redo.add_do_method(element_node.connect.bind("rename_element", _rename_element))
-	#
-	#var element_name: StringName = &"Empty Element_0"
-	#var inc: int = 0
-	#for key: StringName in VisualizerElements.get_elements():
-		#if key == element_name:
-			#inc += 1
-			#element_name = &"Empty Element_" + str(inc)
-	#var layer: int = get_tree().get_node_count_in_group(&"VisualizerElementsUI")
-	#
-	#ActionUtils.undo_redo.add_do_method(element_node.set_initial_name.bind(element_name))
-	#ActionUtils.undo_redo.add_do_method(element_node.add_to_group.bind(&"VisualizerElementsUI"))
-	#ActionUtils.undo_redo.add_do_method(v_box_container.move_child.bind(add_element_button.get_parent(), -1))
-	#
-	#var properties: Dictionary[StringName, Variant] = VisualizerElements.create_property_dictionary(VisualizerElements.ElementType.EMPTY, layer)
-	#ActionUtils.undo_redo.add_do_method(VisualizerElements.create_element.bind(element_name, properties))
-	#
-	#ActionUtils.undo_redo.add_undo_method(VisualizerElements.delete_element.bind(element_name))
-	#
-	#ActionUtils.undo_redo.add_undo_method(element_node.remove_from_group.bind(&"VisualizerElementsUI"))
-	#
-	#ActionUtils.undo_redo.add_undo_method(element_node.disconnect.bind("rename_element", _rename_element))
-	#ActionUtils.undo_redo.add_undo_method(element_node.disconnect.bind("duplicate_element", _duplicate_element))
-	#ActionUtils.undo_redo.add_undo_method(element_node.disconnect.bind("delete_element", _delete_element))
-	#
-	#ActionUtils.undo_redo.add_undo_method(v_box_container.remove_child.bind(element_node))
-	#
-	#ActionUtils.undo_redo.add_undo_method(v_box_container.move_child.bind(add_element_button.get_parent(), -1))
-	#
-	#ActionUtils.undo_redo.commit_action()
-	#
-	#v_box_container.move_child(add_element_button.get_parent(), -1)
-#
-#func _delete_element(p_element_name: StringName) -> void:
-	#ActionUtils.undo_redo.create_action("Delete element")
-	#
-	#print("deleting {element}".format({"element": p_element_name}))
-	#
-	#var element_node: ElementContainer = _get_element_node(p_element_name)
-	#if element_node == null:
-		#printerr("Could not find node to delete.")
-		#return
-	#
-	#ActionUtils.undo_redo.add_do_method(VisualizerElements.delete_element.bind(p_element_name))
-	#ActionUtils.undo_redo.add_do_method(element_node.remove_from_group.bind(&"VisualizerElementsUI"))
-	#
-	#ActionUtils.undo_redo.add_do_method(element_node.disconnect.bind("rename_element", _rename_element))
-	#ActionUtils.undo_redo.add_do_method(element_node.disconnect.bind("duplicate_element", _duplicate_element))
-	#ActionUtils.undo_redo.add_do_method(element_node.disconnect.bind("delete_element", _delete_element))
-	#
-	#ActionUtils.undo_redo.add_do_method(v_box_container.remove_child.bind(element_node))
-	#
-	#ActionUtils.undo_redo.add_do_method(v_box_container.move_child.bind(add_element_button.get_parent(), -1))
-	#
-	#ActionUtils.undo_redo.commit_action()
-	#
-	#v_box_container.move_child(add_element_button.get_parent(), -1)
-#
-#func _duplicate_element(p_element_name: StringName) -> void:
-	#print("duplicating {element}".format({"element": p_element_name}))
-#
-#func _rename_element(p_element_name: StringName) -> void:
-	#print("renaming {element}".format({"element": p_element_name}))
-#
-#func _get_element_node(p_name: StringName) -> ElementContainer:
-	#var node_arr: Array[Node] = v_box_container.get_children()
-	#for node: ElementContainer in node_arr:
-		#if node.get_name() == p_name:
-			#return node
-	#
-	#return null
+	if elements.element_exists(p_element_uid):
+		for property: StringName in elements.get_element_properties(p_element_uid):
+			var property_node: PanelContainer = property_container.instantiate()
+			property_node.set_script(element_property_container_script)
+			@warning_ignore("unsafe_property_access")
+			property_node.elements = elements
+			@warning_ignore("unsafe_property_access")
+			property_node.element_uid = p_element_uid
+			@warning_ignore("unsafe_property_access")
+			property_node.property_key = property
+			properties_box_container.add_child(property_node)
