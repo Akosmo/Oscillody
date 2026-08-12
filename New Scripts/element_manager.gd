@@ -1,7 +1,7 @@
 # Oscillody
 # Copyright (C) 2025-present Akosmo
 
-# visualizer_elements.gd is part of Oscillody.
+# element_manager.gd is part of Oscillody.
 # Unless specified otherwise, it is under the license below:
 
 # Oscillody is free software: you can redistribute it and/or modify it
@@ -17,14 +17,14 @@
 
 # TODO: Refactor this class once the element system is fully figured out and functional.
 
-class_name VisualizerElements
+class_name ElementManager
 extends Node
-## Base class for elements.
+## Manager class for visualizer elements.
 ##
 ## Elements are the parts of a visualizer. This class can be used to create, modify,
-## and delete elements and properties.[br]
+## and delete elements and their properties.[br]
 ## Most methods in this class interact with [member _elements], and triggers [signal elements_updated].[br]
-## UI controls and preset files set values. Elements get values from this class.
+## UI controls and preset files set values, while Element objects get values from this class.
 
 ## Emitted whenever [member _elements] is modified, and triggers relevant changes to the visualizer.
 signal elements_updated
@@ -53,13 +53,16 @@ enum ElementType {
 	TEXT
 }
 
+## Key for an element's name.
 const NAME: StringName = &"Name"
+## Key for an element's type.
 const TYPE: StringName = &"Type"
+## Key for an element's layer.
 const LAYER: StringName = &"Layer"
-const VISIBILITY: StringName = &"Visibility" # Use this.
+## Key for an element's visibility.
+const VISIBILITY: StringName = &"Visibility"
 
-# TODO: Also make a public method to return a ControlNode value to be used by PropertyContainer.
-# This method should check a given property's key and type of the value.
+## Options of [Control] nodes to be used by a [PropertyContainer], based on the property it is linked to.
 enum ControlNode {
 	BUTTON,
 	CHECK_BUTTON,
@@ -73,35 +76,26 @@ enum ControlNode {
 
 ## Holds all elements of the visualizer, along with their properties.
 ## Whenever modified, [signal elements_updated] is emitted.[br]
-## [b]Note:[/b] This member should [b]NOT[/b] be accessed directly.
+## [b]Note:[/b] This member should [b]NOT[/b] be accessed directly outside of this class.
 static var _elements: Dictionary[int, Dictionary]
 
 ## The unique ID (UID) for the last created element during run-time.
-## Initializes at [code]-1[/code], but first created element will have an UID of [code]0[/code].
+## Initializes at [code]-1[/code], but the first created element will have an UID of [code]0[/code].
 static var _element_uid: int = -1
 
-## The UID of the element currently selected to show its properties in the UI.
-## This will be used if instances of properties won't be created and deleted every time and element is selected.
-## @experimental
-static var _selected_element: int = _element_uid
-
 func _init() -> void:
-	var err_updated_elements: Error = elements_updated.connect(_updated_elements) as Error
-	if err_updated_elements:
+	if elements_updated.connect(_updated_elements):
 		printerr("Could not connect \"_updated_elements\" signal.")
 
 ## Returns a deep copy of [member _elements].
 func get_elements() -> Dictionary[int, Dictionary]:
 	return _elements.duplicate_deep(Resource.DeepDuplicateMode.DEEP_DUPLICATE_ALL)
 
-## Alias for [method set_element_properties],
-## internally creates a property dictionary with
-## [code]"Empty_"[/code] appended with the next available UID,
-## [constant ElementType.EMPTY], and the next available layer,
-## for [constant NAME], [constant TYPE], and [constant LAYER], respectively.[br]
+## Alias for [method set_element_properties].
+## Internally creates a property dictionary with the appropriate default values.[br]
 ## Returns the unique ID for the created element. If element could not be created, returns [code]-1[/code].
 func create_element() -> int:
-	var err: Error = set_element_properties(
+	if set_element_properties(
 		_get_available_uid(),
 		{
 			NAME: _get_available_name(),
@@ -109,87 +103,83 @@ func create_element() -> int:
 			LAYER: _get_available_layer(),
 			VISIBILITY: true
 		} as Dictionary[StringName, Variant]
-	)
-	if err:
+	):
 		return -1
 	
 	return _element_uid
 
-## Alias for [method set_element_properties],
-## internally uses an empty property dictionary for deletion.
-func delete_element(p_uid: int) -> Error:
+## Alias for [method set_element_properties].
+## Internally uses an empty property dictionary for deletion.
+func delete_element(p_element_uid: int) -> Error:
 	var empty_dict: Dictionary[StringName, Variant] = {}
-	if not element_exists(p_uid):
+	if not element_exists(p_element_uid):
 		return FAILED
 	
-	return set_element_properties(p_uid, empty_dict)
+	return set_element_properties(p_element_uid, empty_dict)
 
-## Checks if the element [param p_uid] exists.
-func element_exists(p_uid: int) -> bool:
-	if not _is_valid_uid(p_uid):
+## Checks if the element [param p_element_uid] exists.
+func element_exists(p_element_uid: int) -> bool:
+	if not _is_valid_uid(p_element_uid):
 		return false
 	
-	if not _elements.has(p_uid):
+	if not _elements.has(p_element_uid):
 		return false
 	
 	return true
 
-## Sets a property dictionary to element [param p_uid]. Deletes the element if [param p_properties] is empty.
+## Sets a property dictionary to element [param p_element_uid].
+## Deletes the element if [param p_properties] is empty.
 ## If that's the purpose, consider using [method delete_element]. See also [method create_element].[br]
 ## [b]Note:[/b] [param p_properties] should have the correct type, even if it's empty.
-func set_element_properties(p_uid: int, p_properties: Dictionary[StringName, Variant]) -> Error:
+func set_element_properties(p_element_uid: int, p_properties: Dictionary[StringName, Variant]) -> Error:
 	if not _is_element_property_dict_valid(p_properties, false):
 		return FAILED
 	
-	if element_exists(p_uid) and _is_null_or_empty(_elements.get(p_uid)):
+	if element_exists(p_element_uid) and _is_null_or_empty(_elements.get(p_element_uid)):
 		print("Warning: Element already has properties. Setting anyway.")
 	
 	if _is_null_or_empty(p_properties):
-		var err_bool: bool = _elements.erase(p_uid)
-		if not err_bool:
-			printerr("Could not delete \"{UID}\" element".format({"UID": p_uid}))
+		if not _elements.erase(p_element_uid):
+			printerr("Could not delete \"{UID}\" element".format({"UID": p_element_uid}))
 			return FAILED
-		var err: Error = _ensure_gapless_layers()
-		if err:
+		if _ensure_gapless_layers():
 			printerr("Could not ensure gapless layers.")
 			return FAILED
 	else:
 		if not _is_element_property_dict_valid(p_properties):
 			return FAILED
-		var err_bool: bool = _elements.set(p_uid, p_properties)
-		if not err_bool:
-			printerr("Could not set to \"{UID}\" element".format({"UID": p_uid}))
+		if not _elements.set(p_element_uid, p_properties):
+			printerr("Could not set to \"{UID}\" element".format({"UID": p_element_uid}))
 			return FAILED
 	
 	elements_updated.emit()
 	
 	return OK
 
-## Returns the property dictionary for element [param p_uid].[br]
-## [b]Note:[/b] If [param p_uid] does not exist, returns an empty dictionary.
-func get_element_properties(p_uid: int) -> Dictionary[StringName, Variant]:
+## Returns the property dictionary for element [param p_element_uid].[br]
+## [b]Note:[/b] If [param p_element_uid] does not exist, returns an empty dictionary.
+func get_element_properties(p_element_uid: int) -> Dictionary[StringName, Variant]:
 	var r_dict: Dictionary[StringName, Variant] = {}
 	
-	if not element_exists(p_uid):
+	if not element_exists(p_element_uid):
 		return r_dict
 	
-	return _elements.get(p_uid, r_dict)
+	return _elements.get(p_element_uid, r_dict)
 
-## Sets the [param p_property] of [param p_element] to [param p_value].
+## Sets the [param p_property] of [param p_element_uid] to [param p_value].
 ## See also [method get_element_properties].
-func set_element_property(p_element: int, p_property: StringName, p_value: Variant) -> Error:
+func set_element_property(p_element_uid: int, p_property: StringName, p_value: Variant) -> Error:
 	#if not property_exists(p_element, p_property):
 		#return FAILED
 	#if p_property == NAME and _is_null_or_empty(p_value):
 		#printerr("Name can not be empty.")
 		#return FAILED
 	
-	var element: Dictionary[StringName, Variant] = _elements.get(p_element)
-	var err_bool: bool = element.set(p_property, p_value)
-	if not err_bool:
+	var element: Dictionary[StringName, Variant] = _elements.get(p_element_uid)
+	if not element.set(p_property, p_value):
 		printerr(
 			"Can't set property {property} with value {value} in {element}.".format(
-				{"property": p_property, "value": p_value, "element": p_element}
+				{"property": p_property, "value": p_value, "element": p_element_uid}
 			)
 		)
 		return FAILED
@@ -198,26 +188,28 @@ func set_element_property(p_element: int, p_property: StringName, p_value: Varia
 	
 	return OK
 
-## Returns the value of [param p_property] of [param  p_element]. See also [method property_exists].[br]
+## Returns the value of [param p_property] of [param  p_element_uid]. See also [method property_exists].[br]
 ## [b]Note:[/b] if property does not exist, returns [code]null[/code].
-func get_element_property(p_element: int, p_property: StringName) -> Variant:
-	if not property_exists(p_element, p_property):
+func get_element_property(p_element_uid: int, p_property: StringName) -> Variant:
+	if not property_exists(p_element_uid, p_property):
 		return null
 	
-	var element: Dictionary[StringName, Variant] = _elements.get(p_element)
+	var element: Dictionary[StringName, Variant] = _elements.get(p_element_uid)
 	
 	return element.get(p_property)
 
 # TODO: Might be incorrect?
-## Checks if the property [param p_name] exists in [param p_element].
-func property_exists(p_element: int, p_name: StringName) -> bool:
-	if not element_exists(p_element):
+## Checks if the property [param p_name] exists in [param p_element_uid].
+func property_exists(p_element_uid: int, p_name: StringName) -> bool:
+	if not element_exists(p_element_uid):
 		return false
 	if not _is_valid_name(p_name):
 		return false
-	var element: Dictionary[StringName, Variant] = _elements.get(p_element)
+	var element: Dictionary[StringName, Variant] = _elements.get(p_element_uid)
 	if not element.has(p_name):
-		printerr("\"{name}\" does not exist in \"{element}\".".format({"name": p_name, "element": p_element}))
+		printerr(
+			"\"{name}\" does not exist in \"{element}\".".format({"name": p_name, "element": p_element_uid})
+		)
 		return false
 	
 	return true
@@ -266,8 +258,7 @@ func _get_available_layer() -> int:
 			return -1
 	
 	if _elements.keys().size() - 1 < max_layer:
-		var err: Error = _ensure_gapless_layers()
-		if err:
+		if _ensure_gapless_layers():
 			printerr("Could not ensure gapless layers.")
 			return -1
 	
@@ -285,8 +276,7 @@ func _ensure_gapless_layers() -> Error:
 	
 	for dict: Dictionary[StringName, Variant] in _elements.values():
 		if dict.has(LAYER):
-			var err_bool: bool = dict.set(LAYER, all_layers_sorted.find(dict.get(LAYER)))
-			if not err_bool:
+			if not dict.set(LAYER, all_layers_sorted.find(dict.get(LAYER))):
 				return FAILED
 	
 	return OK
@@ -341,13 +331,13 @@ func _is_element_property_dict_valid(
 	
 	return true
 
-## Checks if [param p_uid] is valid for elements.
-func _is_valid_uid(p_uid: int) -> bool:
-	if not _is_valid_builtin_type(p_uid, TYPE_INT):
+## Checks if [param p_element_uid] is valid for elements.
+func _is_valid_uid(p_element_uid: int) -> bool:
+	if not _is_valid_builtin_type(p_element_uid, TYPE_INT):
 		return false
 	
-	if _is_null_or_empty(p_uid):
-		printerr("{UID} is empty.".format({"uid": p_uid}))
+	if _is_null_or_empty(p_element_uid):
+		printerr("{UID} is empty.".format({"uid": p_element_uid}))
 		return false
 	
 	return true

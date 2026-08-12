@@ -22,49 +22,51 @@ extends PanelContainer
 
 signal display_element_properties(element_uid: int)
 
-var elements: VisualizerElements
+var element_manager: ElementManager
 var element_uid: int
-var node_element_name: StringName
 
-@onready var delete_button: Button = %DeleteButton
-@onready var duplicate_button: Button = %DuplicateButton
-#@onready var rename_button: Button = %RenameButton
-@onready var element_name_button: Button = %ElementNameButton
+@onready var _delete_button: Button = %DeleteButton
+@onready var _duplicate_button: Button = %DuplicateButton
+@onready var _element_name_button: Button = %ElementNameButton
 
 func _ready() -> void:
-	element_uid = elements.create_element()
-	node_element_name = elements.get_element_property(element_uid, elements.NAME)
-	set_name(node_element_name)
-	element_name_button.set_text(node_element_name)
-	add_to_group(&"VisualizerElementsUI")
+	if _connect_all_signals():
+		printerr("Could not connect signals.")
 	
-	var err_del: Error = delete_button.connect("pressed", _delete_node_element)
-	if err_del:
-		printerr("Could not connect to \"_delete_node_element\".")
-	var err_dup: Error = duplicate_button.connect("pressed", _duplicate_node_element)
-	if err_dup:
-		printerr("Could not connect to \"_duplicate_node_element\".")
-	var err_display: Error = element_name_button.connect(
-		"pressed", func()->void: display_element_properties.emit(element_uid)
+	element_uid = element_manager.create_element()
+	@warning_ignore("unsafe_cast")
+	set_name(element_manager.get_element_property(element_uid, element_manager.NAME) as StringName)
+	_element_name_button.set_text(
+		str(element_manager.get_element_property(element_uid, element_manager.NAME))
 	)
-	if err_display:
-		printerr("Could not connect to \"display_element_properties\".")
-	var err_on_elements_updated: Error = elements.elements_updated.connect(_on_elements_updated) as Error
-	if err_on_elements_updated:
-		printerr("Could not connect to \"_on_elements_updated\".")
 
-func _delete_node_element() -> void:
-	var err: Error = elements.delete_element(element_uid)
-	if err:
+func _connect_all_signals() -> Error:
+	if _delete_button.pressed.connect(_on_delete_button_pressed):
+		return ERR_INVALID_PARAMETER
+	if _duplicate_button.pressed.connect(_on_duplicate_button_pressed):
+		return ERR_INVALID_PARAMETER
+	if _element_name_button.pressed.connect(_on_element_name_button_pressed):
+		return ERR_INVALID_PARAMETER
+	if element_manager.elements_updated.connect(_on_elements_updated):
+		return ERR_INVALID_PARAMETER
+	
+	return OK
+
+func _on_delete_button_pressed() -> void:
+	if element_manager.delete_element(element_uid):
 		printerr("Could not delete element.")
 		return
 	display_element_properties.emit(-1)
-	remove_from_group(&"VisualizerElementsUI")
 	queue_free()
 
-func _duplicate_node_element() -> void:
+func _on_duplicate_button_pressed() -> void:
 	pass
 
+func _on_element_name_button_pressed() -> void:
+	display_element_properties.emit(element_uid)
+
 func _on_elements_updated() -> void:
-	if elements.element_exists(element_uid):
-		element_name_button.set_text(str(elements.get_element_property(element_uid, elements.NAME)))
+	if element_manager.element_exists(element_uid):
+		_element_name_button.set_text(
+			str(element_manager.get_element_property(element_uid, element_manager.NAME))
+		)

@@ -19,17 +19,16 @@
 class_name Element
 extends CanvasLayer
 
-var elements: VisualizerElements
-
+var element_manager: ElementManager
 var element_uid: int
 var element_name: String
-var element_type: VisualizerElements.ElementType
+var element_type: ElementManager.ElementType
 
 func _ready() -> void:
-	var property_dict: Dictionary[StringName, Variant] = elements.get_element_properties(element_uid)
+	var property_dict: Dictionary[StringName, Variant] = element_manager.get_element_properties(element_uid)
 	for key: StringName in property_dict.keys():
 		match key:
-			elements.NAME:
+			element_manager.NAME:
 				element_name = property_dict.get(key)
-			elements.TYPE:
+			element_manager.TYPE:
 				element_type = property_dict.get(key)

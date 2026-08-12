@@ -17,54 +17,45 @@
 
 extends PanelContainer
 
-var audio_manager: AudioManager = AudioManager.new()
+var audio_manager: AudioManager
 
-var files_property_container_script: Script = preload("res://New Scripts/files_property_container.gd")
+var _files_property_container_script: Script = preload("res://New Scripts/files_property_container.gd")
 
-@onready var save_preset_button: Button = %SavePresetButton
-@onready var refresh_preset_button: Button = %RefreshPresetButton
-@onready var delete_preset_button: Button = %DeletePresetButton
-@onready var open_preset_folder_button: Button = %OpenPresetFolderButton
-@onready var import_audio_button: Button = %ImportAudioButton
-@onready var export_video_button: Button = %ExportVideoButton
+@onready var _save_preset_button: Button = %SavePresetButton
+@onready var _refresh_preset_button: Button = %RefreshPresetButton
+@onready var _delete_preset_button: Button = %DeletePresetButton
+@onready var _open_preset_folder_button: Button = %OpenPresetFolderButton
+@onready var _import_audio_button: Button = %ImportAudioButton
+@onready var _export_video_button: Button = %ExportVideoButton
 
-@onready var import_audio_file_dialog: FileDialog = %ImportAudioFileDialog
+@onready var _import_audio_file_dialog: FileDialog = %ImportAudioFileDialog
 
-@onready var preset_container: PanelContainer = %PresetContainer
-@onready var master_container: PanelContainer = %MasterContainer
+@onready var _preset_container: PanelContainer = %PresetContainer
+@onready var _master_container: PanelContainer = %MasterContainer
 
 func _ready() -> void:
-	var err_signals: Error = _connect_all_signals()
-	if err_signals:
+	if _connect_all_signals():
 		printerr("Could not connect signals.")
+		return
 	
-	master_container.set_script(files_property_container_script)
-	@warning_ignore("unsafe_property_access")
-	master_container.audio_manager = audio_manager
+	_master_container.set_script(_files_property_container_script)
 
 func _connect_all_signals() -> Error:
-	var err: Error = save_preset_button.connect("pressed", _on_save_pressed)
-	if err:
-		return FAILED
-	err = refresh_preset_button.connect("pressed", _on_refresh_pressed)
-	if err:
-		return FAILED
-	err = delete_preset_button.connect("pressed", _on_delete_pressed)
-	if err:
-		return FAILED
-	err = open_preset_folder_button.connect("pressed", _on_open_folder_pressed)
-	if err:
-		return FAILED
-	err = import_audio_button.connect("pressed", _on_import_audio_pressed)
-	if err:
-		return FAILED
-	err = export_video_button.connect("pressed", _on_export_video_pressed)
-	if err:
-		return FAILED
+	if _save_preset_button.pressed.connect(_on_save_pressed):
+		return ERR_INVALID_PARAMETER
+	if _refresh_preset_button.pressed.connect(_on_refresh_pressed):
+		return ERR_INVALID_PARAMETER
+	if _delete_preset_button.pressed.connect(_on_delete_pressed):
+		return ERR_INVALID_PARAMETER
+	if _open_preset_folder_button.pressed.connect(_on_open_folder_pressed):
+		return ERR_INVALID_PARAMETER
+	if _import_audio_button.pressed.connect(_on_import_audio_pressed):
+		return ERR_INVALID_PARAMETER
+	if _export_video_button.pressed.connect(_on_export_video_pressed):
+		return ERR_INVALID_PARAMETER
 	
-	err = import_audio_file_dialog.connect("files_selected", _on_audio_files_selected)
-	if err:
-		return FAILED
+	if _import_audio_file_dialog.files_selected.connect(_on_audio_files_selected):
+		return ERR_INVALID_PARAMETER
 	
 	return OK
 
@@ -81,13 +72,23 @@ func _on_open_folder_pressed() -> void:
 	pass
 
 func _on_import_audio_pressed() -> void:
-	import_audio_file_dialog.popup()
+	_import_audio_file_dialog.popup()
 
+# TEST: Selecting files with the same name.
 func _on_audio_files_selected(p_paths: PackedStringArray) -> void:
-	audio_manager.audio_files_changed.emit(p_paths)
+	@warning_ignore("unsafe_property_access")
+	if _master_container.audio_manager == null:
+		@warning_ignore("unsafe_property_access")
+		_master_container.audio_manager = audio_manager
+		@warning_ignore("unsafe_method_access")
+		if _master_container.connect_audio_manager_signals():
+			return
 	
-	@warning_ignore("unsafe_method_access")
-	master_container.update_audio_list()
+	if audio_manager.test_and_import_audio_files(p_paths):
+		return
+	
+	#@warning_ignore("unsafe_method_access")
+	#_master_container.update_audio_list()
 
 func _on_export_video_pressed() -> void:
 	pass

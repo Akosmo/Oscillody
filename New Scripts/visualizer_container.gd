@@ -19,61 +19,44 @@
 
 extends VSplitContainer
 
-var element_container: PackedScene = preload("res://New Scenes/element_container.tscn")
-var property_container: PackedScene = preload("res://New Scenes/property_container.tscn")
-var element_property_container_script: Script = preload("res://New Scripts/element_property_container.gd")
-#var undo_redo: UndoRedo = UndoRedo.new()
-var elements: VisualizerElements = VisualizerElements.new()
+var element_manager: ElementManager = ElementManager.new()
+var _element_container: PackedScene = preload("res://New Scenes/element_container.tscn")
+var _property_container: PackedScene = preload("res://New Scenes/property_container.tscn")
+var _element_property_container_script: Script = preload("res://New Scripts/element_property_container.gd")
 
-@onready var add_element_button: Button = %AddElementButton
-@onready var element_box_container: VBoxContainer = \
+@onready var _add_element_button: Button = %AddElementButton
+@onready var _element_box_container: VBoxContainer = \
 $PanelContainer/MarginContainer/ScrollContainer/VBoxContainer
-@onready var properties_box_container: VBoxContainer = \
+@onready var _properties_box_container: VBoxContainer = \
 $PanelContainer2/MarginContainer/ScrollContainer/VBoxContainer
 
 
 func _ready() -> void:
-	var err_on_add_element_pressed: Error =  add_element_button.connect(&"pressed", _on_add_element_pressed)
-	if err_on_add_element_pressed:
+	if _add_element_button.pressed.connect(_on_add_element_pressed):
 		printerr("Could not connect the \"pressed\" signal")
 
-#func _shortcut_input(event: InputEvent) -> void:
-	#if event.is_action_pressed("undo") and undo_redo.has_undo():
-		#print("pressing undo...")
-		#var err_bool: bool = undo_redo.undo()
-		#if not err_bool:
-			#printerr("There is no action to undo.")
-	#elif event.is_action_pressed("redo") and undo_redo.has_redo():
-		#print("pressing redo...")
-		#var err_bool: bool = undo_redo.redo()
-		#if not err_bool:
-			#printerr("There is no action to redo.")
-
 func _on_add_element_pressed() -> void:
-	var element_node: ElementContainer = element_container.instantiate()
-	element_node.elements = elements
-	element_box_container.add_child(element_node)
-	var err_display_element_properties: Error = element_node.connect(
-		"display_element_properties", _display_element_properties
-	)
-	if err_display_element_properties:
+	var element_node: ElementContainer = _element_container.instantiate()
+	element_node.element_manager = element_manager
+	_element_box_container.add_child(element_node)
+	if element_node.display_element_properties.connect(_display_element_properties):
 		printerr("Could not connect \"_display_element_properties\".")
 
 func _display_element_properties(p_element_uid: int) -> void:
 	# TODO: Removing and instantiating properties all the time is messy, and maybe not performance friendly.
 	# Prefer hiding properties once instantiated.
-	if properties_box_container.get_child_count():
-		for node: PropertyContainer in properties_box_container.get_children():
-			properties_box_container.remove_child(node)
+	if _properties_box_container.get_child_count():
+		for node: PropertyContainer in _properties_box_container.get_children():
+			_properties_box_container.remove_child(node)
 	
-	if elements.element_exists(p_element_uid):
-		for property: StringName in elements.get_element_properties(p_element_uid):
-			var property_node: PanelContainer = property_container.instantiate()
-			property_node.set_script(element_property_container_script)
+	if element_manager.element_exists(p_element_uid):
+		for property: StringName in element_manager.get_element_properties(p_element_uid):
+			var property_node: PanelContainer = _property_container.instantiate()
+			property_node.set_script(_element_property_container_script)
 			@warning_ignore("unsafe_property_access")
-			property_node.elements = elements
+			property_node.element_manager = element_manager
 			@warning_ignore("unsafe_property_access")
 			property_node.element_uid = p_element_uid
 			@warning_ignore("unsafe_property_access")
 			property_node.property_key = property
-			properties_box_container.add_child(property_node)
+			_properties_box_container.add_child(property_node)

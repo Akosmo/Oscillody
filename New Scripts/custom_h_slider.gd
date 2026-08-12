@@ -20,50 +20,47 @@ extends HBoxContainer
 
 signal value_changed(p_value: float)
 
-@export var min_value: float = 0.0
-@export var max_value: float = 100.0
-@export var step: float = 1.0
-@export var value: float = 0.0
-@export var rounded: bool = false
+@export var _min_value: float = 0.0
+@export var _max_value: float = 100.0
+@export var _step: float = 1.0
+@export var _value: float = 0.0
+@export var _rounded: bool = false
 
 @onready var h_slider: HSlider = $HSlider
 @onready var label: Label = $Label
 
 func _ready() -> void:
-	var err_config: Error = configure_slider(min_value, max_value, step, rounded)
-	if err_config:
+	if configure_slider(_min_value, _max_value, _step, _rounded):
 		printerr("Wrong slider configuration.")
-	var err_init_val: Error = set_value(value)
-	if err_init_val:
+	if set_value(_value):
 		printerr("Wrong value given the slider's configurations.")
 	
 	_set_value_to_label()
 	
-	var err: Error = h_slider.connect("value_changed", _on_value_changed)
-	if err:
+	if h_slider.value_changed.connect(_on_value_changed):
 		printerr("Could not connect \"_on_value_changed\".")
 
 func configure_slider(p_min: float, p_max: float, p_step: float, p_rounded: bool) -> Error:
 	if p_min > p_max or (p_rounded and fmod(p_step, 1.0) != 0):
 		return FAILED
 	
-	h_slider.set_min(min_value)
-	h_slider.set_max(max_value)
-	h_slider.set_step(step)
-	h_slider.set_use_rounded_values(rounded)
+	h_slider.set_min(_min_value)
+	h_slider.set_max(_max_value)
+	h_slider.set_step(_step)
+	h_slider.set_use_rounded_values(_rounded)
 	
 	return OK
 
 func set_value(p_value: float) -> Error:
 	if (
-		p_value < min_value or
-		p_value > max_value or
-		fmod(p_value, step) != 0 or
-		(rounded and fmod(p_value, step))
+		p_value < _min_value or
+		p_value > _max_value or
+		fmod(p_value, _step) != 0 or
+		(_rounded and fmod(p_value, _step))
 	):
 		return FAILED
 	
-	h_slider.set_value(value)
+	h_slider.set_value(_value)
 	
 	return OK
 
@@ -73,6 +70,6 @@ func _on_value_changed(p_value: float) -> void:
 
 func _set_value_to_label() -> void:
 	if h_slider.rounded:
-		label.set_text(str(value).rstrip(".0"))
+		label.set_text(str(_value).rstrip(".0"))
 	else:
-		label.set_text(str(value))
+		label.set_text(str(_value))

@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://bgh2vemoru38h"]
 
+[ext_resource type="Script" uid="uid://dvu5653t05e6o" path="res://New Scripts/main.gd" id="1_pff5h"]
 [ext_resource type="PackedScene" uid="uid://cb0u36yyf40f1" path="res://New Scenes/custom_panel.tscn" id="1_t468s"]
 [ext_resource type="Script" uid="uid://vi4x6vawkfqw" path="res://New Scripts/files_container.gd" id="2_0at2v"]
 [ext_resource type="PackedScene" uid="uid://bfv2ne33xxlso" path="res://New Scenes/property_container.tscn" id="2_jtfbr"]
@@ -8,6 +9,7 @@
 [ext_resource type="Script" uid="uid://blv1t6mo5lluu" path="res://New Scripts/visualizer_container.gd" id="3_au6c5"]
 
 [node name="Main" type="Node" unique_id=789631805]
+script = ExtResource("1_pff5h")
 
 [node name="HSplitContainer" type="HSplitContainer" parent="." unique_id=983053765]
 anchors_preset = 15
@@ -42,6 +44,7 @@ tab_2/title = "Settings"
 tab_3/title = "Help"
 
 [node name="FilesContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer" unique_id=1985883545 instance=ExtResource("1_t468s")]
+unique_name_in_owner = true
 layout_mode = 2
 script = ExtResource("2_0at2v")
 metadata/_tab_index = 0
@@ -163,6 +166,7 @@ layout_mode = 2
 text = "Export Video..."
 
 [node name="VisualizerContainer" type="VSplitContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer" unique_id=559918955]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 split_offsets = PackedInt32Array(225)
@@ -196,6 +200,7 @@ layout_mode = 2
 text = "PROPERTIES"
 
 [node name="SettingsContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer" unique_id=1768564502 instance=ExtResource("1_t468s")]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 metadata/_tab_index = 2
@@ -331,9 +336,11 @@ size_flags_vertical = 3
 ratio = 1.7778
 
 [node name="Visualizer" parent="HSplitContainer/VBoxContainer/AspectRatioContainer" unique_id=1361625850 instance=ExtResource("2_kx00h")]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="PlayerControlContainer" parent="HSplitContainer/VBoxContainer" unique_id=1498337296 instance=ExtResource("2_titj8")]
+unique_name_in_owner = true
 layout_mode = 2
 
 [editable path="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer"]

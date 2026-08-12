@@ -19,23 +19,52 @@ extends PanelContainer
 
 var audio_manager: AudioManager
 
-var option_button: OptionButton
+var _reset_button: Button
+var _option_button: OptionButton
 
 # Init is used instead of `_ready()`, because when it is called on the node, it has no script attached.
 # `_ready()` is called because the node has entered the tree and is ready.
 # But `_init()` is called when a script is attached.
 func _init() -> void:
-	option_button = $MarginContainer/HBoxContainer/HBoxContainer/OptionButton
+	_reset_button = $MarginContainer/HBoxContainer/Button
+	_option_button = $MarginContainer/HBoxContainer/HBoxContainer/OptionButton
 	
-	var err_item_selected: Error = option_button.connect("item_selected", _on_item_selected)
-	if err_item_selected:
-		printerr("Could not connect signal.")
+	if _connect_node_signals():
+		printerr("Could not connect node signals.")
+		return
 
 func update_audio_list() -> void:
-	for stream: StringName in audio_manager.get_streams().keys():
-		option_button.add_item(String(stream))
+	_option_button.clear()
 	
-	audio_manager.set_master(option_button.get_item_text(option_button.get_selected()))
+	var stream_dict: Dictionary[StringName, AudioStream] = audio_manager.get_streams()
+	if not stream_dict.is_empty():
+		for stream: StringName in stream_dict:
+			_option_button.add_item(String(stream))
+		
+		_reset_button.show()
+	
+		audio_manager.set_master_name(_option_button.get_item_text(_option_button.get_selected()))
+	else:
+		audio_manager.set_master_name(&"")
+		
+		_reset_button.hide()
+
+func connect_audio_manager_signals() -> Error:
+	if audio_manager.audio_files_changed.connect(update_audio_list):
+		return ERR_INVALID_PARAMETER
+	
+	return OK
+
+func _connect_node_signals() -> Error:
+	if _reset_button.pressed.connect(_on_reset_pressed):
+		return ERR_INVALID_PARAMETER
+	if _option_button.item_selected.connect(_on_item_selected):
+		return ERR_INVALID_PARAMETER
+	
+	return OK
+
+func _on_reset_pressed() -> void:
+	audio_manager.clear_streams()
 
 func _on_item_selected(p_index: int) -> void:
-	audio_manager.set_master(StringName(option_button.get_item_text(p_index)))
+	audio_manager.set_master_name(StringName(_option_button.get_item_text(p_index)))

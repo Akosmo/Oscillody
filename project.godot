@@ -25,6 +25,7 @@ boot_splash/image="res://Images/Oscillody Logo BG.png"
 config/icon="res://Images/Oscillody Logo (with color).png"
 config/windows_native_icon="res://Images/Oscillody Icon.ico"
 boot_splash/minimum_display_time=500
+config/tags=PackedStringArray("app")
 
 [audio]
 
@@ -46,10 +47,6 @@ gdscript/warnings/missing_await=1
 
 movie_writer/mix_rate=44100
 movie_writer/disable_vsync=true
-
-[global_group]
-
-VisualizerElementsUI=""
 
 [input]
 
