@@ -17,6 +17,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="Oscillody"
 config/description="Audio Visualizer"
 config/version="2.0.0"
+config/tags=PackedStringArray("app")
 run/main_scene="uid://bgh2vemoru38h"
 config/auto_accept_quit=false
 config/features=PackedStringArray("4.7", "Forward Plus")
@@ -25,7 +26,6 @@ boot_splash/image="res://Images/Oscillody Logo BG.png"
 config/icon="res://Images/Oscillody Logo (with color).png"
 config/windows_native_icon="res://Images/Oscillody Icon.ico"
 boot_splash/minimum_display_time=500
-config/tags=PackedStringArray("app")
 
 [audio]
 
@@ -42,6 +42,10 @@ gdscript/warnings/unsafe_cast=1
 gdscript/warnings/unsafe_call_argument=1
 gdscript/warnings/return_value_discarded=1
 gdscript/warnings/missing_await=1
+
+[display]
+
+window/energy_saving/keep_screen_on=false
 
 [editor]
 
@@ -86,3 +90,8 @@ redo={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":true,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":89,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 ]
 }
+
+[physics]
+
+2d/physics_engine="Dummy"
+3d/physics_engine="Dummy"

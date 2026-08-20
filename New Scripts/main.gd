@@ -19,6 +19,7 @@ extends Node
 
 var audio_manager: AudioManager = AudioManager.new()
 var element_manager: ElementManager = ElementManager.new()
+var settings_manager: SettingsManager = SettingsManager.new()
 
 @onready var files_container: PanelContainer = %FilesContainer
 @onready var visualizer_container: VSplitContainer = %VisualizerContainer
@@ -32,10 +33,16 @@ func _ready() -> void:
 	@warning_ignore("unsafe_property_access")
 	visualizer_container.element_manager = element_manager
 	@warning_ignore("unsafe_property_access")
+	settings_container.settings_manager = settings_manager
+	@warning_ignore("unsafe_property_access")
 	visualizer.audio_manager = audio_manager
 	@warning_ignore("unsafe_property_access")
 	player_control_container.audio_manager = audio_manager
 	
+	@warning_ignore("unsafe_method_access")
+	if settings_container.setup():
+		printerr("Could not set up Settings Container")
+		return
 	@warning_ignore("unsafe_method_access")
 	if visualizer.connect_player_signals():
 		printerr("Could not connect player signals.")

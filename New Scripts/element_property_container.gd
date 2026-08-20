@@ -24,7 +24,7 @@ extends PanelContainer
 #signal change_element_button(new_name: String)
 
 var element_manager: ElementManager
-var element_uid: int = -1
+var element_uid: int = element_manager.INVALID_UID
 var property_key: StringName
 var _reset_value: Variant
 
@@ -48,7 +48,7 @@ func _ready() -> void:
 		printerr("Could not connect all property signals.")
 		return
 	
-	if _is_for_element() and element_manager.property_exists(element_uid, property_key):
+	if element_manager.property_exists(element_uid, property_key):
 		_value_label.set_text(String(property_key))
 		
 		if property_key == element_manager.TYPE:
@@ -86,14 +86,14 @@ func _connect_all_signals() -> Error:
 	
 	return OK
 
-func _is_for_element() -> bool:
-	if element_manager != null and element_uid >= 0 and not property_key.is_empty():
-		return true
-	else:
-		return false
+#func _is_for_element() -> bool:
+	#if element_manager != null and element_uid >= 0 and not property_key.is_empty():
+		#return true
+	#else:
+		#return false
 
 func _set_value_to_property(p_value: Variant) -> void:
-	if _is_for_element() and element_manager.property_exists(element_uid, property_key):
+	if element_manager.property_exists(element_uid, property_key):
 		if element_manager.set_element_property(element_uid, property_key, p_value):
 			printerr(
 				"Could not set {property} to {value} in {UID}.".format(

@@ -19,7 +19,7 @@
 
 extends VSplitContainer
 
-var element_manager: ElementManager = ElementManager.new()
+var element_manager: ElementManager
 var _element_container: PackedScene = preload("res://New Scenes/element_container.tscn")
 var _property_container: PackedScene = preload("res://New Scenes/property_container.tscn")
 var _element_property_container_script: Script = preload("res://New Scripts/element_property_container.gd")

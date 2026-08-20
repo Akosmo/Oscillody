@@ -18,7 +18,7 @@
 # TODO: Refactor this class once the element system is fully figured out and functional.
 
 class_name ElementManager
-extends Node
+extends RefCounted
 ## Manager class for visualizer elements.
 ##
 ## Elements are the parts of a visualizer. This class can be used to create, modify,
@@ -53,15 +53,6 @@ enum ElementType {
 	TEXT
 }
 
-## Key for an element's name.
-const NAME: StringName = &"Name"
-## Key for an element's type.
-const TYPE: StringName = &"Type"
-## Key for an element's layer.
-const LAYER: StringName = &"Layer"
-## Key for an element's visibility.
-const VISIBILITY: StringName = &"Visibility"
-
 ## Options of [Control] nodes to be used by a [PropertyContainer], based on the property it is linked to.
 enum ControlNode {
 	BUTTON,
@@ -74,14 +65,25 @@ enum ControlNode {
 	TEXT_EDIT
 }
 
+## Key for an element's name.
+const NAME: StringName = &"Name"
+## Key for an element's type.
+const TYPE: StringName = &"Type"
+## Key for an element's layer.
+const LAYER: StringName = &"Layer"
+## Key for an element's visibility.
+const VISIBILITY: StringName = &"Visibility"
+
+const INVALID_UID: int = -1
+
 ## Holds all elements of the visualizer, along with their properties.
 ## Whenever modified, [signal elements_updated] is emitted.[br]
 ## [b]Note:[/b] This member should [b]NOT[/b] be accessed directly outside of this class.
 static var _elements: Dictionary[int, Dictionary]
 
 ## The unique ID (UID) for the last created element during run-time.
-## Initializes at [code]-1[/code], but the first created element will have an UID of [code]0[/code].
-static var _element_uid: int = -1
+## Initializes at [const INVALID_UID], but the first created element will have an UID of [code]0[/code].
+static var _element_uid: int = INVALID_UID
 
 func _init() -> void:
 	if elements_updated.connect(_updated_elements):
@@ -93,7 +95,7 @@ func get_elements() -> Dictionary[int, Dictionary]:
 
 ## Alias for [method set_element_properties].
 ## Internally creates a property dictionary with the appropriate default values.[br]
-## Returns the unique ID for the created element. If element could not be created, returns [code]-1[/code].
+## Returns the unique ID for the created element. If element could not be created, returns [const INVALID_UID].
 func create_element() -> int:
 	if set_element_properties(
 		_get_available_uid(),
@@ -104,7 +106,7 @@ func create_element() -> int:
 			VISIBILITY: true
 		} as Dictionary[StringName, Variant]
 	):
-		return -1
+		return INVALID_UID
 	
 	return _element_uid
 
@@ -169,11 +171,28 @@ func get_element_properties(p_element_uid: int) -> Dictionary[StringName, Varian
 ## Sets the [param p_property] of [param p_element_uid] to [param p_value].
 ## See also [method get_element_properties].
 func set_element_property(p_element_uid: int, p_property: StringName, p_value: Variant) -> Error:
-	#if not property_exists(p_element, p_property):
+	#if not property_exists(p_element_uid, p_property):
 		#return FAILED
-	#if p_property == NAME and _is_null_or_empty(p_value):
-		#printerr("Name can not be empty.")
-		#return FAILED
+	if p_property == NAME and _is_null_or_empty(p_value):
+		printerr("Name can not be empty.")
+		return FAILED
+	elif (
+		p_property == TYPE and
+		(p_value is not ElementType or
+		p_value < -1 or
+		p_value > 7) # Max element.
+	):
+		printerr("Value for Type is wrong.")
+		return FAILED
+	elif p_property == LAYER:
+		# Ensures there are no duplicates by swapping layers.
+		for dict: Dictionary[StringName, Variant] in _elements.values():
+			if dict.has(LAYER):
+				if dict.get(LAYER) == p_value:
+					@warning_ignore("unsafe_method_access")
+					if not dict.set(LAYER, _elements.get(p_element_uid).get(LAYER)):
+						printerr("Can't swap layers.")
+						return FAILED
 	
 	var element: Dictionary[StringName, Variant] = _elements.get(p_element_uid)
 	if not element.set(p_property, p_value):
@@ -183,6 +202,10 @@ func set_element_property(p_element_uid: int, p_property: StringName, p_value: V
 			)
 		)
 		return FAILED
+	
+	if p_property == LAYER:
+		if _ensure_gapless_layers():
+			printerr("Could not ensure gapless layers after setting Layer property.")
 	
 	elements_updated.emit()
 	
@@ -251,8 +274,9 @@ func _get_available_name() -> String:
 func _get_available_layer() -> int:
 	var max_layer: int = -1
 	for dict: Dictionary[StringName, Variant] in _elements.values():
-		if dict.has(LAYER) and dict.get(LAYER) > max_layer:
-			max_layer = dict.get(LAYER)
+		if dict.has(LAYER):
+			if dict.get(LAYER) > max_layer:
+				max_layer = dict.get(LAYER)
 		else:
 			printerr("Property dictionary has no LAYER key.")
 			return -1
@@ -264,6 +288,7 @@ func _get_available_layer() -> int:
 	
 	return _elements.size()
 
+# TODO: Handle elements with the same layer number.
 ## Ensures the element dictionary has no gaps in regards to layers.
 func _ensure_gapless_layers() -> Error:
 	var all_layers: Array[int]
@@ -337,7 +362,7 @@ func _is_valid_uid(p_element_uid: int) -> bool:
 		return false
 	
 	if _is_null_or_empty(p_element_uid):
-		printerr("{UID} is empty.".format({"uid": p_element_uid}))
+		printerr("{UID} is null.".format({"uid": p_element_uid}))
 		return false
 	
 	return true

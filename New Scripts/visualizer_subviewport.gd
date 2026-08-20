@@ -19,7 +19,7 @@
 # without compromising readability, or without ending up with spaghetti code. Remember that bus needs to
 # be accessed by Analyzer elements.
 
-extends Node
+extends SubViewportContainer
 
 var audio_manager: AudioManager
 var _players: Dictionary[StringName, AudioStreamPlayer]
@@ -27,6 +27,14 @@ var _players: Dictionary[StringName, AudioStreamPlayer]
 # and allows it to be audible.
 # TODO: That needs to be rephrased. See external notes.
 var _master_player: AudioStreamPlayer
+
+func _process(_delta: float) -> void:
+	if _master_player != null and _master_player.get_stream() != null:
+		if audio_manager.is_master_playing():
+			audio_manager.set_master_position(_master_player.get_playback_position())
+		#elif _master_player.get_stream_paused():
+			# TODO: This can probably be done in the manager.
+			#audio_manager.set_master_position(audio_manager.get_master_requested_position())
 
 func connect_player_signals() -> Error:
 	if audio_manager.audio_files_changed.connect(_update_audio):
@@ -88,26 +96,77 @@ func _update_players() -> void:
 func _on_master_changed() -> void:
 	_on_stop_requested()
 	
+	_master_player = null
+	
 	if not audio_manager.get_master_name().is_empty():
 		AudioServer.set_bus_mute(AudioServer.get_bus_index(audio_manager.get_master_name()), false)
 	
-	_master_player = _players.get(audio_manager.get_master_name())
+	if _master_player != null and _master_player.finished.is_connected(_on_master_finished):
+		_master_player.finished.disconnect(_on_master_finished)
+	
+	if not audio_manager.get_master_name().is_empty():
+		_master_player = _players.get(audio_manager.get_master_name())
 	
 	if _master_player != null:
 		_master_player.set_volume_linear(audio_manager.get_master_volume())
+		
+		if _master_player.finished.connect(_on_master_finished):
+			printerr("Could not connect finished signal from the master player.")
+			return
+		
+		if _master_player.get_stream() != null:
+			audio_manager.set_master_duration(_master_player.get_stream().get_length())
+	else:
+		audio_manager.set_master_duration(0.0)
 
 func _on_play_pause_requested() -> void:
 	if _master_player != null:
-		if is_zero_approx(_master_player.get_playback_position()):
-			_master_player.play()
+		#if is_zero_approx(_master_player.get_playback_position()):
+			#_master_player.play()
+		#else:
+			#_master_player.set_stream_paused(_master_player.is_playing())
+			#if _master_player.get_playback_position() != audio_manager.get_master_position():
+				#if (
+					#audio_manager.get_master_position() < audio_manager.get_master_duration() or
+					#audio_manager.is_loop_enabled()
+				#):
+					#_master_player.seek(audio_manager.get_master_position())
+				#else:
+					#_master_player.stop()
+					#audio_manager.set_master_playing(false)
+		#audio_manager.set_master_playing(_master_player.is_playing())
+		
+		#if is_zero_approx(audio_manager.get_master_position()):
+			#_master_player.play()
+			#audio_manager.set_master_playing(true)
+		if not audio_manager.is_master_playing() and not _master_player.get_stream_paused():
+			_master_player.play(audio_manager.get_master_position())
+			audio_manager.set_master_playing(true)
 		else:
-			_master_player.set_stream_paused(_master_player.is_playing())
-		audio_manager.set_master_playing(_master_player.is_playing())
+			_master_player.set_stream_paused(audio_manager.is_master_playing())
+			if _master_player.get_playback_position() != audio_manager.get_master_position():
+				if (
+					audio_manager.get_master_position() < audio_manager.get_master_duration() or
+					audio_manager.is_loop_enabled()
+				):
+					_master_player.seek(audio_manager.get_master_position())
+					audio_manager.set_master_playing(not audio_manager.is_master_playing())
+				else:
+					#_master_player.stop()
+					#audio_manager.set_master_position(0.0)
+					#audio_manager.set_master_playing(false)
+					_master_player.seek(audio_manager.get_master_position() - 0.01)
+			else:
+				audio_manager.set_master_playing(not audio_manager.is_master_playing())
+		
 
 func _on_stop_requested() -> void:
 	if _master_player != null:
 		_master_player.stop()
-		audio_manager.set_master_playing(false)
+	
+	# Just in case... mostly needed in case the master is cleared.
+	audio_manager.set_master_position(0.0)
+	audio_manager.set_master_playing(false)
 
 func _on_volume_change_requested() -> void:
 	if _master_player != null:
@@ -115,4 +174,18 @@ func _on_volume_change_requested() -> void:
 
 func _on_seek_requested(p_time: float) -> void:
 	if _master_player != null:
-		pass
+		if p_time < audio_manager.get_master_duration() or audio_manager.is_loop_enabled():
+			#if audio_manager.is_master_playing():
+			_master_player.seek(p_time)
+		else:
+			#_master_player.stop()
+			#audio_manager.set_master_position(0.0)
+			#audio_manager.set_master_playing(false)
+			_master_player.seek(p_time - 0.01)
+
+func _on_master_finished() -> void:
+	if audio_manager.is_loop_enabled():
+		_master_player.play()
+	else:
+		audio_manager.set_master_position(0.0)
+		audio_manager.set_master_playing(false)

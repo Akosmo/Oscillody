@@ -59,5 +59,12 @@ size_flags_vertical = 4
 unique_name_in_owner = true
 custom_minimum_size = Vector2(51, 0)
 layout_mode = 2
-text = "00:00"
+text = "00:00 / 00:00"
+horizontal_alignment = 1
+
+[node name="TimeSliderPositionHint" type="Label" parent="." unique_id=2079037397]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+offset_transform_enabled = true
 horizontal_alignment = 1

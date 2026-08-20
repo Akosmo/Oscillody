@@ -18,7 +18,7 @@
 # TODO: Disallow loading the same audio file.
 
 class_name AudioManager
-extends Node
+extends RefCounted
 ## Manager class for audio.
 ##
 ## This class is used for communications between the player control, [AudioStreamPlayer]s under the
@@ -51,12 +51,17 @@ static var _is_master_playing: bool
 static var _is_loop_enabled: bool
 static var _master_volume: float = 1.0
 
+static var _time_position: float = 0.0
+static var _time_duration: float = 0.0
+#static var _time_position_requested: float = 0.0
+
 ## Emits [signal play_pause_requested], connected to an [AudioStreamPlayer].
 func request_play_pause() -> void:
 	play_pause_requested.emit()
 
 ## Emits [signal stop_requested], connected to an [AudioStreamPlayer].
 func request_stop() -> void:
+	_time_position = 0.0
 	stop_requested.emit()
 
 ## Emits [signal volume_change_requested], connected to an [AudioStreamPlayer].
@@ -68,7 +73,9 @@ func get_master_volume() -> float:
 	return _master_volume
 
 ## Emits [signal seek_requested], connected to an [AudioStreamPlayer].
-func request_seek(p_time: float = 0.0) -> void:
+func request_seek(p_time: float) -> void:
+	if not _is_master_playing:
+		_time_position = p_time
 	seek_requested.emit(p_time)
 
 ## Emits [signal master_play_state_changed], connected to the player control.
@@ -88,10 +95,23 @@ func enable_loop(p_enable: bool) -> void:
 func is_loop_enabled() -> bool:
 	return _is_loop_enabled
 
+func set_master_position(p_time: float) -> void:
+	_time_position = p_time
+
+func get_master_position() -> float:
+	return _time_position
+
+#func get_master_requested_position() -> float:
+	#return _time_position_requested
+
+func set_master_duration(p_time: float) -> void:
+	_time_duration = p_time
+
 ## Returns the duration of the currently selected master stream.
 func get_master_duration() -> float:
-	var stream: AudioStream = _streams.get(_master_name)
-	return stream.get_length()
+	#var stream: AudioStream = _streams.get(_master_name)
+	#return stream.get_length()
+	return _time_duration
 
 ## Returns a deep copy of [member _streams].
 func get_streams() -> Dictionary[StringName, AudioStream]:
@@ -116,6 +136,7 @@ func clear_streams() -> void:
 	_streams.clear()
 	
 	audio_files_changed.emit()
+	master_changed.emit()
 	master_play_state_changed.emit()
 
 ## Converts audio files to the appropriate [AudioStream] type. If the conversion is successful,

@@ -26,8 +26,8 @@ signal value_changed(p_value: float)
 @export var _value: float = 0.0
 @export var _rounded: bool = false
 
-@onready var h_slider: HSlider = $HSlider
-@onready var label: Label = $Label
+@onready var _h_slider: HSlider = $HSlider
+@onready var _label: Label = $Label
 
 func _ready() -> void:
 	if configure_slider(_min_value, _max_value, _step, _rounded):
@@ -37,17 +37,17 @@ func _ready() -> void:
 	
 	_set_value_to_label()
 	
-	if h_slider.value_changed.connect(_on_value_changed):
+	if _h_slider.value_changed.connect(_on_value_changed):
 		printerr("Could not connect \"_on_value_changed\".")
 
 func configure_slider(p_min: float, p_max: float, p_step: float, p_rounded: bool) -> Error:
 	if p_min > p_max or (p_rounded and fmod(p_step, 1.0) != 0):
 		return FAILED
 	
-	h_slider.set_min(_min_value)
-	h_slider.set_max(_max_value)
-	h_slider.set_step(_step)
-	h_slider.set_use_rounded_values(_rounded)
+	_h_slider.set_min(_min_value)
+	_h_slider.set_max(_max_value)
+	_h_slider.set_step(_step)
+	_h_slider.set_use_rounded_values(_rounded)
 	
 	return OK
 
@@ -60,7 +60,7 @@ func set_value(p_value: float) -> Error:
 	):
 		return FAILED
 	
-	h_slider.set_value(_value)
+	_h_slider.set_value(_value)
 	
 	return OK
 
@@ -69,7 +69,7 @@ func _on_value_changed(p_value: float) -> void:
 	value_changed.emit(p_value)
 
 func _set_value_to_label() -> void:
-	if h_slider.rounded:
-		label.set_text(str(_value).rstrip(".0"))
+	if _h_slider.rounded:
+		_label.set_text(str(_value).rstrip(".0"))
 	else:
-		label.set_text(str(_value))
+		_label.set_text(str(_value))

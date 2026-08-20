@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
+# TODO: Update this script later, since it'll also be used for presets.
+
 extends PanelContainer
 
 var audio_manager: AudioManager
@@ -22,7 +24,7 @@ var audio_manager: AudioManager
 var _reset_button: Button
 var _option_button: OptionButton
 
-# Init is used instead of `_ready()`, because when it is called on the node, it has no script attached.
+# `_init()` is used instead of `_ready()`, because when it is called on the node, it has no script attached.
 # `_ready()` is called because the node has entered the tree and is ready.
 # But `_init()` is called when a script is attached.
 func _init() -> void:

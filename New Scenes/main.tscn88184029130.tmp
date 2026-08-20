@@ -8,7 +8,6 @@
 [ext_resource type="PackedScene" uid="uid://d1oevod46vgin" path="res://New Scenes/new_player_control.tscn" id="2_titj8"]
 [ext_resource type="Script" uid="uid://blv1t6mo5lluu" path="res://New Scripts/visualizer_container.gd" id="3_au6c5"]
 [ext_resource type="Script" uid="uid://dqgse2dg41gys" path="res://New Scripts/settings_container.gd" id="6_2xnxb"]
-[ext_resource type="Script" uid="uid://cen27tgbvrkup" path="res://New Scripts/help_container.gd" id="7_325ne"]
 
 [node name="Main" type="Node" unique_id=789631805]
 script = ExtResource("1_pff5h")
@@ -39,7 +38,7 @@ split_offset = 550
 
 [node name="TabContainer" type="TabContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer" unique_id=61823410]
 layout_mode = 2
-current_tab = 1
+current_tab = 2
 tab_0/title = "Files"
 tab_1/title = "Visualizer"
 tab_2/title = "Settings"
@@ -173,6 +172,7 @@ text = "Export Video..."
 
 [node name="VisualizerContainer" type="VSplitContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer" unique_id=559918955]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 split_offsets = PackedInt32Array(225)
 split_offset = 225
@@ -206,7 +206,6 @@ text = "PROPERTIES"
 
 [node name="SettingsContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer" unique_id=1768564502 instance=ExtResource("1_t468s")]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 script = ExtResource("6_2xnxb")
 metadata/_tab_index = 2
@@ -269,7 +268,6 @@ visible = true
 [node name="HelpContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer" unique_id=1383400275 instance=ExtResource("1_t468s")]
 visible = false
 layout_mode = 2
-script = ExtResource("7_325ne")
 metadata/_tab_index = 3
 metadata/_tab_name = "Help"
 
@@ -285,7 +283,6 @@ theme_override_constants/margin_right = 4
 theme_override_constants/margin_bottom = 4
 
 [node name="DocumentationButton" type="Button" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/HelpContainer/MarginContainer/ScrollContainer/VBoxContainer/DocumentationContainer" unique_id=1012859125]
-unique_name_in_owner = true
 layout_mode = 2
 text = "Documentation"
 
@@ -297,7 +294,6 @@ theme_override_constants/margin_right = 4
 theme_override_constants/margin_bottom = 4
 
 [node name="SuggestFeaturesButton" type="Button" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/HelpContainer/MarginContainer/ScrollContainer/VBoxContainer/SuggestFeaturesContainer" unique_id=943206703]
-unique_name_in_owner = true
 layout_mode = 2
 text = "Suggest Features"
 
@@ -309,7 +305,6 @@ theme_override_constants/margin_right = 4
 theme_override_constants/margin_bottom = 4
 
 [node name="ReportBugsButton" type="Button" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/HelpContainer/MarginContainer/ScrollContainer/VBoxContainer/ReportBugsContainer" unique_id=951323926]
-unique_name_in_owner = true
 layout_mode = 2
 text = "Report Bugs"
 
@@ -321,7 +316,6 @@ theme_override_constants/margin_right = 4
 theme_override_constants/margin_bottom = 4
 
 [node name="SupportButton" type="Button" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/HelpContainer/MarginContainer/ScrollContainer/VBoxContainer/SupportContainer" unique_id=1033955417]
-unique_name_in_owner = true
 layout_mode = 2
 text = "Support"
 
@@ -333,7 +327,6 @@ theme_override_constants/margin_right = 4
 theme_override_constants/margin_bottom = 4
 
 [node name="AboutOscillodyButton" type="Button" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/HelpContainer/MarginContainer/ScrollContainer/VBoxContainer/AboutOscillodyContainer5" unique_id=167131199]
-unique_name_in_owner = true
 layout_mode = 2
 text = "About Oscillody"
 
