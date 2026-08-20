@@ -28,13 +28,21 @@ var _players: Dictionary[StringName, AudioStreamPlayer]
 # TODO: That needs to be rephrased. See external notes.
 var _master_player: AudioStreamPlayer
 
+var element_manager: ElementManager
+
+var element_analyzer_node: ElementAnalyzer = ElementAnalyzer.new()
+var element_analyzer_scene: PackedScene = PackedScene.new()
+
+@onready var sub_viewport: SubViewport = $SubViewport
+
+func _ready() -> void:
+	if element_analyzer_scene.pack(element_analyzer_node):
+		printerr("Could not pack new node.")
+
 func _process(_delta: float) -> void:
 	if _master_player != null and _master_player.get_stream() != null:
 		if audio_manager.is_master_playing():
 			audio_manager.set_master_position(_master_player.get_playback_position())
-		#elif _master_player.get_stream_paused():
-			# TODO: This can probably be done in the manager.
-			#audio_manager.set_master_position(audio_manager.get_master_requested_position())
 
 func connect_player_signals() -> Error:
 	if audio_manager.audio_files_changed.connect(_update_audio):
@@ -49,6 +57,11 @@ func connect_player_signals() -> Error:
 	if audio_manager.volume_change_requested.connect(_on_volume_change_requested):
 		return ERR_INVALID_PARAMETER
 	if audio_manager.seek_requested.connect(_on_seek_requested):
+		return ERR_INVALID_PARAMETER
+	
+	if element_manager.element_created.connect(_on_element_created):
+		return ERR_INVALID_PARAMETER
+	if element_manager.element_deleted.connect(_on_element_deleted):
 		return ERR_INVALID_PARAMETER
 	
 	return OK
@@ -121,24 +134,6 @@ func _on_master_changed() -> void:
 
 func _on_play_pause_requested() -> void:
 	if _master_player != null:
-		#if is_zero_approx(_master_player.get_playback_position()):
-			#_master_player.play()
-		#else:
-			#_master_player.set_stream_paused(_master_player.is_playing())
-			#if _master_player.get_playback_position() != audio_manager.get_master_position():
-				#if (
-					#audio_manager.get_master_position() < audio_manager.get_master_duration() or
-					#audio_manager.is_loop_enabled()
-				#):
-					#_master_player.seek(audio_manager.get_master_position())
-				#else:
-					#_master_player.stop()
-					#audio_manager.set_master_playing(false)
-		#audio_manager.set_master_playing(_master_player.is_playing())
-		
-		#if is_zero_approx(audio_manager.get_master_position()):
-			#_master_player.play()
-			#audio_manager.set_master_playing(true)
 		if not audio_manager.is_master_playing() and not _master_player.get_stream_paused():
 			_master_player.play(audio_manager.get_master_position())
 			audio_manager.set_master_playing(true)
@@ -152,9 +147,6 @@ func _on_play_pause_requested() -> void:
 					_master_player.seek(audio_manager.get_master_position())
 					audio_manager.set_master_playing(not audio_manager.is_master_playing())
 				else:
-					#_master_player.stop()
-					#audio_manager.set_master_position(0.0)
-					#audio_manager.set_master_playing(false)
 					_master_player.seek(audio_manager.get_master_position() - 0.01)
 			else:
 				audio_manager.set_master_playing(not audio_manager.is_master_playing())
@@ -175,12 +167,8 @@ func _on_volume_change_requested() -> void:
 func _on_seek_requested(p_time: float) -> void:
 	if _master_player != null:
 		if p_time < audio_manager.get_master_duration() or audio_manager.is_loop_enabled():
-			#if audio_manager.is_master_playing():
 			_master_player.seek(p_time)
 		else:
-			#_master_player.stop()
-			#audio_manager.set_master_position(0.0)
-			#audio_manager.set_master_playing(false)
 			_master_player.seek(p_time - 0.01)
 
 func _on_master_finished() -> void:
@@ -189,3 +177,33 @@ func _on_master_finished() -> void:
 	else:
 		audio_manager.set_master_position(0.0)
 		audio_manager.set_master_playing(false)
+
+func _on_element_created(p_element_uid: int) -> void:
+	match element_manager.get_element_property(p_element_uid, element_manager.TYPE):
+		element_manager.ElementType.EMPTY:
+			pass
+		element_manager.ElementType.ANALYZER:
+			var node_instance: ElementAnalyzer = element_analyzer_scene.instantiate()
+			node_instance.element_manager = element_manager
+			node_instance.element_uid = p_element_uid
+			sub_viewport.add_child(node_instance)
+			node_instance.setup_element()
+		element_manager.ElementType.GRADIENT:
+			pass
+		element_manager.ElementType.IMAGE:
+			pass
+		element_manager.ElementType.POST_PROCESSING:
+			pass
+		element_manager.ElementType.SHADER:
+			pass
+		element_manager.ElementType.SHAPE:
+			pass
+		element_manager.ElementType.SOLID_COLOR:
+			pass
+		element_manager.ElementType.TEXT:
+			pass
+
+func _on_element_deleted(p_element_uid: int) -> void:
+	for node: Node in sub_viewport.get_children():
+		if node.get_name().containsn(str(p_element_uid)):
+			sub_viewport.remove_child(node)

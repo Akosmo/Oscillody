@@ -21,8 +21,6 @@
 class_name PropertyContainer
 extends PanelContainer
 
-#signal change_element_button(new_name: String)
-
 var element_manager: ElementManager
 var element_uid: int = element_manager.INVALID_UID
 var property_key: StringName
@@ -85,12 +83,6 @@ func _connect_all_signals() -> Error:
 		return ERR_INVALID_PARAMETER
 	
 	return OK
-
-#func _is_for_element() -> bool:
-	#if element_manager != null and element_uid >= 0 and not property_key.is_empty():
-		#return true
-	#else:
-		#return false
 
 func _set_value_to_property(p_value: Variant) -> void:
 	if element_manager.property_exists(element_uid, property_key):

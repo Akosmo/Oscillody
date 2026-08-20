@@ -28,6 +28,9 @@ extends RefCounted
 
 ## Emitted whenever [member _elements] is modified, and triggers relevant changes to the visualizer.
 signal elements_updated
+signal element_created(p_element_uid: int)
+signal element_deleted(p_element_uid: int)
+signal element_property_changed(p_element_uid: int, p_property: StringName)
 
 ## Base type for elements.
 enum ElementType {
@@ -108,6 +111,8 @@ func create_element() -> int:
 	):
 		return INVALID_UID
 	
+	element_created.emit(_element_uid)
+	
 	return _element_uid
 
 ## Alias for [method set_element_properties].
@@ -117,7 +122,12 @@ func delete_element(p_element_uid: int) -> Error:
 	if not element_exists(p_element_uid):
 		return FAILED
 	
-	return set_element_properties(p_element_uid, empty_dict)
+	if set_element_properties(p_element_uid, empty_dict):
+		return FAILED
+	
+	element_deleted.emit(p_element_uid)
+	
+	return OK
 
 ## Checks if the element [param p_element_uid] exists.
 func element_exists(p_element_uid: int) -> bool:
@@ -208,6 +218,10 @@ func set_element_property(p_element_uid: int, p_property: StringName, p_value: V
 			printerr("Could not ensure gapless layers after setting Layer property.")
 	
 	elements_updated.emit()
+	
+	element_property_changed.emit(p_element_uid, p_property)
+	if p_property == TYPE:
+		element_created.emit(p_element_uid)
 	
 	return OK
 

@@ -36,6 +36,7 @@ func _ready() -> void:
 	settings_container.settings_manager = settings_manager
 	@warning_ignore("unsafe_property_access")
 	visualizer.audio_manager = audio_manager
+	visualizer.element_manager = element_manager
 	@warning_ignore("unsafe_property_access")
 	player_control_container.audio_manager = audio_manager
 	

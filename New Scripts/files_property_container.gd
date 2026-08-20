@@ -40,7 +40,7 @@ func update_audio_list() -> void:
 	
 	var stream_dict: Dictionary[StringName, AudioStream] = audio_manager.get_streams()
 	if not stream_dict.is_empty():
-		for stream: StringName in stream_dict:
+		for stream: StringName in stream_dict.keys():
 			_option_button.add_item(String(stream))
 		
 		_reset_button.show()

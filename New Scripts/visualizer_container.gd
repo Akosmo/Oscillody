@@ -50,7 +50,7 @@ func _display_element_properties(p_element_uid: int) -> void:
 			_properties_box_container.remove_child(node)
 	
 	if element_manager.element_exists(p_element_uid):
-		for property: StringName in element_manager.get_element_properties(p_element_uid):
+		for property: StringName in element_manager.get_element_properties(p_element_uid).keys():
 			var property_node: PanelContainer = _property_container.instantiate()
 			property_node.set_script(_element_property_container_script)
 			@warning_ignore("unsafe_property_access")
