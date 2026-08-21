@@ -32,6 +32,12 @@ boot_splash/minimum_display_time=500
 buses/default_bus_layout="uid://c82sn7go5gcr7"
 driver/enable_input=true
 
+[autoload]
+
+AudioManager="*uid://ben01m561drjh"
+ElementManager="*uid://bnho77fgm8yog"
+SettingsManager="*uid://drrev0hbiwml8"
+
 [debug]
 
 gdscript/warnings/untyped_declaration=2

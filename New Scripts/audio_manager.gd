@@ -17,15 +17,15 @@
 
 # TODO: Disallow loading the same audio file.
 
-class_name AudioManager
-extends RefCounted
+extends Node
 ## Manager class for audio.
 ##
 ## This class is used for communications between the player control, [AudioStreamPlayer]s under the
 ## visualizer, and any other nodes that need access to current audio data (such as [Waveform]).
 
 ## Emitted whenever new audio files are imported, or existing ones are cleared from Oscillody.
-signal audio_files_changed
+signal new_audio_imported
+signal stream_list_updated
 ## Emitted whenever a different stream is set as master (audible).
 signal master_changed
 
@@ -45,15 +45,14 @@ signal master_play_state_changed
 ## Holds all imported audio files, as [AudioStream]s. It will have the appropriate type based on the
 ## files extention. For example, a [code].mp3[/code] file is imported as [AudioStreamMP3].
 ## See [method test_and_import_audio_files].
-static var _streams: Dictionary[StringName, AudioStream]
-static var _master_name: StringName
-static var _is_master_playing: bool
-static var _is_loop_enabled: bool
-static var _master_volume: float = 1.0
+var _streams: Dictionary[StringName, AudioStream]
+var _master_name: StringName
+var _is_master_playing: bool
+var _is_loop_enabled: bool
+var _master_volume: float = 1.0
 
-static var _time_position: float = 0.0
-static var _time_duration: float = 0.0
-#static var _time_position_requested: float = 0.0
+var _time_position: float = 0.0
+var _time_duration: float = 0.0
 
 ## Emits [signal play_pause_requested], connected to an [AudioStreamPlayer].
 func request_play_pause() -> void:
@@ -101,16 +100,11 @@ func set_master_position(p_time: float) -> void:
 func get_master_position() -> float:
 	return _time_position
 
-#func get_master_requested_position() -> float:
-	#return _time_position_requested
-
 func set_master_duration(p_time: float) -> void:
 	_time_duration = p_time
 
 ## Returns the duration of the currently selected master stream.
 func get_master_duration() -> float:
-	#var stream: AudioStream = _streams.get(_master_name)
-	#return stream.get_length()
 	return _time_duration
 
 ## Returns a deep copy of [member _streams].
@@ -124,18 +118,21 @@ func set_master_name(p_name: StringName) -> void:
 		return
 	
 	_master_name = p_name
-	
-	master_changed.emit()
 
 ## Returns the name of the selected master.
 func get_master_name() -> StringName:
 	return _master_name
 
+func notify_updated_streams(p_setup: bool) -> void:
+	if p_setup:
+		stream_list_updated.emit()
+	master_changed.emit()
+
 ## Clear [member _streams].
 func clear_streams() -> void:
 	_streams.clear()
 	
-	audio_files_changed.emit()
+	new_audio_imported.emit()
 	master_changed.emit()
 	master_play_state_changed.emit()
 
@@ -188,6 +185,6 @@ audio in the Ogg file container.".format({"filename": filename})
 				)
 				return FAILED
 	
-	audio_files_changed.emit()
+	new_audio_imported.emit()
 	
 	return OK

@@ -17,8 +17,6 @@
 
 extends PanelContainer
 
-var audio_manager: AudioManager
-
 var _files_property_container_script: Script = preload("res://New Scripts/files_property_container.gd")
 
 @onready var _save_preset_button: Button = %SavePresetButton
@@ -76,19 +74,8 @@ func _on_import_audio_pressed() -> void:
 
 # TEST: Selecting files with the same name.
 func _on_audio_files_selected(p_paths: PackedStringArray) -> void:
-	@warning_ignore("unsafe_property_access")
-	if _master_container.audio_manager == null:
-		@warning_ignore("unsafe_property_access")
-		_master_container.audio_manager = audio_manager
-		@warning_ignore("unsafe_method_access")
-		if _master_container.connect_audio_manager_signals():
-			return
-	
-	if audio_manager.test_and_import_audio_files(p_paths):
+	if AudioManager.test_and_import_audio_files(p_paths):
 		return
-	
-	#@warning_ignore("unsafe_method_access")
-	#_master_container.update_audio_list()
 
 func _on_export_video_pressed() -> void:
 	pass

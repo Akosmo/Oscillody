@@ -17,8 +17,6 @@
 
 extends PanelContainer
 
-var settings_manager: SettingsManager
-
 var _settings_property_container_script: Script = preload("res://New Scripts/settings_property_container.gd")
 
 @onready var input_device_container: PanelContainer = %InputDeviceContainer
@@ -27,43 +25,25 @@ var _settings_property_container_script: Script = preload("res://New Scripts/set
 @onready var theme_container: PanelContainer = %ThemeContainer
 @onready var switch_to_sliders_container: PanelContainer = %SwitchToSlidersContainer
 
-func setup() -> void:
+func _ready() -> void:
 	input_device_container.set_script(_settings_property_container_script)
 	@warning_ignore("unsafe_property_access")
-	input_device_container.settings_manager = settings_manager
-	@warning_ignore("unsafe_property_access")
-	input_device_container.container_property = settings_manager.ContainerProperty.INPUT_DEVICE
-	@warning_ignore("unsafe_method_access")
-	input_device_container.set_matching_property()
+	input_device_container.container_property = SettingsManager.ContainerProperty.INPUT_DEVICE
 	
 	output_device_container.set_script(_settings_property_container_script)
 	@warning_ignore("unsafe_property_access")
-	output_device_container.settings_manager = settings_manager
-	@warning_ignore("unsafe_property_access")
-	output_device_container.container_property = settings_manager.ContainerProperty.OUTPUT_DEVICE
-	@warning_ignore("unsafe_method_access")
-	output_device_container.set_matching_property()
+	output_device_container.container_property = SettingsManager.ContainerProperty.OUTPUT_DEVICE
 	
 	export_resolution_container.set_script(_settings_property_container_script)
 	@warning_ignore("unsafe_property_access")
-	export_resolution_container.settings_manager = settings_manager
-	@warning_ignore("unsafe_property_access")
-	export_resolution_container.container_property = settings_manager.ContainerProperty.EXPORT_RESOLUTION
-	@warning_ignore("unsafe_method_access")
-	export_resolution_container.set_matching_property()
+	export_resolution_container.container_property = SettingsManager.ContainerProperty.EXPORT_RESOLUTION
 	
 	theme_container.set_script(_settings_property_container_script)
 	@warning_ignore("unsafe_property_access")
-	theme_container.settings_manager = settings_manager
-	@warning_ignore("unsafe_property_access")
-	theme_container.container_property = settings_manager.ContainerProperty.THEME
-	@warning_ignore("unsafe_method_access")
-	theme_container.set_matching_property()
+	theme_container.container_property = SettingsManager.ContainerProperty.THEME
 	
 	switch_to_sliders_container.set_script(_settings_property_container_script)
 	@warning_ignore("unsafe_property_access")
-	switch_to_sliders_container.settings_manager = settings_manager
-	@warning_ignore("unsafe_property_access")
-	switch_to_sliders_container.container_property = settings_manager.ContainerProperty.SLIDER_SWITCH
-	@warning_ignore("unsafe_method_access")
-	switch_to_sliders_container.set_matching_property()
+	switch_to_sliders_container.container_property = SettingsManager.ContainerProperty.SLIDER_SWITCH
+	
+	SettingsManager.update_settings.emit()

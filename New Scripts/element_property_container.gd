@@ -21,8 +21,7 @@
 class_name PropertyContainer
 extends PanelContainer
 
-var element_manager: ElementManager
-var element_uid: int = element_manager.INVALID_UID
+var element_uid: int = ElementManager.INVALID_UID
 var property_key: StringName
 var _reset_value: Variant
 
@@ -46,10 +45,10 @@ func _ready() -> void:
 		printerr("Could not connect all property signals.")
 		return
 	
-	if element_manager.property_exists(element_uid, property_key):
+	if ElementManager.property_exists(element_uid, property_key):
 		_value_label.set_text(String(property_key))
 		
-		if property_key == element_manager.TYPE:
+		if property_key == ElementManager.TYPE:
 			_option_button.add_item("Analyzer")
 			_option_button.add_item("Gradient")
 			_option_button.add_item("Image")
@@ -59,7 +58,7 @@ func _ready() -> void:
 			_option_button.add_item("Solid Color")
 			_option_button.add_item("Text")
 		
-		_set_property_value_to_control(element_manager.get_element_property(element_uid, property_key))
+		_set_property_value_to_control(ElementManager.get_element_property(element_uid, property_key))
 
 func _connect_all_signals() -> Error:
 	if _reset_button.pressed.connect(_on_reset_pressed):
@@ -85,8 +84,8 @@ func _connect_all_signals() -> Error:
 	return OK
 
 func _set_value_to_property(p_value: Variant) -> void:
-	if element_manager.property_exists(element_uid, property_key):
-		if element_manager.set_element_property(element_uid, property_key, p_value):
+	if ElementManager.property_exists(element_uid, property_key):
+		if ElementManager.set_element_property(element_uid, property_key, p_value):
 			printerr(
 				"Could not set {property} to {value} in {UID}.".format(
 					{"property": property_key,
@@ -97,21 +96,21 @@ func _set_value_to_property(p_value: Variant) -> void:
 			)
 
 func _set_property_value_to_control(p_value: Variant) -> void:
-	match element_manager.get_control_node_for_property(element_uid, property_key):
-		element_manager.ControlNode.BUTTON:
+	match ElementManager.get_control_node_for_property(element_uid, property_key):
+		ElementManager.ControlNode.BUTTON:
 			_button.show()
-		element_manager.ControlNode.CHECK_BUTTON:
+		ElementManager.ControlNode.CHECK_BUTTON:
 			_check_button.show()
 			@warning_ignore("unsafe_cast")
 			_check_button.set_pressed(p_value as bool)
-		element_manager.ControlNode.COLOR_PICKER_BUTTON:
+		ElementManager.ControlNode.COLOR_PICKER_BUTTON:
 			_color_picker_button.show()
 			@warning_ignore("unsafe_cast")
 			_color_picker_button.set_pick_color(p_value as Color)
-		element_manager.ControlNode.LINE_EDIT:
+		ElementManager.ControlNode.LINE_EDIT:
 			_line_edit.show()
 			_line_edit.set_text(str(p_value))
-		element_manager.ControlNode.NUMERICAL:
+		ElementManager.ControlNode.NUMERICAL:
 			# TODO: Check if user prefer sliders. Have an instance of a Settings class.
 			_spin_box.show()
 			@warning_ignore("unsafe_call_argument")
@@ -119,11 +118,11 @@ func _set_property_value_to_control(p_value: Variant) -> void:
 			@warning_ignore("unsafe_call_argument")
 			if _custom_h_slider.set_value(p_value):
 				printerr("Wrong value given the slider's configurations.")
-		element_manager.ControlNode.OPTION_BUTTON:
+		ElementManager.ControlNode.OPTION_BUTTON:
 			_option_button.show()
 			@warning_ignore("unsafe_cast")
 			_option_button.select(p_value as int)
-		element_manager.ControlNode.TEXT_EDIT:
+		ElementManager.ControlNode.TEXT_EDIT:
 			_text_edit.show()
 			_text_edit.set_text(str(p_value))
 

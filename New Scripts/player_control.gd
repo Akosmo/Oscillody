@@ -21,8 +21,6 @@ extends PanelContainer
 const _GRABBER_OFFSET: float = 8.0
 const _HINT_Y_POSITION: float = -40.0
 
-var audio_manager: AudioManager
-
 var _position_secs: String
 var _position_mins: String
 var _duration_secs: String
@@ -57,13 +55,16 @@ func _ready() -> void:
 	_hint_position = Vector2(0.0, _HINT_Y_POSITION)
 	
 	_user_seeking = false
+	
+	if _connect_all_signals():
+		printerr("Could not connect all signals.")
 
 func _process(_delta: float) -> void:
 	if not _user_seeking:
-		_time_slider.set_value_no_signal(audio_manager.get_master_position())
+		_time_slider.set_value_no_signal(AudioManager.get_master_position())
 	
-	_position_mins = str(floori(audio_manager.get_master_position() / 60.0))
-	_position_secs = str(int(fmod(audio_manager.get_master_position(), 60.0))).pad_zeros(2)
+	_position_mins = str(floori(AudioManager.get_master_position() / 60.0))
+	_position_secs = str(int(fmod(AudioManager.get_master_position(), 60.0))).pad_zeros(2)
 	
 	_time_label.set_text(
 		"{pm}:{ps} / {dm}:{ds}".format(
@@ -75,9 +76,9 @@ func _process(_delta: float) -> void:
 # Shortcut doesn't work if button is not visible in tree.
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event.is_action_pressed("play_pause"):
-		audio_manager.request_play_pause()
+		AudioManager.request_play_pause()
 
-func connect_all_signals() -> Error:
+func _connect_all_signals() -> Error:
 	if _play_pause_button.pressed.connect(_on_play_pause_pressed):
 		return ERR_INVALID_PARAMETER
 	if _stop_button.pressed.connect(_on_stop_pressed):
@@ -97,25 +98,25 @@ func connect_all_signals() -> Error:
 	if _time_slider.mouse_exited.connect(_on_time_slider_mouse_exited):
 		return ERR_INVALID_PARAMETER
 	
-	# TODO: Add audio_files_changed here to reset player when streams are cleared.
-	if audio_manager.master_changed.connect(_on_master_changed):
+	# TODO: Add new_audio_imported here to reset player when streams are cleared.
+	if AudioManager.master_changed.connect(_on_master_changed):
 		return ERR_INVALID_PARAMETER
-	if audio_manager.master_play_state_changed.connect(_on_master_play_state_changed):
+	if AudioManager.master_play_state_changed.connect(_on_master_play_state_changed):
 		return ERR_INVALID_PARAMETER
 	
 	return OK
 
 func _on_play_pause_pressed() -> void:
-	audio_manager.request_play_pause()
+	AudioManager.request_play_pause()
 
 func _on_stop_pressed() -> void:
-	audio_manager.request_stop()
+	AudioManager.request_stop()
 
 func _on_loop_toggled(p_toggled_on: bool) -> void:
-	audio_manager.enable_loop(p_toggled_on)
+	AudioManager.enable_loop(p_toggled_on)
 
 func _on_volume_value_changed(p_value: float) -> void:
-	audio_manager.request_volume_change(p_value)
+	AudioManager.request_volume_change(p_value)
 	_volume_label.set_text(str(roundi(p_value * 100.0)) + "%")
 
 func _on_time_slider_drag_started() -> void:
@@ -123,7 +124,7 @@ func _on_time_slider_drag_started() -> void:
 
 func _on_time_slider_drag_ended(_p_value_changed: bool) -> void:
 	# FIXME: Can't seek while audio is paused...
-	audio_manager.request_seek(_time_slider.get_value())
+	AudioManager.request_seek(_time_slider.get_value())
 	_user_seeking = false
 
 # TODO: Shift time by half a second to it always lands at the expected time.
@@ -162,21 +163,21 @@ func _on_time_slider_gui_input(p_event: InputEvent) -> void:
 	_time_slider_position_hint.set_offset_transform_position(_hint_position)
 
 func _on_time_slider_mouse_entered() -> void:
-	if not is_zero_approx(audio_manager.get_master_duration()):
+	if not is_zero_approx(AudioManager.get_master_duration()):
 		_time_slider_position_hint.set_visible(true)
 
 func _on_time_slider_mouse_exited() -> void:
 	_time_slider_position_hint.set_visible(false)
 
 func _on_master_changed() -> void:
-	_time_slider.set_max(audio_manager.get_master_duration())
+	_time_slider.set_max(AudioManager.get_master_duration())
 	
-	_duration_mins = str(floori(audio_manager.get_master_duration() / 60.0))
-	_duration_secs = str(int(fmod(audio_manager.get_master_duration(), 60.0))).pad_zeros(2)
+	_duration_mins = str(floori(AudioManager.get_master_duration() / 60.0))
+	_duration_secs = str(int(fmod(AudioManager.get_master_duration(), 60.0))).pad_zeros(2)
 
 # TEST: Check how this changes on loop.
 func _on_master_play_state_changed() -> void:
-	if audio_manager.is_master_playing():
+	if AudioManager.is_master_playing():
 		_play_pause_button.set_text("PAUSE")
 	else:
 		_play_pause_button.set_text("PLAY")

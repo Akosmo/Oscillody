@@ -17,8 +17,7 @@
 
 # TODO: Refactor this class once the element system is fully figured out and functional.
 
-class_name ElementManager
-extends RefCounted
+extends Node
 ## Manager class for visualizer elements.
 ##
 ## Elements are the parts of a visualizer. This class can be used to create, modify,
@@ -82,11 +81,11 @@ const INVALID_UID: int = -1
 ## Holds all elements of the visualizer, along with their properties.
 ## Whenever modified, [signal elements_updated] is emitted.[br]
 ## [b]Note:[/b] This member should [b]NOT[/b] be accessed directly outside of this class.
-static var _elements: Dictionary[int, Dictionary]
+var _elements: Dictionary[int, Dictionary]
 
 ## The unique ID (UID) for the last created element during run-time.
 ## Initializes at [const INVALID_UID], but the first created element will have an UID of [code]0[/code].
-static var _element_uid: int = INVALID_UID
+var _element_uid: int = INVALID_UID
 
 func _init() -> void:
 	if elements_updated.connect(_updated_elements):

@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-class_name SettingsManager
-extends RefCounted
+extends Node
+
+signal update_settings
 
 enum ContainerProperty {
 	INPUT_DEVICE,
@@ -30,11 +31,11 @@ const RESOLUTION_720P: StringName = &"720p"
 const RESOLUTION_1080P: StringName = &"1080p"
 const RESOLUTION_1440P: StringName = &"1440p"
 
-static var _input_device: String
-static var _output_device: String
-static var _export_resolution: String
-static var _theme: String
-static var _slider_preference: bool
+var _input_device: String
+var _output_device: String
+var _export_resolution: String
+var _theme: String
+var _slider_preference: bool
 
 func _init() -> void:
 	_input_device = AudioServer.get_input_device()

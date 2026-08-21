@@ -18,7 +18,6 @@
 class_name ElementAnalyzer
 extends Element
 
-var element_manager: ElementManager
 var element_uid: int
 var property_dictionary: Dictionary[StringName, Variant]
 
@@ -27,28 +26,28 @@ var element_type: ElementManager.ElementType
 var element_layer: int
 var element_visibility: bool
 
-func setup_element() -> void:
-	property_dictionary = element_manager.get_element_properties(element_uid)
+func _ready() -> void:
+	property_dictionary = ElementManager.get_element_properties(element_uid)
 	for property_key: StringName in property_dictionary.keys():
 		_change_property(property_key, true)
 	
-	if element_manager.element_property_changed.connect(_on_element_property_changed):
+	if ElementManager.element_property_changed.connect(_on_element_property_changed):
 		return printerr("Could not connect signal.")
 
 func _change_property(p_property: StringName, p_new_element: bool = false) -> void:
 	match p_property:
-		element_manager.NAME:
+		ElementManager.NAME:
 			element_name = property_dictionary.get(p_property)
 			set_name(element_name + "_" + str(element_uid))
-		element_manager.TYPE:
+		ElementManager.TYPE:
 			if p_new_element:
 				element_type = property_dictionary.get(p_property)
 			else:
 				queue_free()
-		element_manager.LAYER:
+		ElementManager.LAYER:
 			element_layer = property_dictionary.get(p_property)
 			set_layer(element_layer)
-		element_manager.VISIBILITY:
+		ElementManager.VISIBILITY:
 			element_visibility = property_dictionary.get(p_property)
 			set_visible(element_visibility)
 

@@ -19,8 +19,6 @@
 
 extends PanelContainer
 
-var audio_manager: AudioManager
-
 var _reset_button: Button
 var _option_button: OptionButton
 
@@ -31,42 +29,44 @@ func _init() -> void:
 	_reset_button = $MarginContainer/HBoxContainer/Button
 	_option_button = $MarginContainer/HBoxContainer/HBoxContainer/OptionButton
 	
-	if _connect_node_signals():
-		printerr("Could not connect node signals.")
+	if _connect_signals():
+		printerr("Could not connect signals.")
 		return
 
 func update_audio_list() -> void:
 	_option_button.clear()
 	
-	var stream_dict: Dictionary[StringName, AudioStream] = audio_manager.get_streams()
+	# TODO: Maybe set on audio to stream conversion, and only read master name in this function.
+	# One reason to not do it, is that maybe the user doesn't want to change master all the time.
+	var stream_dict: Dictionary[StringName, AudioStream] = AudioManager.get_streams()
 	if not stream_dict.is_empty():
 		for stream: StringName in stream_dict.keys():
 			_option_button.add_item(String(stream))
 		
 		_reset_button.show()
 	
-		audio_manager.set_master_name(_option_button.get_item_text(_option_button.get_selected()))
+		AudioManager.set_master_name(_option_button.get_item_text(_option_button.get_selected()))
 	else:
-		audio_manager.set_master_name(&"")
+		AudioManager.set_master_name(&"")
 		
 		_reset_button.hide()
-
-func connect_audio_manager_signals() -> Error:
-	if audio_manager.audio_files_changed.connect(update_audio_list):
-		return ERR_INVALID_PARAMETER
 	
-	return OK
+	AudioManager.notify_updated_streams(true)
 
-func _connect_node_signals() -> Error:
+func _connect_signals() -> Error:
 	if _reset_button.pressed.connect(_on_reset_pressed):
 		return ERR_INVALID_PARAMETER
 	if _option_button.item_selected.connect(_on_item_selected):
 		return ERR_INVALID_PARAMETER
 	
+	if AudioManager.new_audio_imported.connect(update_audio_list):
+		return ERR_INVALID_PARAMETER
+	
 	return OK
 
 func _on_reset_pressed() -> void:
-	audio_manager.clear_streams()
+	AudioManager.clear_streams()
 
 func _on_item_selected(p_index: int) -> void:
-	audio_manager.set_master_name(StringName(_option_button.get_item_text(p_index)))
+	AudioManager.set_master_name(StringName(_option_button.get_item_text(p_index)))
+	AudioManager.notify_updated_streams(false)

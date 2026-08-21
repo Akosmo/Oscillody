@@ -19,7 +19,6 @@
 
 extends VSplitContainer
 
-var element_manager: ElementManager
 var _element_container: PackedScene = preload("res://New Scenes/element_container.tscn")
 var _property_container: PackedScene = preload("res://New Scenes/property_container.tscn")
 var _element_property_container_script: Script = preload("res://New Scripts/element_property_container.gd")
@@ -30,14 +29,12 @@ $PanelContainer/MarginContainer/ScrollContainer/VBoxContainer
 @onready var _properties_box_container: VBoxContainer = \
 $PanelContainer2/MarginContainer/ScrollContainer/VBoxContainer
 
-
 func _ready() -> void:
 	if _add_element_button.pressed.connect(_on_add_element_pressed):
 		printerr("Could not connect the \"pressed\" signal")
 
 func _on_add_element_pressed() -> void:
 	var element_node: ElementContainer = _element_container.instantiate()
-	element_node.element_manager = element_manager
 	_element_box_container.add_child(element_node)
 	if element_node.display_element_properties.connect(_display_element_properties):
 		printerr("Could not connect \"_display_element_properties\".")
@@ -49,12 +46,10 @@ func _display_element_properties(p_element_uid: int) -> void:
 		for node: PropertyContainer in _properties_box_container.get_children():
 			_properties_box_container.remove_child(node)
 	
-	if element_manager.element_exists(p_element_uid):
-		for property: StringName in element_manager.get_element_properties(p_element_uid).keys():
+	if ElementManager.element_exists(p_element_uid):
+		for property: StringName in ElementManager.get_element_properties(p_element_uid).keys():
 			var property_node: PanelContainer = _property_container.instantiate()
 			property_node.set_script(_element_property_container_script)
-			@warning_ignore("unsafe_property_access")
-			property_node.element_manager = element_manager
 			@warning_ignore("unsafe_property_access")
 			property_node.element_uid = p_element_uid
 			@warning_ignore("unsafe_property_access")

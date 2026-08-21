@@ -19,8 +19,6 @@ extends PanelContainer
 
 var container_property: SettingsManager.ContainerProperty
 
-var settings_manager: SettingsManager
-
 var _reset_button: Button
 var _option_button: OptionButton
 var _check_button: CheckButton
@@ -35,35 +33,11 @@ func _init() -> void:
 	_option_button = $MarginContainer/HBoxContainer/HBoxContainer/OptionButton
 	_check_button = $MarginContainer/HBoxContainer/HBoxContainer/CheckButton
 	
-	if _connect_node_signals():
+	if _connect_signals():
 		printerr("Could not connect node signals.")
 		return
 
-func set_matching_property() -> void:
-	match container_property:
-		settings_manager.ContainerProperty.INPUT_DEVICE:
-			for input_device: String in AudioServer.get_input_device_list():
-				_option_button.add_item(input_device)
-			_option_button.select(
-				AudioServer.get_input_device_list().find(settings_manager.get_input_device())
-			)
-		settings_manager.ContainerProperty.OUTPUT_DEVICE:
-			for output_device: String in AudioServer.get_output_device_list():
-				_option_button.add_item(output_device)
-			_option_button.select(
-				AudioServer.get_output_device_list().find(settings_manager.get_output_device())
-			)
-		settings_manager.ContainerProperty.EXPORT_RESOLUTION:
-			_option_button.add_item("720p")
-			_option_button.add_item("1080p")
-			_option_button.add_item("1440p")
-			_option_button.select(1)
-		settings_manager.ContainerProperty.THEME:
-			pass
-		settings_manager.ContainerProperty.SLIDER_SWITCH:
-			pass
-
-func _connect_node_signals() -> Error:
+func _connect_signals() -> Error:
 	if _reset_button.pressed.connect(_on_reset_pressed):
 		return ERR_INVALID_PARAMETER
 	if _option_button.item_selected.connect(_on_item_selected):
@@ -71,37 +45,64 @@ func _connect_node_signals() -> Error:
 	if _check_button.toggled.connect(_on_check_pressed):
 		return ERR_INVALID_PARAMETER
 	
+	if SettingsManager.update_settings.connect(_on_update_settings):
+		return ERR_INVALID_PARAMETER
+	
 	return OK
 
 func _on_reset_pressed() -> void:
 	match container_property:
-		settings_manager.ContainerProperty.INPUT_DEVICE:
+		SettingsManager.ContainerProperty.INPUT_DEVICE:
 			pass
-		settings_manager.ContainerProperty.OUTPUT_DEVICE:
+		SettingsManager.ContainerProperty.OUTPUT_DEVICE:
 			pass
-		settings_manager.ContainerProperty.EXPORT_RESOLUTION:
+		SettingsManager.ContainerProperty.EXPORT_RESOLUTION:
 			pass
-		settings_manager.ContainerProperty.THEME:
+		SettingsManager.ContainerProperty.THEME:
 			pass
-		settings_manager.ContainerProperty.SLIDER_SWITCH:
+		SettingsManager.ContainerProperty.SLIDER_SWITCH:
 			pass
 
 func _on_item_selected(p_index: int) -> void:
 	match container_property:
-		settings_manager.ContainerProperty.INPUT_DEVICE:
-			if settings_manager.set_input_device(_option_button.get_item_text(p_index)):
+		SettingsManager.ContainerProperty.INPUT_DEVICE:
+			if SettingsManager.set_input_device(_option_button.get_item_text(p_index)):
 				printerr("Could not set input device.")
-		settings_manager.ContainerProperty.OUTPUT_DEVICE:
-			if settings_manager.set_output_device(_option_button.get_item_text(p_index)):
+		SettingsManager.ContainerProperty.OUTPUT_DEVICE:
+			if SettingsManager.set_output_device(_option_button.get_item_text(p_index)):
 				printerr("Could not set output device.")
-		settings_manager.ContainerProperty.EXPORT_RESOLUTION:
-			if settings_manager.set_export_resolution(_option_button.get_item_text(p_index)):
+		SettingsManager.ContainerProperty.EXPORT_RESOLUTION:
+			if SettingsManager.set_export_resolution(_option_button.get_item_text(p_index)):
 				printerr("Could not set export resolution.")
-		settings_manager.ContainerProperty.THEME:
-			if settings_manager.set_app_theme(_option_button.get_item_text(p_index)):
+		SettingsManager.ContainerProperty.THEME:
+			if SettingsManager.set_app_theme(_option_button.get_item_text(p_index)):
 				printerr("Could not set theme.")
 		_:
 			pass
 
 func _on_check_pressed(p_toggled_on: bool) -> void:
-	settings_manager.enable_sliders(p_toggled_on)
+	SettingsManager.enable_sliders(p_toggled_on)
+
+func _on_update_settings() -> void:
+	match container_property:
+		SettingsManager.ContainerProperty.INPUT_DEVICE:
+			for input_device: String in AudioServer.get_input_device_list():
+				_option_button.add_item(input_device)
+			_option_button.select(
+				AudioServer.get_input_device_list().find(SettingsManager.get_input_device())
+			)
+		SettingsManager.ContainerProperty.OUTPUT_DEVICE:
+			for output_device: String in AudioServer.get_output_device_list():
+				_option_button.add_item(output_device)
+			_option_button.select(
+				AudioServer.get_output_device_list().find(SettingsManager.get_output_device())
+			)
+		SettingsManager.ContainerProperty.EXPORT_RESOLUTION:
+			_option_button.add_item("720p")
+			_option_button.add_item("1080p")
+			_option_button.add_item("1440p")
+			_option_button.select(1)
+		SettingsManager.ContainerProperty.THEME:
+			pass
+		SettingsManager.ContainerProperty.SLIDER_SWITCH:
+			pass

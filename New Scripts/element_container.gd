@@ -22,7 +22,6 @@ extends PanelContainer
 
 signal display_element_properties(element_uid: int)
 
-var element_manager: ElementManager
 var _element_uid: int
 
 @onready var _delete_button: Button = %DeleteButton
@@ -33,11 +32,11 @@ func _ready() -> void:
 	if _connect_all_signals():
 		printerr("Could not connect signals.")
 	
-	_element_uid = element_manager.create_element()
+	_element_uid = ElementManager.create_element()
 	@warning_ignore("unsafe_cast")
-	set_name(element_manager.get_element_property(_element_uid, element_manager.NAME) as StringName)
+	set_name(ElementManager.get_element_property(_element_uid, ElementManager.NAME) as StringName)
 	_element_name_button.set_text(
-		str(element_manager.get_element_property(_element_uid, element_manager.NAME))
+		str(ElementManager.get_element_property(_element_uid, ElementManager.NAME))
 	)
 
 func _connect_all_signals() -> Error:
@@ -47,16 +46,16 @@ func _connect_all_signals() -> Error:
 		return ERR_INVALID_PARAMETER
 	if _element_name_button.pressed.connect(_on_element_name_button_pressed):
 		return ERR_INVALID_PARAMETER
-	if element_manager.elements_updated.connect(_on_elements_updated):
+	if ElementManager.elements_updated.connect(_on_elements_updated):
 		return ERR_INVALID_PARAMETER
 	
 	return OK
 
 func _on_delete_button_pressed() -> void:
-	if element_manager.delete_element(_element_uid):
+	if ElementManager.delete_element(_element_uid):
 		printerr("Could not delete element.")
 		return
-	display_element_properties.emit(element_manager.INVALID_UID)
+	display_element_properties.emit(ElementManager.INVALID_UID)
 	queue_free()
 
 func _on_duplicate_button_pressed() -> void:
@@ -66,7 +65,7 @@ func _on_element_name_button_pressed() -> void:
 	display_element_properties.emit(_element_uid)
 
 func _on_elements_updated() -> void:
-	if element_manager.element_exists(_element_uid):
+	if ElementManager.element_exists(_element_uid):
 		_element_name_button.set_text(
-			str(element_manager.get_element_property(_element_uid, element_manager.NAME))
+			str(ElementManager.get_element_property(_element_uid, ElementManager.NAME))
 		)

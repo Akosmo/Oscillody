@@ -21,14 +21,11 @@
 
 extends SubViewportContainer
 
-var audio_manager: AudioManager
 var _players: Dictionary[StringName, AudioStreamPlayer]
 # This is not a special, separated instance. The player assigned to it is chosen from `_players`,
 # and allows it to be audible.
 # TODO: That needs to be rephrased. See external notes.
 var _master_player: AudioStreamPlayer
-
-var element_manager: ElementManager
 
 var element_analyzer_node: ElementAnalyzer = ElementAnalyzer.new()
 var element_analyzer_scene: PackedScene = PackedScene.new()
@@ -38,30 +35,33 @@ var element_analyzer_scene: PackedScene = PackedScene.new()
 func _ready() -> void:
 	if element_analyzer_scene.pack(element_analyzer_node):
 		printerr("Could not pack new node.")
+	
+	if _connect_player_signals():
+		printerr("Could not connect player signals.")
 
 func _process(_delta: float) -> void:
 	if _master_player != null and _master_player.get_stream() != null:
-		if audio_manager.is_master_playing():
-			audio_manager.set_master_position(_master_player.get_playback_position())
+		if AudioManager.is_master_playing():
+			AudioManager.set_master_position(_master_player.get_playback_position())
 
-func connect_player_signals() -> Error:
-	if audio_manager.audio_files_changed.connect(_update_audio):
+func _connect_player_signals() -> Error:
+	if AudioManager.stream_list_updated.connect(_update_audio):
 		return ERR_INVALID_PARAMETER
-	if audio_manager.master_changed.connect(_on_master_changed):
-		return ERR_INVALID_PARAMETER
-	
-	if audio_manager.play_pause_requested.connect(_on_play_pause_requested):
-		return ERR_INVALID_PARAMETER
-	if audio_manager.stop_requested.connect(_on_stop_requested):
-		return ERR_INVALID_PARAMETER
-	if audio_manager.volume_change_requested.connect(_on_volume_change_requested):
-		return ERR_INVALID_PARAMETER
-	if audio_manager.seek_requested.connect(_on_seek_requested):
+	if AudioManager.master_changed.connect(_on_master_changed):
 		return ERR_INVALID_PARAMETER
 	
-	if element_manager.element_created.connect(_on_element_created):
+	if AudioManager.play_pause_requested.connect(_on_play_pause_requested):
 		return ERR_INVALID_PARAMETER
-	if element_manager.element_deleted.connect(_on_element_deleted):
+	if AudioManager.stop_requested.connect(_on_stop_requested):
+		return ERR_INVALID_PARAMETER
+	if AudioManager.volume_change_requested.connect(_on_volume_change_requested):
+		return ERR_INVALID_PARAMETER
+	if AudioManager.seek_requested.connect(_on_seek_requested):
+		return ERR_INVALID_PARAMETER
+	
+	if ElementManager.element_created.connect(_on_element_created):
+		return ERR_INVALID_PARAMETER
+	if ElementManager.element_deleted.connect(_on_element_deleted):
 		return ERR_INVALID_PARAMETER
 	
 	return OK
@@ -75,7 +75,7 @@ func _update_buses() -> void:
 		AudioServer.remove_bus(AudioServer.get_bus_count() - 1)
 	
 	var bus_idx: int = 1
-	for stream_name: StringName in audio_manager.get_streams().keys():
+	for stream_name: StringName in AudioManager.get_streams().keys():
 		AudioServer.add_bus(bus_idx)
 		AudioServer.set_bus_name(bus_idx, stream_name)
 		AudioServer.set_bus_mute(bus_idx, true)
@@ -92,7 +92,7 @@ func _update_players() -> void:
 	
 	_players.clear()
 	
-	var stream_dict: Dictionary[StringName, AudioStream] = audio_manager.get_streams()
+	var stream_dict: Dictionary[StringName, AudioStream] = AudioManager.get_streams()
 	for stream_name: StringName in stream_dict.keys():
 		var player: AudioStreamPlayer = AudioStreamPlayer.new()
 		@warning_ignore("unsafe_call_argument")
@@ -111,45 +111,45 @@ func _on_master_changed() -> void:
 	
 	_master_player = null
 	
-	if not audio_manager.get_master_name().is_empty():
-		AudioServer.set_bus_mute(AudioServer.get_bus_index(audio_manager.get_master_name()), false)
+	if not AudioManager.get_master_name().is_empty():
+		AudioServer.set_bus_mute(AudioServer.get_bus_index(AudioManager.get_master_name()), false)
 	
 	if _master_player != null and _master_player.finished.is_connected(_on_master_finished):
 		_master_player.finished.disconnect(_on_master_finished)
 	
-	if not audio_manager.get_master_name().is_empty():
-		_master_player = _players.get(audio_manager.get_master_name())
+	if not AudioManager.get_master_name().is_empty():
+		_master_player = _players.get(AudioManager.get_master_name())
 	
 	if _master_player != null:
-		_master_player.set_volume_linear(audio_manager.get_master_volume())
+		_master_player.set_volume_linear(AudioManager.get_master_volume())
 		
 		if _master_player.finished.connect(_on_master_finished):
 			printerr("Could not connect finished signal from the master player.")
 			return
 		
 		if _master_player.get_stream() != null:
-			audio_manager.set_master_duration(_master_player.get_stream().get_length())
+			AudioManager.set_master_duration(_master_player.get_stream().get_length())
 	else:
-		audio_manager.set_master_duration(0.0)
+		AudioManager.set_master_duration(0.0)
 
 func _on_play_pause_requested() -> void:
 	if _master_player != null:
-		if not audio_manager.is_master_playing() and not _master_player.get_stream_paused():
-			_master_player.play(audio_manager.get_master_position())
-			audio_manager.set_master_playing(true)
+		if not AudioManager.is_master_playing() and not _master_player.get_stream_paused():
+			_master_player.play(AudioManager.get_master_position())
+			AudioManager.set_master_playing(true)
 		else:
-			_master_player.set_stream_paused(audio_manager.is_master_playing())
-			if _master_player.get_playback_position() != audio_manager.get_master_position():
+			_master_player.set_stream_paused(AudioManager.is_master_playing())
+			if _master_player.get_playback_position() != AudioManager.get_master_position():
 				if (
-					audio_manager.get_master_position() < audio_manager.get_master_duration() or
-					audio_manager.is_loop_enabled()
+					AudioManager.get_master_position() < AudioManager.get_master_duration() or
+					AudioManager.is_loop_enabled()
 				):
-					_master_player.seek(audio_manager.get_master_position())
-					audio_manager.set_master_playing(not audio_manager.is_master_playing())
+					_master_player.seek(AudioManager.get_master_position())
+					AudioManager.set_master_playing(not AudioManager.is_master_playing())
 				else:
-					_master_player.seek(audio_manager.get_master_position() - 0.01)
+					_master_player.seek(AudioManager.get_master_position() - 0.01)
 			else:
-				audio_manager.set_master_playing(not audio_manager.is_master_playing())
+				AudioManager.set_master_playing(not AudioManager.is_master_playing())
 		
 
 func _on_stop_requested() -> void:
@@ -157,50 +157,48 @@ func _on_stop_requested() -> void:
 		_master_player.stop()
 	
 	# Just in case... mostly needed in case the master is cleared.
-	audio_manager.set_master_position(0.0)
-	audio_manager.set_master_playing(false)
+	AudioManager.set_master_position(0.0)
+	AudioManager.set_master_playing(false)
 
 func _on_volume_change_requested() -> void:
 	if _master_player != null:
-		_master_player.set_volume_linear(audio_manager.get_master_volume())
+		_master_player.set_volume_linear(AudioManager.get_master_volume())
 
 func _on_seek_requested(p_time: float) -> void:
 	if _master_player != null:
-		if p_time < audio_manager.get_master_duration() or audio_manager.is_loop_enabled():
+		if p_time < AudioManager.get_master_duration() or AudioManager.is_loop_enabled():
 			_master_player.seek(p_time)
 		else:
 			_master_player.seek(p_time - 0.01)
 
 func _on_master_finished() -> void:
-	if audio_manager.is_loop_enabled():
+	if AudioManager.is_loop_enabled():
 		_master_player.play()
 	else:
-		audio_manager.set_master_position(0.0)
-		audio_manager.set_master_playing(false)
+		AudioManager.set_master_position(0.0)
+		AudioManager.set_master_playing(false)
 
 func _on_element_created(p_element_uid: int) -> void:
-	match element_manager.get_element_property(p_element_uid, element_manager.TYPE):
-		element_manager.ElementType.EMPTY:
+	match ElementManager.get_element_property(p_element_uid, ElementManager.TYPE):
+		ElementManager.ElementType.EMPTY:
 			pass
-		element_manager.ElementType.ANALYZER:
+		ElementManager.ElementType.ANALYZER:
 			var node_instance: ElementAnalyzer = element_analyzer_scene.instantiate()
-			node_instance.element_manager = element_manager
 			node_instance.element_uid = p_element_uid
 			sub_viewport.add_child(node_instance)
-			node_instance.setup_element()
-		element_manager.ElementType.GRADIENT:
+		ElementManager.ElementType.GRADIENT:
 			pass
-		element_manager.ElementType.IMAGE:
+		ElementManager.ElementType.IMAGE:
 			pass
-		element_manager.ElementType.POST_PROCESSING:
+		ElementManager.ElementType.POST_PROCESSING:
 			pass
-		element_manager.ElementType.SHADER:
+		ElementManager.ElementType.SHADER:
 			pass
-		element_manager.ElementType.SHAPE:
+		ElementManager.ElementType.SHAPE:
 			pass
-		element_manager.ElementType.SOLID_COLOR:
+		ElementManager.ElementType.SOLID_COLOR:
 			pass
-		element_manager.ElementType.TEXT:
+		ElementManager.ElementType.TEXT:
 			pass
 
 func _on_element_deleted(p_element_uid: int) -> void:

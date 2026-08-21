@@ -17,28 +17,27 @@
 
 # TODO: Delete this class?
 
-class_name ElementEmpty
-extends Element
-
-var element_manager: ElementManager
-var element_uid: int
-var element_name: String
-var element_type: ElementManager.ElementType
-var element_layer: int
-var element_visibility: bool
-
-func setup_element() -> void:
-	var property_dict: Dictionary[StringName, Variant] = element_manager.get_element_properties(element_uid)
-	for key: StringName in property_dict.keys():
-		match key:
-			element_manager.NAME:
-				element_name = property_dict.get(key)
-				set_name(element_name + "_" + str(element_uid))
-			element_manager.TYPE:
-				element_type = property_dict.get(key)
-			element_manager.LAYER:
-				element_layer = property_dict.get(key)
-				set_layer(element_layer)
-			element_manager.VISIBILITY:
-				element_visibility = property_dict.get(key)
-				set_visible(element_visibility)
+#class_name ElementEmpty
+#extends Element
+#
+#var element_uid: int
+#var element_name: String
+#var element_type: ElementManager.ElementType
+#var element_layer: int
+#var element_visibility: bool
+#
+#func setup_element() -> void:
+	#var property_dict: Dictionary[StringName, Variant] = ElementManager.get_element_properties(element_uid)
+	#for key: StringName in property_dict.keys():
+		#match key:
+			#ElementManager.NAME:
+				#element_name = property_dict.get(key)
+				#set_name(element_name + "_" + str(element_uid))
+			#ElementManager.TYPE:
+				#element_type = property_dict.get(key)
+			#ElementManager.LAYER:
+				#element_layer = property_dict.get(key)
+				#set_layer(element_layer)
+			#ElementManager.VISIBILITY:
+				#element_visibility = property_dict.get(key)
+				#set_visible(element_visibility)
