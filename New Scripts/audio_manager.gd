@@ -45,7 +45,7 @@ signal master_play_state_changed
 ## Holds all imported audio files, as [AudioStream]s. It will have the appropriate type based on the
 ## files extention. For example, a [code].mp3[/code] file is imported as [AudioStreamMP3].
 ## See [method test_and_import_audio_files].
-var _streams: Dictionary[StringName, AudioStream]
+var _streams: Dictionary[String, AudioStream] # NOTE: This was changed from StringName to String.
 var _master_name: StringName
 var _is_master_playing: bool
 var _is_loop_enabled: bool

@@ -27,13 +27,15 @@ var _players: Dictionary[StringName, AudioStreamPlayer]
 # TODO: That needs to be rephrased. See external notes.
 var _master_player: AudioStreamPlayer
 
-var element_analyzer_node: ElementAnalyzer = ElementAnalyzer.new()
+var element_empty_scene: PackedScene = PackedScene.new()
 var element_analyzer_scene: PackedScene = PackedScene.new()
 
 @onready var sub_viewport: SubViewport = $SubViewport
 
 func _ready() -> void:
-	if element_analyzer_scene.pack(element_analyzer_node):
+	if element_empty_scene.pack(ElementEmpty.new()):
+		printerr("Could not pack new node.")
+	if element_analyzer_scene.pack(ElementAnalyzer.new()):
 		printerr("Could not pack new node.")
 	
 	if _connect_player_signals():
@@ -62,6 +64,8 @@ func _connect_player_signals() -> Error:
 	if ElementManager.element_created.connect(_on_element_created):
 		return ERR_INVALID_PARAMETER
 	if ElementManager.element_deleted.connect(_on_element_deleted):
+		return ERR_INVALID_PARAMETER
+	if ElementManager.element_changed_type.connect(_on_element_changed_type):
 		return ERR_INVALID_PARAMETER
 	
 	return OK
@@ -181,13 +185,13 @@ func _on_master_finished() -> void:
 func _on_element_created(p_element_uid: int) -> void:
 	match ElementManager.get_element_property(p_element_uid, ElementManager.TYPE):
 		ElementManager.ElementType.EMPTY:
-			pass
+			var node_instance: ElementEmpty = element_empty_scene.instantiate()
+			node_instance.element_uid = p_element_uid
+			sub_viewport.add_child(node_instance)
 		ElementManager.ElementType.ANALYZER:
 			var node_instance: ElementAnalyzer = element_analyzer_scene.instantiate()
 			node_instance.element_uid = p_element_uid
 			sub_viewport.add_child(node_instance)
-		ElementManager.ElementType.GRADIENT:
-			pass
 		ElementManager.ElementType.IMAGE:
 			pass
 		ElementManager.ElementType.POST_PROCESSING:
@@ -196,8 +200,6 @@ func _on_element_created(p_element_uid: int) -> void:
 			pass
 		ElementManager.ElementType.SHAPE:
 			pass
-		ElementManager.ElementType.SOLID_COLOR:
-			pass
 		ElementManager.ElementType.TEXT:
 			pass
 
@@ -205,3 +207,7 @@ func _on_element_deleted(p_element_uid: int) -> void:
 	for node: Node in sub_viewport.get_children():
 		if node.get_name().containsn(str(p_element_uid)):
 			sub_viewport.remove_child(node)
+
+func _on_element_changed_type(p_element_uid: int) -> void:
+	#_on_element_deleted(p_element_uid) # Element classes already handle this.
+	_on_element_created(p_element_uid)

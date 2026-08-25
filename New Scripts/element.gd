@@ -15,11 +15,19 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
+# TODO: Update as needed.
+
 @abstract
 class_name Element
 extends CanvasLayer
 
 #@abstract func setup_element() -> void
+
+@abstract func _ready() -> void
+
+@abstract func _setup_properties() -> void
+
+#@abstract func _set_configuration_for_property(p_property: StringName)
 
 @abstract func _change_property(p_property: StringName, p_new_element: bool = false) -> void
 

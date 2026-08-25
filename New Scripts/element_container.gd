@@ -20,7 +20,7 @@
 class_name ElementContainer
 extends PanelContainer
 
-signal display_element_properties(element_uid: int)
+signal element_selected(p_element_uid: int)
 
 var _element_uid: int
 
@@ -46,7 +46,8 @@ func _connect_all_signals() -> Error:
 		return ERR_INVALID_PARAMETER
 	if _element_name_button.pressed.connect(_on_element_name_button_pressed):
 		return ERR_INVALID_PARAMETER
-	if ElementManager.elements_updated.connect(_on_elements_updated):
+	
+	if ElementUIHelper.element_name_changed.connect(_on_element_name_changed):
 		return ERR_INVALID_PARAMETER
 	
 	return OK
@@ -55,17 +56,15 @@ func _on_delete_button_pressed() -> void:
 	if ElementManager.delete_element(_element_uid):
 		printerr("Could not delete element.")
 		return
-	display_element_properties.emit(ElementManager.INVALID_UID)
+	element_selected.emit(ElementManager.INVALID_UID)
 	queue_free()
 
 func _on_duplicate_button_pressed() -> void:
 	pass
 
 func _on_element_name_button_pressed() -> void:
-	display_element_properties.emit(_element_uid)
+	element_selected.emit(_element_uid)
 
-func _on_elements_updated() -> void:
-	if ElementManager.element_exists(_element_uid):
-		_element_name_button.set_text(
-			str(ElementManager.get_element_property(_element_uid, ElementManager.NAME))
-		)
+func _on_element_name_changed(p_element_uid: int, p_name: String) -> void:
+	if p_element_uid == _element_uid:
+		_element_name_button.set_text(p_name)

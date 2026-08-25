@@ -23,6 +23,10 @@ extends PanelContainer
 
 var element_uid: int = ElementManager.INVALID_UID
 var property_key: StringName
+
+var _property_configurations: Dictionary[StringName, Variant]
+var _control_node: ElementUIHelper.ControlNode
+var _property_value: Variant
 var _reset_value: Variant
 
 @onready var _value_label: Label = $MarginContainer/HBoxContainer/Label
@@ -38,8 +42,6 @@ $MarginContainer/HBoxContainer/HBoxContainer/ColorPickerButton
 @onready var _option_button: OptionButton = $MarginContainer/HBoxContainer/HBoxContainer/OptionButton
 @onready var _text_edit: TextEdit = $MarginContainer/HBoxContainer/HBoxContainer/TextEdit
 
-# TODO: Split inside sections into different functions,
-# and also configure slider (and spinbox) before setting value.
 func _ready() -> void:
 	if _connect_all_signals():
 		printerr("Could not connect all property signals.")
@@ -48,19 +50,22 @@ func _ready() -> void:
 	if ElementManager.property_exists(element_uid, property_key):
 		_value_label.set_text(String(property_key))
 		
-		if property_key == ElementManager.TYPE:
-			_option_button.add_item("Analyzer")
-			_option_button.add_item("Gradient")
-			_option_button.add_item("Image")
-			_option_button.add_item("Post-Processing")
-			_option_button.add_item("Shader")
-			_option_button.add_item("Shape")
-			_option_button.add_item("Solid Color")
-			_option_button.add_item("Text")
+		_property_configurations = ElementUIHelper.get_property_configurations(element_uid, property_key)
 		
-		_set_property_value_to_control(ElementManager.get_element_property(element_uid, property_key))
+		if not _property_configurations.is_empty():
+			_control_node = _property_configurations.get(ElementUIHelper.CONTROL_NODE)
+			_reset_value = _property_configurations.get(ElementUIHelper.DEFAULT_VALUE)
+		
+		_property_value = ElementManager.get_element_property(element_uid, property_key)
+		if _reset_value != null and _property_value != _reset_value:
+			_reset_button.show()
+		
+		_set_property_value_to_control()
 
 func _connect_all_signals() -> Error:
+	if SettingsManager.slider_preference_changed.connect(_on_slider_preference_changed):
+		return ERR_INVALID_PARAMETER
+	
 	if _reset_button.pressed.connect(_on_reset_pressed):
 		return ERR_INVALID_PARAMETER
 	
@@ -94,40 +99,90 @@ func _set_value_to_property(p_value: Variant) -> void:
 					}
 				)
 			)
+		_property_value = p_value
 
-func _set_property_value_to_control(p_value: Variant) -> void:
-	match ElementManager.get_control_node_for_property(element_uid, property_key):
-		ElementManager.ControlNode.BUTTON:
+# TEST: Check if this trigger signals. Depending on the result, optimize to avoid unnecessary calls.
+func _set_property_value_to_control() -> void:
+	match _control_node:
+		ElementUIHelper.ControlNode.BUTTON:
 			_button.show()
-		ElementManager.ControlNode.CHECK_BUTTON:
+		ElementUIHelper.ControlNode.CHECK_BUTTON:
 			_check_button.show()
 			@warning_ignore("unsafe_cast")
-			_check_button.set_pressed(p_value as bool)
-		ElementManager.ControlNode.COLOR_PICKER_BUTTON:
+			_check_button.set_pressed(_property_value as bool)
+		ElementUIHelper.ControlNode.COLOR_PICKER_BUTTON:
 			_color_picker_button.show()
 			@warning_ignore("unsafe_cast")
-			_color_picker_button.set_pick_color(p_value as Color)
-		ElementManager.ControlNode.LINE_EDIT:
+			_color_picker_button.set_pick_color(_property_value as Color)
+		ElementUIHelper.ControlNode.LINE_EDIT:
 			_line_edit.show()
-			_line_edit.set_text(str(p_value))
-		ElementManager.ControlNode.NUMERICAL:
-			# TODO: Check if user prefer sliders. Have an instance of a Settings class.
-			_spin_box.show()
-			@warning_ignore("unsafe_call_argument")
-			_spin_box.set_value(p_value)
-			@warning_ignore("unsafe_call_argument")
-			if _custom_h_slider.set_value(p_value):
-				printerr("Wrong value given the slider's configurations.")
-		ElementManager.ControlNode.OPTION_BUTTON:
+			_line_edit.set_text(str(_property_value))
+		ElementUIHelper.ControlNode.NUMERICAL:
+			if SettingsManager.are_sliders_enabled(): # TODO: Make a signal for this.
+				_custom_h_slider.show()
+				if property_key == ElementManager.LAYER:
+					var _max_from_size: float = float(ElementManager.get_elements().size() - 1)
+					if _custom_h_slider.configure_slider(0.0, _max_from_size, 1.0, true):
+						printerr("Could not configure slider.")
+				else:
+					@warning_ignore("unsafe_cast")
+					var _min: float = _property_configurations.get(ElementUIHelper.MINIMUM) as float
+					@warning_ignore("unsafe_cast")
+					var _max: float = _property_configurations.get(ElementUIHelper.MAXIUMUM) as float
+					@warning_ignore("unsafe_cast")
+					var _step: float = _property_configurations.get(ElementUIHelper.STEP) as float
+					@warning_ignore("unsafe_cast")
+					var _rounded: bool = _property_configurations.get(ElementUIHelper.ROUNDED) as bool
+					if _custom_h_slider.configure_slider(_min, _max, _step, _rounded):
+						printerr("Could not configure slider.")
+				@warning_ignore("unsafe_call_argument")
+				if _custom_h_slider.set_value(_property_value):
+					printerr("Wrong value given the slider's configurations.")
+			else:
+				_spin_box.show()
+				if property_key == ElementManager.LAYER:
+					var _max_from_size: float = float(ElementManager.get_elements().size() - 1)
+					_spin_box.set_min(0.0)
+					_spin_box.set_max(_max_from_size)
+					_spin_box.set_step(1.0)
+					_spin_box.set_use_rounded_values(true)
+				else:
+					@warning_ignore("unsafe_cast")
+					var _min: float = _property_configurations.get(ElementUIHelper.MINIMUM) as float
+					@warning_ignore("unsafe_cast")
+					var _max: float = _property_configurations.get(ElementUIHelper.MAXIUMUM) as float
+					@warning_ignore("unsafe_cast")
+					var _step: float = _property_configurations.get(ElementUIHelper.STEP) as float
+					@warning_ignore("unsafe_cast")
+					var _rounded: bool = _property_configurations.get(ElementUIHelper.ROUNDED) as bool
+					_spin_box.set_min(_min)
+					_spin_box.set_max(_max)
+					_spin_box.set_step(_step)
+					_spin_box.set_use_rounded_values(_rounded)
+				@warning_ignore("unsafe_call_argument")
+				_spin_box.set_value(_property_value)
+		ElementUIHelper.ControlNode.OPTION_BUTTON:
 			_option_button.show()
+			if property_key == ElementManager.TYPE:
+				for item: StringName in ElementUIHelper.ELEMENT_TYPES:
+					_option_button.add_item(item)
+			else:
+				@warning_ignore("unsafe_method_access")
+				for item: StringName in _property_configurations.get(ElementUIHelper.OPTIONS).values():
+					_option_button.add_item(item)
 			@warning_ignore("unsafe_cast")
-			_option_button.select(p_value as int)
-		ElementManager.ControlNode.TEXT_EDIT:
+			_option_button.select(_property_value as int)
+		ElementUIHelper.ControlNode.TEXT_EDIT:
 			_text_edit.show()
-			_text_edit.set_text(str(p_value))
+			_text_edit.set_text(str(_property_value))
+
+func _on_slider_preference_changed() -> void:
+	_set_property_value_to_control()
 
 func _on_reset_pressed() -> void:
-	pass
+	_property_value = _reset_value
+	_set_value_to_property(_reset_value)
+	_set_property_value_to_control()
 
 func _on_button_pressed() -> void:
 	pass

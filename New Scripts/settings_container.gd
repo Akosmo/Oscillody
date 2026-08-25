@@ -46,4 +46,4 @@ func _ready() -> void:
 	@warning_ignore("unsafe_property_access")
 	switch_to_sliders_container.container_property = SettingsManager.ContainerProperty.SLIDER_SWITCH
 	
-	SettingsManager.update_settings.emit()
+	SettingsManager.notify_setup_request()

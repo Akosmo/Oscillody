@@ -25,11 +25,14 @@ extends Node
 ## Most methods in this class interact with [member _elements], and triggers [signal elements_updated].[br]
 ## UI controls and preset files set values, while Element objects get values from this class.
 
-## Emitted whenever [member _elements] is modified, and triggers relevant changes to the visualizer.
-signal elements_updated
+# TODO: Move these to ElementUIHelper
+### Emitted whenever [member _elements] is modified, and triggers relevant changes to the visualizer.
+#signal elements_updated
 signal element_created(p_element_uid: int)
 signal element_deleted(p_element_uid: int)
+#signal element_properties_changed(p_element_uid: int)
 signal element_property_changed(p_element_uid: int, p_property: StringName)
+signal element_changed_type(p_element_uid: int)
 
 ## Base type for elements.
 enum ElementType {
@@ -39,8 +42,6 @@ enum ElementType {
 	EMPTY = -1,
 	## An audio analyzer element, such as a waveform. Must be linked to an audio track to work.
 	ANALYZER,
-	## A 2-point gradient element.
-	GRADIENT,
 	## An image element.
 	IMAGE,
 	## A post-processing element.
@@ -49,12 +50,11 @@ enum ElementType {
 	SHADER,
 	## A shape element.
 	SHAPE,
-	## A solid color element.
-	SOLID_COLOR,
 	## A text element.
 	TEXT
 }
 
+# TODO: Deprecate this.
 ## Options of [Control] nodes to be used by a [PropertyContainer], based on the property it is linked to.
 enum ControlNode {
 	BUTTON,
@@ -87,9 +87,9 @@ var _elements: Dictionary[int, Dictionary]
 ## Initializes at [const INVALID_UID], but the first created element will have an UID of [code]0[/code].
 var _element_uid: int = INVALID_UID
 
-func _init() -> void:
-	if elements_updated.connect(_updated_elements):
-		printerr("Could not connect \"_updated_elements\" signal.")
+#func _init() -> void:
+	#if elements_updated.connect(_updated_elements):
+		#printerr("Could not connect \"_updated_elements\" signal.")
 
 ## Returns a deep copy of [member _elements].
 func get_elements() -> Dictionary[int, Dictionary]:
@@ -146,7 +146,10 @@ func set_element_properties(p_element_uid: int, p_properties: Dictionary[StringN
 	if not _is_element_property_dict_valid(p_properties, false):
 		return FAILED
 	
-	if element_exists(p_element_uid) and _is_null_or_empty(_elements.get(p_element_uid)):
+	var new_element: bool = true
+	
+	if element_exists(p_element_uid):
+		new_element = false
 		print("Warning: Element already has properties. Setting anyway.")
 	
 	if _is_null_or_empty(p_properties):
@@ -163,7 +166,12 @@ func set_element_properties(p_element_uid: int, p_properties: Dictionary[StringN
 			printerr("Could not set to \"{UID}\" element".format({"UID": p_element_uid}))
 			return FAILED
 	
-	elements_updated.emit()
+	#elements_updated.emit()
+	
+	#element_properties_changed.emit(p_element_uid)
+	
+	if not new_element:
+		ElementUIHelper.element_properties_changed.emit(p_element_uid)
 	
 	return OK
 
@@ -180,8 +188,10 @@ func get_element_properties(p_element_uid: int) -> Dictionary[StringName, Varian
 ## Sets the [param p_property] of [param p_element_uid] to [param p_value].
 ## See also [method get_element_properties].
 func set_element_property(p_element_uid: int, p_property: StringName, p_value: Variant) -> Error:
-	#if not property_exists(p_element_uid, p_property):
-		#return FAILED
+	# NOTE: This shouldn't exist if I want to add new properties one by one.
+	if not property_exists(p_element_uid, p_property):
+		return FAILED
+	
 	if p_property == NAME and _is_null_or_empty(p_value):
 		printerr("Name can not be empty.")
 		return FAILED
@@ -212,15 +222,17 @@ func set_element_property(p_element_uid: int, p_property: StringName, p_value: V
 		)
 		return FAILED
 	
-	if p_property == LAYER:
+	if p_property == NAME:
+		ElementUIHelper.element_name_changed.emit(p_element_uid, p_value)
+	elif p_property == LAYER:
 		if _ensure_gapless_layers():
 			printerr("Could not ensure gapless layers after setting Layer property.")
 	
-	elements_updated.emit()
+	#elements_updated.emit()
 	
 	element_property_changed.emit(p_element_uid, p_property)
 	if p_property == TYPE:
-		element_created.emit(p_element_uid)
+		element_changed_type.emit(p_element_uid)
 	
 	return OK
 
@@ -281,7 +293,7 @@ func _get_available_uid() -> int:
 
 ## Returns the next available default name. [b]Must[/b] be used after [method _get_available_uid] is called.
 func _get_available_name() -> String:
-	return "Empty_" + str(_element_uid)
+	return "Element_" + str(_element_uid)
 
 ## Returns the next available layer number.
 func _get_available_layer() -> int:

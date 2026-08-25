@@ -45,7 +45,7 @@ func _connect_signals() -> Error:
 	if _check_button.toggled.connect(_on_check_pressed):
 		return ERR_INVALID_PARAMETER
 	
-	if SettingsManager.update_settings.connect(_on_update_settings):
+	if SettingsManager.setup_requested.connect(_on_update_settings):
 		return ERR_INVALID_PARAMETER
 	
 	return OK

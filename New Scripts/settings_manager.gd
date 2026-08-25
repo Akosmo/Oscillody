@@ -17,7 +17,8 @@
 
 extends Node
 
-signal update_settings
+signal setup_requested
+signal slider_preference_changed
 
 enum ContainerProperty {
 	INPUT_DEVICE,
@@ -88,6 +89,10 @@ func set_app_theme(p_theme: String) -> Error:
 
 func enable_sliders(p_enable: bool) -> void:
 	_slider_preference = p_enable
+	slider_preference_changed.emit()
+
+func notify_setup_request() -> void:
+	setup_requested.emit()
 
 func are_sliders_enabled() -> bool:
 	return _slider_preference

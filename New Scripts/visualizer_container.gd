@@ -23,6 +23,8 @@ var _element_container: PackedScene = preload("res://New Scenes/element_containe
 var _property_container: PackedScene = preload("res://New Scenes/property_container.tscn")
 var _element_property_container_script: Script = preload("res://New Scripts/element_property_container.gd")
 
+var _current_uid_selected: int = ElementManager.INVALID_UID
+
 @onready var _add_element_button: Button = %AddElementButton
 @onready var _element_box_container: VBoxContainer = \
 $PanelContainer/MarginContainer/ScrollContainer/VBoxContainer
@@ -31,20 +33,24 @@ $PanelContainer2/MarginContainer/ScrollContainer/VBoxContainer
 
 func _ready() -> void:
 	if _add_element_button.pressed.connect(_on_add_element_pressed):
-		printerr("Could not connect the \"pressed\" signal")
+		printerr("Could not connect the \"pressed\" signal.")
+	#if ElementManager.element_properties_changed.connect(_display_element_properties):
+		#printerr("Could not connect the \"element_properties_changed\" signal.")
+	if ElementUIHelper.element_properties_changed.connect(_update_properties_container):
+		printerr("Could not connect the \"element_properties_changed\" signal.")
 
 func _on_add_element_pressed() -> void:
 	var element_node: ElementContainer = _element_container.instantiate()
 	_element_box_container.add_child(element_node)
-	if element_node.display_element_properties.connect(_display_element_properties):
-		printerr("Could not connect \"_display_element_properties\".")
+	if element_node.element_selected.connect(_update_properties_container):
+		printerr("Could not connect \"element_selected\".")
 
-func _display_element_properties(p_element_uid: int) -> void:
-	# TODO: Removing and instantiating properties all the time is messy, and maybe not performance friendly.
-	# Prefer hiding properties once instantiated.
+func _update_properties_container(p_element_uid: int) -> void:
 	if _properties_box_container.get_child_count():
 		for node: PropertyContainer in _properties_box_container.get_children():
 			_properties_box_container.remove_child(node)
+	
+	_current_uid_selected = p_element_uid
 	
 	if ElementManager.element_exists(p_element_uid):
 		for property: StringName in ElementManager.get_element_properties(p_element_uid).keys():
