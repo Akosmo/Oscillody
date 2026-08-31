@@ -21,6 +21,7 @@
 
 extends SubViewportContainer
 
+# TEST: Importing audio files with the same name and extension.
 var _players: Dictionary[StringName, AudioStreamPlayer]
 # This is not a special, separated instance. The player assigned to it is chosen from `_players`,
 # and allows it to be audible.
@@ -33,20 +34,24 @@ var element_analyzer_scene: PackedScene = PackedScene.new()
 @onready var sub_viewport: SubViewport = $SubViewport
 
 func _ready() -> void:
-	if element_empty_scene.pack(ElementEmpty.new()):
-		printerr("Could not pack new node.")
-	if element_analyzer_scene.pack(ElementAnalyzer.new()):
-		printerr("Could not pack new node.")
+	if element_empty_scene.pack(ElementCanvasEmpty.new()):
+		printerr("Could not pack node.")
+	if element_analyzer_scene.pack(ElementCanvasAnalyzer.new()):
+		printerr("Could not pack node.")
 	
-	if _connect_player_signals():
-		printerr("Could not connect player signals.")
+	WindowUtilities.set_subviewport_size(sub_viewport.get_size())
+	
+	if _connect_signals():
+		printerr("Could not connect signals.")
 
 func _process(_delta: float) -> void:
 	if _master_player != null and _master_player.get_stream() != null:
 		if AudioManager.is_master_playing():
 			AudioManager.set_master_position(_master_player.get_playback_position())
+	
+	WindowUtilities.set_subviewport_size(sub_viewport.get_size())
 
-func _connect_player_signals() -> Error:
+func _connect_signals() -> Error:
 	if AudioManager.stream_list_updated.connect(_update_audio):
 		return ERR_INVALID_PARAMETER
 	if AudioManager.master_changed.connect(_on_master_changed):
@@ -65,7 +70,7 @@ func _connect_player_signals() -> Error:
 		return ERR_INVALID_PARAMETER
 	if ElementManager.element_deleted.connect(_on_element_deleted):
 		return ERR_INVALID_PARAMETER
-	if ElementManager.element_changed_type.connect(_on_element_changed_type):
+	if ElementManager.element_type_changed.connect(_on_element_created):
 		return ERR_INVALID_PARAMETER
 	
 	return OK
@@ -84,9 +89,9 @@ func _update_buses() -> void:
 		AudioServer.set_bus_name(bus_idx, stream_name)
 		AudioServer.set_bus_mute(bus_idx, true)
 		AudioServer.add_bus_effect(bus_idx, AudioEffectCapture.new())
-		AudioServer.set_bus_effect_enabled(bus_idx, 0, false)
+		#AudioServer.set_bus_effect_enabled(bus_idx, 0, false)
 		AudioServer.add_bus_effect(bus_idx, AudioEffectSpectrumAnalyzer.new())
-		AudioServer.set_bus_effect_enabled(bus_idx, 1, false)
+		#AudioServer.set_bus_effect_enabled(bus_idx, 1, false)
 		bus_idx += 1
 
 func _update_players() -> void:
@@ -111,6 +116,7 @@ func _update_players() -> void:
 		add_child(player)
 
 func _on_master_changed() -> void:
+	# Clean-up (if needed) and changing to a valid Master.
 	_on_stop_requested()
 	
 	_master_player = null
@@ -121,28 +127,33 @@ func _on_master_changed() -> void:
 	if _master_player != null and _master_player.finished.is_connected(_on_master_finished):
 		_master_player.finished.disconnect(_on_master_finished)
 	
+	# Set-up.
 	if not AudioManager.get_master_name().is_empty():
 		_master_player = _players.get(AudioManager.get_master_name())
 	
 	if _master_player != null:
 		_master_player.set_volume_linear(AudioManager.get_master_volume())
 		
-		if _master_player.finished.connect(_on_master_finished):
-			printerr("Could not connect finished signal from the master player.")
-			return
+		if not _master_player.finished.is_connected(_on_master_finished):
+			if _master_player.finished.connect(_on_master_finished):
+				printerr("Could not connect finished signal from the Master Player.")
 		
 		if _master_player.get_stream() != null:
 			AudioManager.set_master_duration(_master_player.get_stream().get_length())
-	else:
-		AudioManager.set_master_duration(0.0)
+	#else:
+		#AudioManager.set_master_duration(0.0)
 
 func _on_play_pause_requested() -> void:
 	if _master_player != null:
+		# If Master Player is stopped.
 		if not AudioManager.is_master_playing() and not _master_player.get_stream_paused():
+			# User can seek while Master Player is stopped.
 			_master_player.play(AudioManager.get_master_position())
 			AudioManager.set_master_playing(true)
 		else:
+			# Master Player is either playing or paused.
 			_master_player.set_stream_paused(AudioManager.is_master_playing())
+			# If user seeked while the Master Player was paused.
 			if _master_player.get_playback_position() != AudioManager.get_master_position():
 				if (
 					AudioManager.get_master_position() < AudioManager.get_master_duration() or
@@ -151,6 +162,8 @@ func _on_play_pause_requested() -> void:
 					_master_player.seek(AudioManager.get_master_position())
 					AudioManager.set_master_playing(not AudioManager.is_master_playing())
 				else:
+					# If user seeked at or past duration and looping is disabled.
+					# Seeking at the exact duration just loops back, so avoid that.
 					_master_player.seek(AudioManager.get_master_position() - 0.01)
 			else:
 				AudioManager.set_master_playing(not AudioManager.is_master_playing())
@@ -160,19 +173,19 @@ func _on_stop_requested() -> void:
 	if _master_player != null:
 		_master_player.stop()
 	
-	# Just in case... mostly needed in case the master is cleared.
 	AudioManager.set_master_position(0.0)
 	AudioManager.set_master_playing(false)
 
 func _on_volume_change_requested() -> void:
 	if _master_player != null:
-		_master_player.set_volume_linear(AudioManager.get_master_volume())
+		AudioServer.set_bus_volume_linear(0, AudioManager.get_master_volume())
 
 func _on_seek_requested(p_time: float) -> void:
 	if _master_player != null:
 		if p_time < AudioManager.get_master_duration() or AudioManager.is_loop_enabled():
 			_master_player.seek(p_time)
 		else:
+			# Seeking at the exact duration just loops back, so avoid that.
 			_master_player.seek(p_time - 0.01)
 
 func _on_master_finished() -> void:
@@ -182,32 +195,28 @@ func _on_master_finished() -> void:
 		AudioManager.set_master_position(0.0)
 		AudioManager.set_master_playing(false)
 
-func _on_element_created(p_element_uid: int) -> void:
-	match ElementManager.get_element_property(p_element_uid, ElementManager.TYPE):
-		ElementManager.ElementType.EMPTY:
-			var node_instance: ElementEmpty = element_empty_scene.instantiate()
-			node_instance.element_uid = p_element_uid
+func _on_element_created(p_element: Element) -> void:
+	match p_element.get_type():
+		Element.ElementType.EMPTY:
+			var node_instance: ElementCanvasEmpty = element_empty_scene.instantiate()
+			node_instance.element = p_element
 			sub_viewport.add_child(node_instance)
-		ElementManager.ElementType.ANALYZER:
-			var node_instance: ElementAnalyzer = element_analyzer_scene.instantiate()
-			node_instance.element_uid = p_element_uid
+		Element.ElementType.ANALYZER:
+			var node_instance: ElementCanvasAnalyzer = element_analyzer_scene.instantiate()
+			node_instance.element = p_element
 			sub_viewport.add_child(node_instance)
-		ElementManager.ElementType.IMAGE:
+		Element.ElementType.IMAGE:
 			pass
-		ElementManager.ElementType.POST_PROCESSING:
+		Element.ElementType.POST_PROCESSING:
 			pass
-		ElementManager.ElementType.SHADER:
+		Element.ElementType.SHADER:
 			pass
-		ElementManager.ElementType.SHAPE:
+		Element.ElementType.SHAPE:
 			pass
-		ElementManager.ElementType.TEXT:
+		Element.ElementType.TEXT:
 			pass
 
-func _on_element_deleted(p_element_uid: int) -> void:
+func _on_element_deleted(p_element: Element) -> void:
 	for node: Node in sub_viewport.get_children():
-		if node.get_name().containsn(str(p_element_uid)):
+		if node.get_name().containsn(str(p_element.get_unique_id())):
 			sub_viewport.remove_child(node)
-
-func _on_element_changed_type(p_element_uid: int) -> void:
-	#_on_element_deleted(p_element_uid) # Element classes already handle this.
-	_on_element_created(p_element_uid)

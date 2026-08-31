@@ -32,19 +32,19 @@ var _files_property_container_script: Script = preload("res://New Scripts/files_
 @onready var _master_container: PanelContainer = %MasterContainer
 
 func _ready() -> void:
-	if _connect_all_signals():
+	if _connect_signals():
 		printerr("Could not connect signals.")
 		return
 	
 	_master_container.set_script(_files_property_container_script)
 
-func _connect_all_signals() -> Error:
+func _connect_signals() -> Error:
 	if _save_preset_button.pressed.connect(_on_save_pressed):
 		return ERR_INVALID_PARAMETER
-	if _refresh_preset_button.pressed.connect(_on_refresh_pressed):
-		return ERR_INVALID_PARAMETER
-	if _delete_preset_button.pressed.connect(_on_delete_pressed):
-		return ERR_INVALID_PARAMETER
+	#if _refresh_preset_button.pressed.connect(_on_refresh_pressed):
+		#return ERR_INVALID_PARAMETER
+	#if _delete_preset_button.pressed.connect(_on_delete_pressed):
+		#return ERR_INVALID_PARAMETER
 	if _open_preset_folder_button.pressed.connect(_on_open_folder_pressed):
 		return ERR_INVALID_PARAMETER
 	if _import_audio_button.pressed.connect(_on_import_audio_pressed):
@@ -60,11 +60,11 @@ func _connect_all_signals() -> Error:
 func _on_save_pressed() -> void:
 	pass
 
-func _on_refresh_pressed() -> void:
-	pass
-
-func _on_delete_pressed() -> void:
-	pass
+#func _on_refresh_pressed() -> void:
+	#pass
+#
+#func _on_delete_pressed() -> void:
+	#pass
 
 func _on_open_folder_pressed() -> void:
 	pass

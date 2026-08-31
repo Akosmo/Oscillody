@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://d1oevod46vgin" path="res://New Scenes/new_player_control.tscn" id="2_titj8"]
 [ext_resource type="Script" uid="uid://blv1t6mo5lluu" path="res://New Scripts/visualizer_container.gd" id="3_au6c5"]
 [ext_resource type="Script" uid="uid://dqgse2dg41gys" path="res://New Scripts/settings_container.gd" id="6_2xnxb"]
+[ext_resource type="Script" uid="uid://b8chcqdsmkmh0" path="res://New Scripts/settings_property_container.gd" id="7_0oqpi"]
 [ext_resource type="Script" uid="uid://cen27tgbvrkup" path="res://New Scripts/help_container.gd" id="7_325ne"]
 
 [node name="Main" type="Node" unique_id=789631805]
@@ -146,8 +147,6 @@ text = "Master"
 
 [node name="OptionButton" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/MasterContainer/MarginContainer/HBoxContainer/HBoxContainer" parent_id_path=PackedInt32Array(1358979536, 1197491246) index="6" unique_id=1932618024]
 visible = true
-custom_minimum_size = Vector2(180, 0)
-clip_text = true
 
 [node name="MarginContainer3" type="MarginContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1985883545, 998451736) index="5" unique_id=1005808437]
 layout_mode = 2
@@ -219,6 +218,7 @@ text = ""
 [node name="InputDeviceContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="0" unique_id=1580903313 instance=ExtResource("2_jtfbr")]
 unique_name_in_owner = true
 layout_mode = 2
+script = ExtResource("7_0oqpi")
 
 [node name="Label" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/InputDeviceContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(1580903313, 1985752979) index="0" unique_id=1523211957]
 text = "Input Device"
@@ -229,6 +229,7 @@ visible = true
 [node name="OutputDeviceContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="1" unique_id=601412527 instance=ExtResource("2_jtfbr")]
 unique_name_in_owner = true
 layout_mode = 2
+script = ExtResource("7_0oqpi")
 
 [node name="Label" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/OutputDeviceContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(601412527, 1985752979) index="0" unique_id=1523211957]
 text = "Output Device"
@@ -239,6 +240,7 @@ visible = true
 [node name="ExportResolutionContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="2" unique_id=287350813 instance=ExtResource("2_jtfbr")]
 unique_name_in_owner = true
 layout_mode = 2
+script = ExtResource("7_0oqpi")
 
 [node name="Label" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/ExportResolutionContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(287350813, 1985752979) index="0" unique_id=1523211957]
 text = "Export Resolution"
@@ -249,6 +251,7 @@ visible = true
 [node name="ThemeContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="3" unique_id=2138609664 instance=ExtResource("2_jtfbr")]
 unique_name_in_owner = true
 layout_mode = 2
+script = ExtResource("7_0oqpi")
 
 [node name="Label" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/ThemeContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(2138609664, 1985752979) index="0" unique_id=1523211957]
 text = "Theme"
@@ -259,6 +262,7 @@ visible = true
 [node name="SwitchToSlidersContainer" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="4" unique_id=1258595353 instance=ExtResource("2_jtfbr")]
 unique_name_in_owner = true
 layout_mode = 2
+script = ExtResource("7_0oqpi")
 
 [node name="Label" parent="HSplitContainer/PanelContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/SwitchToSlidersContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(1258595353, 1985752979) index="0" unique_id=1523211957]
 text = "Switch To Sliders"

@@ -56,15 +56,15 @@ func _ready() -> void:
 	
 	_user_seeking = false
 	
-	if _connect_all_signals():
-		printerr("Could not connect all signals.")
+	if _connect_signals():
+		printerr("Could not connect signals.")
 
 func _process(_delta: float) -> void:
-	if not _user_seeking:
+	if not _user_seeking and AudioManager.is_master_playing():
 		_time_slider.set_value_no_signal(AudioManager.get_master_position())
 	
 	_position_mins = str(floori(AudioManager.get_master_position() / 60.0))
-	_position_secs = str(int(fmod(AudioManager.get_master_position(), 60.0))).pad_zeros(2)
+	_position_secs = str(floori(fmod(AudioManager.get_master_position(), 60.0))).pad_zeros(2)
 	
 	_time_label.set_text(
 		"{pm}:{ps} / {dm}:{ds}".format(
@@ -78,7 +78,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if event.is_action_pressed("play_pause"):
 		AudioManager.request_play_pause()
 
-func _connect_all_signals() -> Error:
+func _connect_signals() -> Error:
 	if _play_pause_button.pressed.connect(_on_play_pause_pressed):
 		return ERR_INVALID_PARAMETER
 	if _stop_button.pressed.connect(_on_stop_pressed):
@@ -98,7 +98,6 @@ func _connect_all_signals() -> Error:
 	if _time_slider.mouse_exited.connect(_on_time_slider_mouse_exited):
 		return ERR_INVALID_PARAMETER
 	
-	# TODO: Add new_audio_imported here to reset player when streams are cleared.
 	if AudioManager.master_changed.connect(_on_master_changed):
 		return ERR_INVALID_PARAMETER
 	if AudioManager.master_play_state_changed.connect(_on_master_play_state_changed):
@@ -123,17 +122,14 @@ func _on_time_slider_drag_started() -> void:
 	_user_seeking = true
 
 func _on_time_slider_drag_ended(_p_value_changed: bool) -> void:
-	# FIXME: Can't seek while audio is paused...
-	AudioManager.request_seek(_time_slider.get_value())
+	AudioManager.request_seek(floorf(_time_slider.get_value()))
 	_user_seeking = false
 
-# TODO: Shift time by half a second to it always lands at the expected time.
-# Currently, clicking at :10 for example, can either land at :10 or :11 in the audio.
 func _on_time_slider_gui_input(p_event: InputEvent) -> void:
 	if p_event is InputEventMouseMotion:
 		_mouse_motion = p_event
 	
-	# Remapped.
+	# Mouse position in the X axis along the time slider. Remapped.
 	_mouse_x_position_remapped = clampf(
 		(_mouse_motion.get_position().x - _GRABBER_OFFSET) / \
 		(_time_slider.get_size().x - _GRABBER_OFFSET * 2.0),
@@ -141,11 +137,11 @@ func _on_time_slider_gui_input(p_event: InputEvent) -> void:
 		1.0
 	)
 	
-	# Remapped.
-	_audio_position_mouse = _time_slider.get_max() * _mouse_x_position_remapped
+	# Mouse position converted to time position in the loaded song.
+	_audio_position_mouse = roundf(floorf(_time_slider.get_max()) * _mouse_x_position_remapped)
 	
 	_position_mins_mouse = str(floori(_audio_position_mouse / 60.0))
-	_position_secs_mouse = str(int(fmod(_audio_position_mouse, 60.0))).pad_zeros(2)
+	_position_secs_mouse = str(roundi(fmod(_audio_position_mouse, 60.0))).pad_zeros(2)
 	_time_slider_position_hint.set_text(_position_mins_mouse + ":" + _position_secs_mouse)
 	
 	if _time_slider_position_hint.get_text().length() == 4:
@@ -173,7 +169,9 @@ func _on_master_changed() -> void:
 	_time_slider.set_max(AudioManager.get_master_duration())
 	
 	_duration_mins = str(floori(AudioManager.get_master_duration() / 60.0))
-	_duration_secs = str(int(fmod(AudioManager.get_master_duration(), 60.0))).pad_zeros(2)
+	_duration_secs = str(floori(fmod(AudioManager.get_master_duration(), 60.0))).pad_zeros(2)
+	
+	_time_slider.set_value_no_signal(AudioManager.get_master_position())
 
 # TEST: Check how this changes on loop.
 func _on_master_play_state_changed() -> void:

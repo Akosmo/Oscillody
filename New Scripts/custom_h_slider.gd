@@ -17,24 +17,21 @@
 
 class_name CustomHSlider
 extends HBoxContainer
+## A custom [HSlider] that displays the current value.
 
+## Emitted when the value changes, similarly to [signal Range.value_changed].
 signal value_changed(p_value: float)
 
-@export var _min_value: float = 0.0
-@export var _max_value: float = 100.0
-@export var _step: float = 1.0
-@export var _value: float = 0.0
-@export var _rounded: bool = false
+var _min_value: float = 0.0
+var _max_value: float = 100.0
+var _step: float = 1.0
+var _value: float = 0.0
+var _rounded: bool = false
 
 @onready var _h_slider: HSlider = $HSlider
 @onready var _label: Label = $Label
 
 func _ready() -> void:
-	if configure_slider(_min_value, _max_value, _step, _rounded):
-		printerr("Wrong slider configuration.")
-	if set_value(_value):
-		printerr("Wrong value given the slider's configurations.")
-	
 	_set_value_to_label()
 	
 	if _h_slider.value_changed.connect(_on_value_changed):
@@ -44,10 +41,15 @@ func configure_slider(p_min: float, p_max: float, p_step: float, p_rounded: bool
 	if p_min > p_max or (p_rounded and fmod(p_step, 1.0) != 0):
 		return FAILED
 	
-	_h_slider.set_min(_min_value)
-	_h_slider.set_max(_max_value)
-	_h_slider.set_step(_step)
-	_h_slider.set_use_rounded_values(_rounded)
+	_h_slider.set_min(p_min)
+	_h_slider.set_max(p_max)
+	_h_slider.set_step(p_step)
+	_h_slider.set_use_rounded_values(p_rounded)
+	
+	_min_value = p_min
+	_max_value = p_max
+	_step = p_step
+	_rounded = p_rounded
 	
 	return OK
 
@@ -60,16 +62,21 @@ func set_value(p_value: float) -> Error:
 	):
 		return FAILED
 	
-	_h_slider.set_value(_value)
+	_value = p_value
+	
+	_h_slider.set_value(p_value)
+	_set_value_to_label()
 	
 	return OK
 
 func _on_value_changed(p_value: float) -> void:
+	_value = p_value
 	_set_value_to_label()
 	value_changed.emit(p_value)
 
 func _set_value_to_label() -> void:
-	if _h_slider.rounded:
-		_label.set_text(str(_value).rstrip(".0"))
+	if _h_slider.is_using_rounded_values():
+		if str(_value).containsn(".0"):
+			_label.set_text(str(_value).replace(".0", ""))
 	else:
 		_label.set_text(str(_value))

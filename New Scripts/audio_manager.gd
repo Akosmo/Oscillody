@@ -15,27 +15,32 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-# TODO: Disallow loading the same audio file.
+# TODO: Disallow loading the same audio file, and files with the same name and extension.
+# TODO: This class can probably be refactored along with the `visualizer_subcontainer` class,
+# especially in regards to signals (`new_audio_imported`, `stream_list_updated`, `master_changed`,
+# and `master_play_state_changed`).
 
 extends Node
-## Manager class for audio.
+## Manager class that handles audio playback.
 ##
-## This class is used for communications between the player control, [AudioStreamPlayer]s under the
-## visualizer, and any other nodes that need access to current audio data (such as [Waveform]).
+## This class is used for communications between the player control and [AudioStreamPlayer]s under the
+## visualizer.
 
-## Emitted whenever new audio files are imported, or existing ones are cleared from Oscillody.
+## Emitted whenever new audio files are just imported
+## and added to [member _streams], or existing ones are cleared from Oscillody.
 signal new_audio_imported
+## Emitted whenever the list of streams in the UI is updated, including an updated [member _master_name].
 signal stream_list_updated
-## Emitted whenever a different stream is set as master (audible).
+## Emitted whenever a different stream is set as Master (audible).
 signal master_changed
 
-## Emitted whenever the player control attempts to play or pause the master stream player.
+## Emitted whenever the player control attempts to play or pause the Master stream player.
 signal play_pause_requested
-## Emitted whenever the player control attempts to stop the master stream player.
+## Emitted whenever the player control attempts to stop the Master stream player.
 signal stop_requested
-## Emitted whenever the player control attempts to change the volume of the master stream player.
+## Emitted whenever the player control attempts to change the volume of the Master stream player.
 signal volume_change_requested
-## Emitted whenever the player control attempts to seek a position in the master stream player.
+## Emitted whenever the player control attempts to seek a position in the Master stream player.
 ## [param p_time] sets the position at which the player will seek to.
 signal seek_requested(p_time: float)
 
@@ -45,7 +50,8 @@ signal master_play_state_changed
 ## Holds all imported audio files, as [AudioStream]s. It will have the appropriate type based on the
 ## files extention. For example, a [code].mp3[/code] file is imported as [AudioStreamMP3].
 ## See [method test_and_import_audio_files].
-var _streams: Dictionary[String, AudioStream] # NOTE: This was changed from StringName to String.
+var _streams: Dictionary[StringName, AudioStream]
+## The name of the Master stream, based on a key found in [member _streams].
 var _master_name: StringName
 var _is_master_playing: bool
 var _is_loop_enabled: bool
@@ -68,25 +74,28 @@ func request_volume_change(p_volume_linear: float) -> void:
 	_master_volume = p_volume_linear
 	volume_change_requested.emit()
 
+## Returns the current volume of the Master player.
 func get_master_volume() -> float:
 	return _master_volume
 
 ## Emits [signal seek_requested], connected to an [AudioStreamPlayer].
 func request_seek(p_time: float) -> void:
-	if not _is_master_playing:
+	if not _is_master_playing: # Allow seeking to work if Master is not playing.
 		_time_position = p_time
 	seek_requested.emit(p_time)
 
-## Emits [signal master_play_state_changed], connected to the player control.
+## Emits [signal master_play_state_changed], connected to the player control.[br]
+## [b]Note:[/b] This is different than [method request_play_pause], as it does not actually makes the
+## Master [AudioStreamPlayer] play. Must be set manually.
 func set_master_playing(p_playing: bool) -> void:
 	_is_master_playing = p_playing
 	master_play_state_changed.emit()
 
-## Returns [code]true[/code] if the master [AudioStreamPlayer] is playing.
+## Returns [code]true[/code] if the Master [AudioStreamPlayer] is playing.
 func is_master_playing() -> bool:
 	return _is_master_playing
 
-## Enables loop.
+## If [param p_enable] is [code]true[/code], loop is enabled.
 func enable_loop(p_enable: bool) -> void:
 	_is_loop_enabled = p_enable
 
@@ -94,16 +103,19 @@ func enable_loop(p_enable: bool) -> void:
 func is_loop_enabled() -> bool:
 	return _is_loop_enabled
 
+## Sets the current time position of the Master player.
 func set_master_position(p_time: float) -> void:
 	_time_position = p_time
 
+## Returns the current time position of the Master player.
 func get_master_position() -> float:
 	return _time_position
 
+## Sets the current time duration of the Master player.
 func set_master_duration(p_time: float) -> void:
 	_time_duration = p_time
 
-## Returns the duration of the currently selected master stream.
+## Returns the current time duration of the Master player.
 func get_master_duration() -> float:
 	return _time_duration
 
@@ -111,7 +123,7 @@ func get_master_duration() -> float:
 func get_streams() -> Dictionary[StringName, AudioStream]:
 	return _streams.duplicate_deep(Resource.DeepDuplicateMode.DEEP_DUPLICATE_ALL)
 
-## Changes the selected master, based on its key in [member _streams].
+## Changes the selected Master, based on its key in [member _streams].
 func set_master_name(p_name: StringName) -> void:
 	if p_name not in _streams.keys() and not p_name.is_empty():
 		printerr("Master not in streams dictionary.")
@@ -119,10 +131,12 @@ func set_master_name(p_name: StringName) -> void:
 	
 	_master_name = p_name
 
-## Returns the name of the selected master.
+## Returns the name of the selected Master.
 func get_master_name() -> StringName:
 	return _master_name
 
+## Emits [signal master_changed], and also [signal stream_list_updated] beforehand
+## if [param p_setup] is [code]true[/code].
 func notify_updated_streams(p_setup: bool) -> void:
 	if p_setup:
 		stream_list_updated.emit()
@@ -131,9 +145,12 @@ func notify_updated_streams(p_setup: bool) -> void:
 ## Clear [member _streams].
 func clear_streams() -> void:
 	_streams.clear()
+	#_time_position = 0.0
+	_time_duration = 0.0
+	#set_master_playing(false)
 	
 	new_audio_imported.emit()
-	master_changed.emit()
+	#master_changed.emit()
 	master_play_state_changed.emit()
 
 ## Converts audio files to the appropriate [AudioStream] type. If the conversion is successful,

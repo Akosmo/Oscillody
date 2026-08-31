@@ -23,17 +23,18 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="MarginContainer/HBoxContainer" unique_id=1523211957]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "PROPERTY TEXT"
 
 [node name="Button" type="Button" parent="MarginContainer/HBoxContainer" unique_id=779598649]
 visible = false
 layout_mode = 2
-size_flags_horizontal = 10
+size_flags_horizontal = 8
 text = "R"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=1197491246]
 layout_mode = 2
-size_flags_horizontal = 10
+size_flags_horizontal = 8
 theme_override_constants/separation = 10
 
 [node name="Button" type="Button" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=594840813]
@@ -70,8 +71,9 @@ custom_minimum_size = Vector2(100, 0)
 
 [node name="OptionButton" type="OptionButton" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1932618024]
 visible = false
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
+clip_text = true
 fit_to_longest_item = false
 
 [node name="TextEdit" type="TextEdit" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1358945300]

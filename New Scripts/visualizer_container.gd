@@ -15,15 +15,13 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-# TODO: Make members private if not used outside the class. And document this class.
-
 extends VSplitContainer
 
 var _element_container: PackedScene = preload("res://New Scenes/element_container.tscn")
 var _property_container: PackedScene = preload("res://New Scenes/property_container.tscn")
 var _element_property_container_script: Script = preload("res://New Scripts/element_property_container.gd")
 
-var _current_uid_selected: int = ElementManager.INVALID_UID
+var _current_element_selected: Element = null
 
 @onready var _add_element_button: Button = %AddElementButton
 @onready var _element_box_container: VBoxContainer = \
@@ -33,31 +31,46 @@ $PanelContainer2/MarginContainer/ScrollContainer/VBoxContainer
 
 func _ready() -> void:
 	if _add_element_button.pressed.connect(_on_add_element_pressed):
-		printerr("Could not connect the \"pressed\" signal.")
-	#if ElementManager.element_properties_changed.connect(_display_element_properties):
-		#printerr("Could not connect the \"element_properties_changed\" signal.")
-	if ElementUIHelper.element_properties_changed.connect(_update_properties_container):
-		printerr("Could not connect the \"element_properties_changed\" signal.")
+		printerr("Could not connect signal.")
+	if ElementManager.element_type_changed.connect(_update_properties_container):
+		printerr("Could not connect signal.")
+	if ElementManager.element_layers_updated.connect(_on_element_layers_updated):
+		printerr("Could not connect signal.")
 
 func _on_add_element_pressed() -> void:
 	var element_node: ElementContainer = _element_container.instantiate()
 	_element_box_container.add_child(element_node)
 	if element_node.element_selected.connect(_update_properties_container):
-		printerr("Could not connect \"element_selected\".")
+		printerr("Could not connect signal.")
+	if element_node.element_container_deleted.connect(_on_element_container_deleted):
+		printerr("Could not connect signal.")
 
-func _update_properties_container(p_element_uid: int) -> void:
+func _update_properties_container(p_element: Element) -> void:
 	if _properties_box_container.get_child_count():
-		for node: PropertyContainer in _properties_box_container.get_children():
+		for node: ElementPropertyContainer in _properties_box_container.get_children():
 			_properties_box_container.remove_child(node)
 	
-	_current_uid_selected = p_element_uid
+	_current_element_selected = p_element
 	
-	if ElementManager.element_exists(p_element_uid):
-		for property: StringName in ElementManager.get_element_properties(p_element_uid).keys():
+	if p_element != null:
+		for property_key: StringName in p_element.get_property_dictionary().keys():
 			var property_node: PanelContainer = _property_container.instantiate()
 			property_node.set_script(_element_property_container_script)
 			@warning_ignore("unsafe_property_access")
-			property_node.element_uid = p_element_uid
+			property_node.element = p_element
 			@warning_ignore("unsafe_property_access")
-			property_node.property_key = property
+			property_node.property_key = property_key
 			_properties_box_container.add_child(property_node)
+
+func _on_element_container_deleted(p_element: Element) -> void:
+	if p_element == _current_element_selected:
+		if _properties_box_container.get_child_count():
+			for node: ElementPropertyContainer in _properties_box_container.get_children():
+				_properties_box_container.remove_child(node)
+
+func _on_element_layers_updated() -> void:
+	for node: Node in _element_box_container.get_children():
+		if node is not ElementContainer:
+			continue
+		var element_node: ElementContainer = node as ElementContainer
+		_element_box_container.move_child(element_node, element_node.element.get_layer() + 1)

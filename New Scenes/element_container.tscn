@@ -21,10 +21,11 @@ layout_mode = 2
 [node name="DeleteButton" type="Button" parent="MarginContainer/HBoxContainer" unique_id=699517842]
 unique_name_in_owner = true
 layout_mode = 2
-text = "DE"
+text = "DEL"
 
 [node name="DuplicateButton" type="Button" parent="MarginContainer/HBoxContainer" unique_id=2050310513]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 text = "DU"
 

@@ -45,7 +45,7 @@ func update_audio_list() -> void:
 		
 		_reset_button.show()
 	
-		AudioManager.set_master_name(_option_button.get_item_text(_option_button.get_selected()))
+		AudioManager.set_master_name(StringName(_option_button.get_item_text(_option_button.get_selected())))
 	else:
 		AudioManager.set_master_name(&"")
 		

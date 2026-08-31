@@ -1,7 +1,7 @@
 # Oscillody
 # Copyright (C) 2025-present Akosmo
 
-# element_empty.gd is part of Oscillody.
+# property_configurations_options.gd is part of Oscillody.
 # Unless specified otherwise, it is under the license below:
 
 # Oscillody is free software: you can redistribute it and/or modify it
@@ -15,23 +15,17 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-class_name ElementEmpty
-extends Element
+class_name PropertyConfigurationsOptions
+extends PropertyConfigurations
 
-func get_property_dictionary() -> Dictionary[StringName, Variant]:
-	var _property_dictionary: Dictionary[StringName, Variant] = {
-		SN_NAME: _element_name,
-		SN_TYPE: _type,
-		SN_LAYER: _layer,
-		SN_VISIBILITY: _visibility
-	}
-	return _property_dictionary
+const OPTIONS: StringName = &"Options"
 
-func get_method_dictionary() -> Dictionary[StringName, StringName]:
-	var _method_dictionary: Dictionary[StringName, StringName] = {
-		SN_NAME: set_element_name.get_method(),
-		SN_TYPE: set_type.get_method(),
-		SN_LAYER: set_layer.get_method(),
-		SN_VISIBILITY: set_visibility.get_method()
-	}
-	return _method_dictionary
+var _options: Array:
+	set = set_options,
+	get = get_options
+
+func set_options(p_value: Array) -> void:
+	_options = p_value
+
+func get_options() -> Array:
+	return _options

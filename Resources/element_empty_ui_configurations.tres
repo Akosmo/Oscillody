@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="ElementEmptyUIConfigurations" format=3 uid="uid://c5noed3x5ibew"]
+
+[ext_resource type="Script" uid="uid://bf6hstjlgrvrm" path="res://New Scripts/element_empty_ui_configurations.gd" id="1_ecajc"]
+
+[resource]
+script = ExtResource("1_ecajc")
+metadata/_custom_type_script = "uid://bf6hstjlgrvrm"

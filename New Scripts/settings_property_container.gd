@@ -23,7 +23,7 @@ var _reset_button: Button
 var _option_button: OptionButton
 var _check_button: CheckButton
 
-var _default_value: Variant
+var _reset_value: Variant
 
 # `_init()` is used instead of `_ready()`, because when it is called on the node, it has no script attached.
 # `_ready()` is called because the node has entered the tree and is ready.
@@ -34,7 +34,7 @@ func _init() -> void:
 	_check_button = $MarginContainer/HBoxContainer/HBoxContainer/CheckButton
 	
 	if _connect_signals():
-		printerr("Could not connect node signals.")
+		printerr("Could not connect signals.")
 		return
 
 func _connect_signals() -> Error:
@@ -98,9 +98,9 @@ func _on_update_settings() -> void:
 				AudioServer.get_output_device_list().find(SettingsManager.get_output_device())
 			)
 		SettingsManager.ContainerProperty.EXPORT_RESOLUTION:
-			_option_button.add_item("720p")
-			_option_button.add_item("1080p")
-			_option_button.add_item("1440p")
+			_option_button.add_item(SettingsManager.RESOLUTION_720P)
+			_option_button.add_item(SettingsManager.RESOLUTION_1080P)
+			_option_button.add_item(SettingsManager.RESOLUTION_1440P)
 			_option_button.select(1)
 		SettingsManager.ContainerProperty.THEME:
 			pass

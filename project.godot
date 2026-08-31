@@ -34,10 +34,11 @@ driver/enable_input=true
 
 [autoload]
 
-AudioManager="*uid://ben01m561drjh"
-ElementManager="*uid://bnho77fgm8yog"
 SettingsManager="*uid://drrev0hbiwml8"
-ElementUIHelper="*uid://nq0sn3t0bisv"
+WindowUtilities="*uid://bocv6duulp86s"
+ElementManager="*uid://bnho77fgm8yog"
+AudioManager="*uid://ben01m561drjh"
+RealTimeAudioData="*uid://wx06fafgb57s"
 
 [debug]
 

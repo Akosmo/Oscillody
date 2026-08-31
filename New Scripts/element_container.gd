@@ -15,56 +15,54 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-# TODO: Make members private if not used outside the class. And document this class.
-
 class_name ElementContainer
 extends PanelContainer
+## UI class represending an [Element].
 
-signal element_selected(p_element_uid: int)
+## Emitted when the button with the Element's name is pressed.
+signal element_selected(p_element: Element)
+## Emitter when the delete button is pressed.
+signal element_container_deleted(p_element: Element)
 
-var _element_uid: int
+var element: Element
 
 @onready var _delete_button: Button = %DeleteButton
-@onready var _duplicate_button: Button = %DuplicateButton
 @onready var _element_name_button: Button = %ElementNameButton
 
 func _ready() -> void:
-	if _connect_all_signals():
-		printerr("Could not connect signals.")
+	element = ElementManager.create_element()
+	set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
+	_element_name_button.set_text(element.get_element_name())
 	
-	_element_uid = ElementManager.create_element()
-	@warning_ignore("unsafe_cast")
-	set_name(ElementManager.get_element_property(_element_uid, ElementManager.NAME) as StringName)
-	_element_name_button.set_text(
-		str(ElementManager.get_element_property(_element_uid, ElementManager.NAME))
-	)
+	if _connect_signals():
+		printerr("Could not connect signals.")
 
-func _connect_all_signals() -> Error:
+func _connect_signals() -> Error:
 	if _delete_button.pressed.connect(_on_delete_button_pressed):
-		return ERR_INVALID_PARAMETER
-	if _duplicate_button.pressed.connect(_on_duplicate_button_pressed):
 		return ERR_INVALID_PARAMETER
 	if _element_name_button.pressed.connect(_on_element_name_button_pressed):
 		return ERR_INVALID_PARAMETER
 	
-	if ElementUIHelper.element_name_changed.connect(_on_element_name_changed):
+	if element.property_changed.connect(_on_element_name_changed):
+		return ERR_INVALID_PARAMETER
+	
+	if ElementManager.element_type_changed.connect(_on_element_type_changed):
 		return ERR_INVALID_PARAMETER
 	
 	return OK
 
 func _on_delete_button_pressed() -> void:
-	if ElementManager.delete_element(_element_uid):
-		printerr("Could not delete element.")
-		return
-	element_selected.emit(ElementManager.INVALID_UID)
+	ElementManager.delete_element(element)
+	element_container_deleted.emit(element)
 	queue_free()
 
-func _on_duplicate_button_pressed() -> void:
-	pass
-
 func _on_element_name_button_pressed() -> void:
-	element_selected.emit(_element_uid)
+	element_selected.emit(element)
 
-func _on_element_name_changed(p_element_uid: int, p_name: String) -> void:
-	if p_element_uid == _element_uid:
-		_element_name_button.set_text(p_name)
+func _on_element_name_changed(p_property: StringName) -> void:
+	if p_property == element.SN_NAME:
+		_element_name_button.set_text(element.get_element_name())
+
+func _on_element_type_changed(p_element: Element) -> void:
+	if element.get_unique_id() == p_element.get_unique_id():
+		element = p_element

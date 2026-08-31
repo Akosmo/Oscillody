@@ -1,7 +1,7 @@
 # Oscillody
 # Copyright (C) 2025-present Akosmo
 
-# element_empty.gd is part of Oscillody.
+# element_canvas_empty.gd is part of Oscillody.
 # Unless specified otherwise, it is under the license below:
 
 # Oscillody is free software: you can redistribute it and/or modify it
@@ -15,23 +15,23 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-class_name ElementEmpty
-extends Element
+class_name ElementCanvasEmpty
+extends ElementCanvas
 
-func get_property_dictionary() -> Dictionary[StringName, Variant]:
-	var _property_dictionary: Dictionary[StringName, Variant] = {
-		SN_NAME: _element_name,
-		SN_TYPE: _type,
-		SN_LAYER: _layer,
-		SN_VISIBILITY: _visibility
-	}
-	return _property_dictionary
+var element: ElementEmpty
 
-func get_method_dictionary() -> Dictionary[StringName, StringName]:
-	var _method_dictionary: Dictionary[StringName, StringName] = {
-		SN_NAME: set_element_name.get_method(),
-		SN_TYPE: set_type.get_method(),
-		SN_LAYER: set_layer.get_method(),
-		SN_VISIBILITY: set_visibility.get_method()
-	}
-	return _method_dictionary
+func _ready() -> void:
+	if element.property_changed.connect(_on_element_property_changed):
+		printerr("Could not connect signal.")
+
+func _on_element_property_changed(p_property: StringName) -> void:
+	match p_property:
+		ElementEmpty.SN_NAME:
+			set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
+		ElementEmpty.SN_TYPE:
+			queue_free()
+		ElementEmpty.SN_LAYER:
+			set_layer(element.get_layer())
+		ElementEmpty.SN_VISIBILITY:
+			set_visible(element.get_visibility())
+			set_process(element.get_visibility())
