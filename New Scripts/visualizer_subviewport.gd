@@ -89,15 +89,15 @@ func _update_buses() -> void:
 		AudioServer.set_bus_name(bus_idx, stream_name)
 		AudioServer.set_bus_mute(bus_idx, true)
 		AudioServer.add_bus_effect(bus_idx, AudioEffectCapture.new())
-		#AudioServer.set_bus_effect_enabled(bus_idx, 0, false)
 		AudioServer.add_bus_effect(bus_idx, AudioEffectSpectrumAnalyzer.new())
-		#AudioServer.set_bus_effect_enabled(bus_idx, 1, false)
 		bus_idx += 1
 
 func _update_players() -> void:
 	for player: StringName in _players.keys():
-		@warning_ignore("unsafe_cast")
-		remove_child(_players.get(player) as AudioStreamPlayer)
+		#@warning_ignore("unsafe_cast")
+		#remove_child(_players.get(player) as AudioStreamPlayer)
+		@warning_ignore("unsafe_method_access")
+		_players.get(player).queue_free()
 	
 	_players.clear()
 	
@@ -132,16 +132,12 @@ func _on_master_changed() -> void:
 		_master_player = _players.get(AudioManager.get_master_name())
 	
 	if _master_player != null:
-		_master_player.set_volume_linear(AudioManager.get_master_volume())
-		
 		if not _master_player.finished.is_connected(_on_master_finished):
 			if _master_player.finished.connect(_on_master_finished):
 				printerr("Could not connect finished signal from the Master Player.")
 		
 		if _master_player.get_stream() != null:
 			AudioManager.set_master_duration(_master_player.get_stream().get_length())
-	#else:
-		#AudioManager.set_master_duration(0.0)
 
 func _on_play_pause_requested() -> void:
 	if _master_player != null:
@@ -177,8 +173,7 @@ func _on_stop_requested() -> void:
 	AudioManager.set_master_playing(false)
 
 func _on_volume_change_requested() -> void:
-	if _master_player != null:
-		AudioServer.set_bus_volume_linear(0, AudioManager.get_master_volume())
+	AudioServer.set_bus_volume_linear(0, AudioManager.get_master_volume())
 
 func _on_seek_requested(p_time: float) -> void:
 	if _master_player != null:
@@ -218,5 +213,7 @@ func _on_element_created(p_element: Element) -> void:
 
 func _on_element_deleted(p_element: Element) -> void:
 	for node: Node in sub_viewport.get_children():
-		if node.get_name().containsn(str(p_element.get_unique_id())):
-			sub_viewport.remove_child(node)
+		@warning_ignore("unsafe_method_access")
+		if node is ElementCanvas and node.get_element() == p_element:
+			#sub_viewport.remove_child(node)
+			node.queue_free()

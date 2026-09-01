@@ -36,9 +36,8 @@ driver/enable_input=true
 
 SettingsManager="*uid://drrev0hbiwml8"
 WindowUtilities="*uid://bocv6duulp86s"
-ElementManager="*uid://bnho77fgm8yog"
 AudioManager="*uid://ben01m561drjh"
-RealTimeAudioData="*uid://wx06fafgb57s"
+ElementManager="*uid://bnho77fgm8yog"
 
 [debug]
 

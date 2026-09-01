@@ -37,14 +37,21 @@ var _node_2d: Node2D
 func _ready() -> void:
 	_node_2d = Node2D.new()
 	_node_2d.set_script(preload("uid://cponhhfeulyxf"))
+	@warning_ignore("unsafe_property_access")
 	_node_2d.element = element
 	add_child(_node_2d)
 	
 	if element.property_changed.connect(_on_element_property_changed):
-		return printerr("Could not connect signal.")
+		printerr("Could not connect signal.")
+	
+	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
+		printerr("Could not connect signal.")
 
 func _process(_delta: float) -> void:
 	_node_2d.queue_redraw()
+
+func get_element() -> Element:
+	return element
 
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:
@@ -58,7 +65,23 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			set_visible(element.get_visibility())
 			set_process(element.get_visibility())
 		ElementAnalyzer.SN_AUDIO_SOURCE:
-			_node_2d.capture_effect = AudioServer.get_bus_effect(
-				AudioServer.get_bus_index(element.get_audio_source()),
-				0
-			)
+			if not element.get_audio_source().is_empty():
+				@warning_ignore("unsafe_property_access")
+				_node_2d.capture_effect = AudioServer.get_bus_effect(
+					AudioServer.get_bus_index(element.get_audio_source()),
+					0
+				)
+			else:
+				@warning_ignore("unsafe_property_access")
+				_node_2d.capture_effect = null
+
+func _on_stream_list_updated() -> void:
+	if not element.get_audio_source().is_empty():
+		@warning_ignore("unsafe_property_access")
+		_node_2d.capture_effect = AudioServer.get_bus_effect(
+			AudioServer.get_bus_index(element.get_audio_source()),
+			0
+		)
+	else:
+		@warning_ignore("unsafe_property_access")
+		_node_2d.capture_effect = null

@@ -24,6 +24,9 @@ func _ready() -> void:
 	if element.property_changed.connect(_on_element_property_changed):
 		printerr("Could not connect signal.")
 
+func get_element() -> Element:
+	return element
+
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:
 		ElementEmpty.SN_NAME:

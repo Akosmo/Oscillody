@@ -35,8 +35,13 @@ var _elements: Array[Element] # This array is sorted by layer order.
 var _element_unique_id: int = -1
 
 func _init() -> void:
+	@warning_ignore("return_value_discarded")
 	element_created.connect(_print_elements)
+	@warning_ignore("return_value_discarded")
 	element_deleted.connect(_print_elements)
+	
+	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
+		printerr("Could not connect signal.")
 
 ## Returns the number of existing Elements.
 func get_element_count() -> int:
@@ -60,6 +65,7 @@ func create_element() -> Element:
 	element_created.emit(element)
 	
 	# Debug only.
+	@warning_ignore("return_value_discarded")
 	element.property_changed.connect(_print_elements)
 	
 	return element
@@ -69,7 +75,8 @@ func create_element() -> Element:
 ## This should only be called by pressing the delete button in an [ElementContainer].
 func delete_element(p_element: Element) -> void:
 	# Debug only.
-	p_element.property_changed.disconnect(_print_elements)
+	if p_element.property_changed.is_connected(_print_elements):
+		p_element.property_changed.disconnect(_print_elements)
 	
 	_elements.erase(p_element)
 	
@@ -104,8 +111,16 @@ func change_element_type(p_element: Element) -> void:
 	new_element.set_layer(p_element.get_layer(), false)
 	new_element.set_visibility(p_element.get_visibility())
 	
+	# Debug only.
+	if p_element.property_changed.is_connected(_print_elements):
+		p_element.property_changed.disconnect(_print_elements)
+	
 	_elements.erase(p_element)
 	#element_deleted.emit(p_element)
+	
+	# Debug only.
+	@warning_ignore("return_value_discarded")
+	new_element.property_changed.connect(_print_elements)
 	
 	@warning_ignore("return_value_discarded")
 	_elements.insert(new_element.get_layer(), new_element)
@@ -118,6 +133,16 @@ func reindex_layer(p_element: Element, p_to_index: int) -> void:
 	@warning_ignore("return_value_discarded")
 	_elements.insert(p_to_index, p_element)
 	_update_layers()
+
+func _on_stream_list_updated() -> void:
+	if not AudioManager.get_master_name().is_empty():
+		return
+	
+	for element: Element in _elements:
+		match element.get_type():
+			Element.ElementType.ANALYZER:
+				@warning_ignore("unsafe_method_access")
+				element.set_audio_source(&"")
 
 func _get_next_available_uid() -> int:
 	_element_unique_id += 1
@@ -132,10 +157,10 @@ func _update_layers() -> void:
 # Debug
 func _print_elements(_p_value: Variant) -> void:
 	for element: Element in _elements:
-		var formatted_string: String = str(element.get_property_dictionary())
-		formatted_string = formatted_string.replacen(", &", ",\n\t&")
-		formatted_string = formatted_string.replacen("{ ", "{\n\t")
-		formatted_string = formatted_string.replacen(" }", "\n}\n")
+		#var formatted_string: String = str(element.get_property_dictionary())
+		#formatted_string = formatted_string.replacen(", &", ",\n\t&")
+		#formatted_string = formatted_string.replacen("{ ", "{\n\t")
+		#formatted_string = formatted_string.replacen(" }", "\n}\n")
 		var less_formatted_string: String = str(element.get_property_dictionary())
 		less_formatted_string += "\n"
 		print(less_formatted_string)

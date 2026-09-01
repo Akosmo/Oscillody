@@ -44,7 +44,7 @@ func update_audio_list() -> void:
 			_option_button.add_item(String(stream))
 		
 		_reset_button.show()
-	
+		
 		AudioManager.set_master_name(StringName(_option_button.get_item_text(_option_button.get_selected())))
 	else:
 		AudioManager.set_master_name(&"")

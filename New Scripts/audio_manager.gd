@@ -145,12 +145,9 @@ func notify_updated_streams(p_setup: bool) -> void:
 ## Clear [member _streams].
 func clear_streams() -> void:
 	_streams.clear()
-	#_time_position = 0.0
 	_time_duration = 0.0
-	#set_master_playing(false)
 	
 	new_audio_imported.emit()
-	#master_changed.emit()
 	master_play_state_changed.emit()
 
 ## Converts audio files to the appropriate [AudioStream] type. If the conversion is successful,

@@ -127,8 +127,6 @@ func _set_value_to_property(p_value: Variant) -> void:
 			_reset_button.hide()
 
 func _set_property_value_to_control() -> void:
-	#_update_property_configuration_dictionary()
-	
 	_stop_signal = true
 	
 	match _control_node:
@@ -195,9 +193,6 @@ func _set_property_value_to_control() -> void:
 					_option_button.select(idx)
 				else:
 					printerr("Wrong type for OptionButton.")
-				#if _property_value != null:
-					#_stop_signal = false
-					#_set_value_to_property(_property_value)
 		ElementUIConfigurations.ControlNode.TEXT_EDIT:
 			_text_edit.show()
 			_text_edit.set_text(str(_property_value))
@@ -232,11 +227,13 @@ func _on_slider_preference_changed() -> void:
 
 # Update layer controls and dynamic lists.
 func _on_external_options_changed(_p_element: Element) -> void:
-	_update_property_configuration_dictionary()
-	_set_property_value_to_control()
+	_on_external_options_changed_no_parameter()
 
 func _on_external_options_changed_no_parameter() -> void:
 	_update_property_configuration_dictionary()
+	var property_dict: Dictionary[StringName, Variant] = element.get_property_dictionary()
+	if property_dict.get(property_key) != _property_value:
+		_property_value = property_dict.get(property_key)
 	_set_property_value_to_control()
 
 func _on_reset_pressed() -> void:

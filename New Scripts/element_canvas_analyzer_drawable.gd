@@ -20,13 +20,15 @@ extends Node2D
 var element: ElementAnalyzer
 var capture_effect: AudioEffectCapture
 
+var _audio_data: RealTimeAudioData = RealTimeAudioData.new()
+
 var _waveform_data: PackedFloat32Array
 var _spacing: Vector2
 var _height: float
 var _waveform_points: PackedVector2Array
 
 func _draw() -> void:
-	if element.get_analyzer_type() == element.AnalyzerType.WAVEFORM:
+	if element.get_analyzer_type() == ElementAnalyzer.AnalyzerType.WAVEFORM:
 		_draw_waveform()
 	#else:
 		#_draw_spectrum()
@@ -35,11 +37,13 @@ func _draw_waveform() -> void:
 	if is_zero_approx(element.get_waveform_color().a):
 		return
 	
-	if capture_effect != null:
-		_waveform_data = RealTimeAudioData.get_waveform_data(
-			capture_effect,
-			element.get_waveform_sample_history_length()
-		)
+	#if capture_effect != null:
+	_waveform_data = _audio_data.get_waveform_data(
+		capture_effect,
+		element.get_waveform_sample_history_length()
+	)
+	#else:
+		#_waveform_data.fill(0.0)
 	
 	_waveform_points.clear()
 	if _waveform_points.resize(_waveform_data.size()):
@@ -53,7 +57,7 @@ func _draw_waveform() -> void:
 	Vector2(WindowUtilities.get_subviewport_size())
 	var angle: float = begin_pos.angle_to_point(end_pos)
 	var positive_direction: Vector2 = Vector2(sin(angle), cos(angle) * -1)
-	var total_samples: float = float(RealTimeAudioData.get_number_of_samples() - 1) * \
+	var total_samples: float = float(_audio_data.get_samples_per_second() - 1) * \
 	float(element.get_waveform_sample_history_length())
 	_spacing = Vector2(
 		(end_pos.x - begin_pos.x) / total_samples,
@@ -70,17 +74,17 @@ func _draw_waveform() -> void:
 		base_line[point_idx].y = begin_pos.y + point_idx * _spacing.y
 	
 	# 2: Modify points of the line based on the audio amplitude times positive_direction times height
-	if RealTimeAudioData._get_audio_samples_size() == element.get_waveform_sample_history_length():
-		for point_idx: int in _waveform_data.size():
-			_waveform_points[point_idx].x = \
-			base_line[point_idx].x + _waveform_data[point_idx] * _height * positive_direction.x
-			_waveform_points[point_idx].y = \
-			base_line[point_idx].y + _waveform_data[point_idx] * _height * positive_direction.y
+	#if _audio_data._get_distributed_audio_samples_size() == element.get_waveform_sample_history_length():
+	for point_idx: int in _waveform_data.size():
+		_waveform_points[point_idx].x = \
+		base_line[point_idx].x + _waveform_data[point_idx] * _height * positive_direction.x
+		_waveform_points[point_idx].y = \
+		base_line[point_idx].y + _waveform_data[point_idx] * _height * positive_direction.y
 	
-	if _waveform_points.size() > 1 and RealTimeAudioData._get_audio_samples_size() > 0:
-		draw_polyline(
-			_waveform_points,
-			element.get_waveform_color(),
-			element.get_waveform_thickness(),
-			element.get_waveform_antialiasing()
-		)
+	#if _waveform_points.size() > 1 and _audio_data._get_distributed_audio_samples_size() > 0:
+	draw_polyline(
+		_waveform_points,
+		element.get_waveform_color(),
+		element.get_waveform_thickness(),
+		element.get_waveform_antialiasing()
+	)

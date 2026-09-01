@@ -60,9 +60,12 @@ func _on_element_name_button_pressed() -> void:
 	element_selected.emit(element)
 
 func _on_element_name_changed(p_property: StringName) -> void:
-	if p_property == element.SN_NAME:
+	if p_property == Element.SN_NAME:
 		_element_name_button.set_text(element.get_element_name())
 
 func _on_element_type_changed(p_element: Element) -> void:
 	if element.get_unique_id() == p_element.get_unique_id():
 		element = p_element
+		
+		@warning_ignore("return_value_discarded")
+		element.property_changed.connect(_on_element_name_changed)

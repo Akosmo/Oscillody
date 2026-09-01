@@ -159,38 +159,3 @@ func get_visibility() -> bool:
 ## Abstract method which returns a dictionary of all the Element's methods,
 ## with each method being a [StringName], which can be called with [method Object.call].
 @abstract func get_method_dictionary() -> Dictionary[StringName, StringName]
-
-#func get_property_configurations() -> Dictionary[StringName, PropertyConfigurations]:
-	#return _property_configurations
-#
-#func get_element_name_configurations() -> PropertyConfigurations:
-	#var configs: PropertyConfigurations = PropertyConfigurations.new()
-	#configs.set_control_node(PropertyConfigurations.ControlNode.LINE_EDIT)
-	#configs.set_default_value("Element_" + str(get_unique_id()))
-	#
-	#return configs
-#
-#func get_type_configurations() -> PropertyConfigurationsOptions:
-	#var configs: PropertyConfigurationsOptions = PropertyConfigurationsOptions.new()
-	#configs.set_control_node(PropertyConfigurations.ControlNode.OPTION_BUTTON)
-	#configs.set_default_value(ElementType.EMPTY)
-	#configs.set_options(ELEMENT_TYPES)
-	#
-	#return configs
-#
-#func get_layer_configurations() -> PropertyConfigurationsNumerical:
-	#var configs: PropertyConfigurationsNumerical = PropertyConfigurationsNumerical.new()
-	#configs.set_control_node(PropertyConfigurations.ControlNode.NUMERICAL)
-	#configs.set_minimum(0.0)
-	#configs.set_maximum(ElementManager.get_element_count() - 1)
-	#configs.set_step(1.0)
-	#configs.set_rounded(true)
-	#
-	#return configs
-#
-#func get_visibility_configurations() -> PropertyConfigurations:
-	#var configs: PropertyConfigurations = PropertyConfigurations.new()
-	#configs.set_control_node(PropertyConfigurations.ControlNode.CHECK_BUTTON)
-	#configs.set_default_value(true)
-	#
-	#return configs

@@ -26,14 +26,8 @@ extends CanvasLayer
 ## Data mostly comes from a given [Element]. The [CanvasLayer] node may instantiate child nodes
 ## for specific functionality, such as drawing waveforms with [Node2D], using [method CanvasItem._draw].
 
-#@abstract func setup_element() -> void
-
 @abstract func _ready() -> void
 
-#@abstract func _setup_properties() -> void
-
-#@abstract func _set_configuration_for_property(p_property: StringName)
-
-#@abstract func _change_property(p_property: StringName, p_new_element: bool = false) -> void
+@abstract func get_element() -> Element
 
 @abstract func _on_element_property_changed(p_property: StringName) -> void
