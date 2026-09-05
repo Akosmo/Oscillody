@@ -24,6 +24,7 @@ extends Node
 signal setup_requested
 ## Emitted when [method enable_sliders] is called.
 signal slider_preference_changed
+signal sync_element_shake_requested
 
 ## All possible properties that a property container can be linked to.
 enum ContainerProperty {
@@ -31,7 +32,8 @@ enum ContainerProperty {
 	OUTPUT_DEVICE,
 	EXPORT_RESOLUTION,
 	THEME,
-	SLIDER_SWITCH
+	SLIDER_SWITCH,
+	SYNC_ELEMENT_SHAKE
 }
 
 ## The [StringName] for 720p export resolution.

@@ -151,6 +151,7 @@ func get_property_dictionary() -> Dictionary[StringName, Variant]:
 		SN_WAVEFORM_COLOR: _waveform_color,
 		SN_WAVEFORM_ANTIALIASING: _waveform_antialiasing
 	}
+	
 	return _property_dictionary
 
 func get_method_dictionary() -> Dictionary[StringName, StringName]:
@@ -171,4 +172,5 @@ func get_method_dictionary() -> Dictionary[StringName, StringName]:
 		SN_WAVEFORM_COLOR: set_waveform_color.get_method(),
 		SN_WAVEFORM_ANTIALIASING: set_waveform_antialiasing.get_method()
 	}
+	
 	return _method_dictionary

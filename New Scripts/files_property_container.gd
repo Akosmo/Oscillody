@@ -26,8 +26,8 @@ var _option_button: OptionButton
 # `_ready()` is called because the node has entered the tree and is ready.
 # But `_init()` is called when a script is attached.
 func _init() -> void:
-	_reset_button = $MarginContainer/HBoxContainer/Button
-	_option_button = $MarginContainer/HBoxContainer/HBoxContainer/OptionButton
+	_reset_button = %ResetButton
+	_option_button = %OptionButton
 	
 	if _connect_signals():
 		printerr("Could not connect signals.")

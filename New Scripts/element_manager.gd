@@ -95,15 +95,19 @@ func change_element_type(p_element: Element) -> void:
 		p_element.ElementType.ANALYZER:
 			new_element = ElementAnalyzer.new() as ElementAnalyzer
 		p_element.ElementType.IMAGE:
-			pass
+			new_element = ElementImage.new() as ElementImage
 		p_element.ElementType.POST_PROCESSING:
 			pass
+			#new_element = ElementPostProcessing.new() as ElementPostProcessing
 		p_element.ElementType.SHADER:
 			pass
+			#new_element = ElementShader.new() as ElementShader
 		p_element.ElementType.SHAPE:
 			pass
+			#new_element = ElementShape.new() as ElementShape
 		p_element.ElementType.TEXT:
 			pass
+			#new_element = ElementText.new() as ElementText
 	
 	new_element.set_unique_id(p_element.get_unique_id())
 	new_element.set_element_name(p_element.get_element_name())
@@ -116,7 +120,6 @@ func change_element_type(p_element: Element) -> void:
 		p_element.property_changed.disconnect(_print_elements)
 	
 	_elements.erase(p_element)
-	#element_deleted.emit(p_element)
 	
 	# Debug only.
 	@warning_ignore("return_value_discarded")
@@ -154,13 +157,9 @@ func _update_layers() -> void:
 	
 	element_layers_updated.emit()
 
-# Debug
+# Debug.
 func _print_elements(_p_value: Variant) -> void:
 	for element: Element in _elements:
-		#var formatted_string: String = str(element.get_property_dictionary())
-		#formatted_string = formatted_string.replacen(", &", ",\n\t&")
-		#formatted_string = formatted_string.replacen("{ ", "{\n\t")
-		#formatted_string = formatted_string.replacen(" }", "\n}\n")
 		var less_formatted_string: String = str(element.get_property_dictionary())
 		less_formatted_string += "\n"
 		print(less_formatted_string)

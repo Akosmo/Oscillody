@@ -1,7 +1,7 @@
 # Oscillody
 # Copyright (C) 2025-present Akosmo
 
-# element_analyzer_ui_configurations.gd is part of Oscillody.
+# element_image_ui_configurations.gd is part of Oscillody.
 # Unless specified otherwise, it is under the license below:
 
 # Oscillody is free software: you can redistribute it and/or modify it
@@ -15,101 +15,105 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-class_name ElementAnalyzerUIConfigurations
+class_name ElementImageUIConfigurations
 extends ElementUIConfigurations
 
 func get_property_configurations() -> Dictionary[StringName, Dictionary]:
 	var ret: Dictionary[StringName, Dictionary] = {
-		ElementAnalyzer.SN_NAME: {
+		ElementImage.SN_NAME: {
 			CONTROL_NODE: ControlNode.LINE_EDIT,
 		},
-		ElementAnalyzer.SN_TYPE: {
+		ElementImage.SN_TYPE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
-			DEFAULT_VALUE: ElementAnalyzer.ElementType.EMPTY,
-			OPTIONS: ElementAnalyzer.ELEMENT_TYPES
+			DEFAULT_VALUE: ElementImage.ElementType.EMPTY,
+			OPTIONS: ElementImage.ELEMENT_TYPES
 		},
-		ElementAnalyzer.SN_LAYER: {
+		ElementImage.SN_LAYER: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			MINIMUM: 0.0,
 			MAXIMUM: ElementManager.get_element_count() - 1.0,
 			STEP: 1.0,
 			ROUNDED: true
 		},
-		ElementAnalyzer.SN_VISIBILITY: {
+		ElementImage.SN_VISIBILITY: {
 			CONTROL_NODE: ControlNode.CHECK_BUTTON,
 			DEFAULT_VALUE: true
 		},
-		ElementAnalyzer.SN_ANALYZER_TYPE: {
-			CONTROL_NODE: ControlNode.OPTION_BUTTON,
-			OPTIONS: ElementAnalyzer.ANALYZER_TYPES
+		ElementImage.SN_IMAGE_PATH: {
+			CONTROL_NODE: ControlNode.BUTTON,
+			DEFAULT_VALUE: ""
 		},
-		ElementAnalyzer.SN_AUDIO_SOURCE: {
-			CONTROL_NODE: ControlNode.OPTION_BUTTON,
-			OPTIONS: AudioManager.get_streams().keys()
+		ElementImage.SN_IMAGE_X_POSITION: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 0.5,
+			MINIMUM: 0.0,
+			MAXIMUM: 1.0,
+			STEP: 0.01,
+			ROUNDED: false
 		},
-		ElementAnalyzer.SN_BEGIN_X_POSITION: {
+		ElementImage.SN_IMAGE_Y_POSITION: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 0.5,
+			MINIMUM: 0.0,
+			MAXIMUM: 1.0,
+			STEP: 0.01,
+			ROUNDED: false
+		},
+		ElementImage.SN_IMAGE_ROTATION: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 0.0,
-			MINIMUM: 0.0,
-			MAXIMUM: 1.0,
-			STEP: 0.01,
-			ROUNDED: false
+			MINIMUM: -180.0,
+			MAXIMUM: 180.0,
+			STEP: 5.0,
+			ROUNDED: true
 		},
-		ElementAnalyzer.SN_BEGIN_Y_POSITION: {
-			CONTROL_NODE: ControlNode.NUMERICAL,
-			DEFAULT_VALUE: 0.5,
-			MINIMUM: 0.0,
-			MAXIMUM: 1.0,
-			STEP: 0.01,
-			ROUNDED: false
-		},
-		ElementAnalyzer.SN_END_X_POSITION: {
+		ElementImage.SN_IMAGE_SCALE: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 1.0,
-			MINIMUM: 0.0,
-			MAXIMUM: 1.0,
-			STEP: 0.01,
+			MINIMUM: 0.1,
+			MAXIMUM: 2.0,
+			STEP: 0.1,
 			ROUNDED: false
 		},
-		ElementAnalyzer.SN_END_Y_POSITION: {
+		ElementImage.SN_OPACITY: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
-			DEFAULT_VALUE: 0.5,
-			MINIMUM: 0.0,
-			MAXIMUM: 1.0,
-			STEP: 0.01,
-			ROUNDED: false
-		},
-		ElementAnalyzer.SN_HEIGHT: {
-			CONTROL_NODE: ControlNode.NUMERICAL,
-			DEFAULT_VALUE: 0.5,
+			DEFAULT_VALUE: 1.0,
 			MINIMUM: 0.0,
 			MAXIMUM: 1.0,
 			STEP: 0.05,
 			ROUNDED: false
 		},
-		ElementAnalyzer.SN_WAVEFORM_SAMPLE_HISTORY_LENGTH: {
+		ElementImage.SN_BLUR: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
-			DEFAULT_VALUE: 4.0,
-			MINIMUM: 1.0,
-			MAXIMUM: 32.0,
+			DEFAULT_VALUE: 0.0,
+			MINIMUM: 0.0,
+			MAXIMUM: 1.0,
+			STEP: 0.05,
+			ROUNDED: false
+		},
+		ElementImage.SN_SHAKE_AMPLITUDE: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 0.0,
+			MINIMUM: 0.0,
+			MAXIMUM: 1.0,
+			STEP: 0.05,
+			ROUNDED: false
+		},
+		ElementImage.SN_SHAKE_FREQUENCY: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 0.0,
+			MINIMUM: 0.0,
+			MAXIMUM: 1.0,
+			STEP: 0.05,
+			ROUNDED: false
+		},
+		ElementImage.SN_SHAKE_SEED: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 0.0,
+			MINIMUM: 0.0,
+			MAXIMUM: 100.0,
 			STEP: 1.0,
 			ROUNDED: true
-		},
-		ElementAnalyzer.SN_WAVEFORM_THICKNESS: {
-			CONTROL_NODE: ControlNode.NUMERICAL,
-			DEFAULT_VALUE: 1.0,
-			MINIMUM: 1.0,
-			MAXIMUM: 10.0,
-			STEP: 1.0,
-			ROUNDED: true
-		},
-		ElementAnalyzer.SN_WAVEFORM_COLOR: {
-			CONTROL_NODE: ControlNode.COLOR_PICKER_BUTTON,
-			DEFAULT_VALUE: Color.WHITE
-		},
-		ElementAnalyzer.SN_WAVEFORM_ANTIALIASING: {
-			CONTROL_NODE: ControlNode.CHECK_BUTTON,
-			DEFAULT_VALUE: true
 		}
 	}
 	

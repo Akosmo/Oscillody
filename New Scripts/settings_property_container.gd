@@ -20,8 +20,9 @@ extends PanelContainer
 var container_property: SettingsManager.ContainerProperty
 
 var _reset_button: Button
-var _option_button: OptionButton
+var _button: Button
 var _check_button: CheckButton
+var _option_button: OptionButton
 
 var _reset_value: Variant
 
@@ -29,9 +30,10 @@ var _reset_value: Variant
 # `_ready()` is called because the node has entered the tree and is ready.
 # But `_init()` is called when a script is attached.
 func _init() -> void:
-	_reset_button = $MarginContainer/HBoxContainer/Button
-	_option_button = $MarginContainer/HBoxContainer/HBoxContainer/OptionButton
-	_check_button = $MarginContainer/HBoxContainer/HBoxContainer/CheckButton
+	_reset_button = %ResetButton
+	_button = %Button
+	_check_button = %CheckButton
+	_option_button = %OptionButton
 	
 	if _connect_signals():
 		printerr("Could not connect signals.")
@@ -40,9 +42,11 @@ func _init() -> void:
 func _connect_signals() -> Error:
 	if _reset_button.pressed.connect(_on_reset_pressed):
 		return ERR_INVALID_PARAMETER
-	if _option_button.item_selected.connect(_on_item_selected):
+	if _button.pressed.connect(_on_button_pressed):
 		return ERR_INVALID_PARAMETER
-	if _check_button.toggled.connect(_on_check_pressed):
+	if _check_button.toggled.connect(_on_check_toggled):
+		return ERR_INVALID_PARAMETER
+	if _option_button.item_selected.connect(_on_item_selected):
 		return ERR_INVALID_PARAMETER
 	
 	if SettingsManager.setup_requested.connect(_on_update_settings):
@@ -62,6 +66,14 @@ func _on_reset_pressed() -> void:
 			pass
 		SettingsManager.ContainerProperty.SLIDER_SWITCH:
 			pass
+		_:
+			printerr("Unknown property.")
+
+func _on_button_pressed() -> void:
+	SettingsManager.sync_element_shake_requested.emit()
+
+func _on_check_toggled(p_toggled_on: bool) -> void:
+	SettingsManager.enable_sliders(p_toggled_on)
 
 func _on_item_selected(p_index: int) -> void:
 	match container_property:
@@ -78,10 +90,7 @@ func _on_item_selected(p_index: int) -> void:
 			if SettingsManager.set_app_theme(_option_button.get_item_text(p_index)):
 				printerr("Could not set theme.")
 		_:
-			pass
-
-func _on_check_pressed(p_toggled_on: bool) -> void:
-	SettingsManager.enable_sliders(p_toggled_on)
+			printerr("Unknown property.")
 
 func _on_update_settings() -> void:
 	match container_property:
@@ -106,3 +115,7 @@ func _on_update_settings() -> void:
 			pass
 		SettingsManager.ContainerProperty.SLIDER_SWITCH:
 			pass
+		SettingsManager.ContainerProperty.SYNC_ELEMENT_SHAKE:
+			pass
+		_:
+			printerr("Unknown property.")

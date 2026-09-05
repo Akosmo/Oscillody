@@ -21,6 +21,9 @@ extends ElementCanvas
 var element: ElementEmpty
 
 func _ready() -> void:
+	set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
+	set_layer(element.get_layer())
+	
 	if element.property_changed.connect(_on_element_property_changed):
 		printerr("Could not connect signal.")
 

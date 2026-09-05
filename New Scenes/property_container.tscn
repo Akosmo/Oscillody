@@ -21,12 +21,14 @@ theme_override_constants/margin_bottom = 4
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=1985752979]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="MarginContainer/HBoxContainer" unique_id=1523211957]
+[node name="PropertyLabel" type="Label" parent="MarginContainer/HBoxContainer" unique_id=1523211957]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "PROPERTY TEXT"
 
-[node name="Button" type="Button" parent="MarginContainer/HBoxContainer" unique_id=779598649]
+[node name="ResetButton" type="Button" parent="MarginContainer/HBoxContainer" unique_id=779598649]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 size_flags_horizontal = 8
@@ -38,31 +40,46 @@ size_flags_horizontal = 8
 theme_override_constants/separation = 10
 
 [node name="Button" type="Button" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=594840813]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 text = "EDIT"
 
+[node name="FileDialog" type="FileDialog" parent="MarginContainer/HBoxContainer/HBoxContainer/Button" unique_id=1724563514]
+unique_name_in_owner = true
+title = "Open a File"
+dialog_hide_on_ok = true
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.png, *.jpg, *.jpeg ; Supported Formats")
+use_native_dialog = true
+
 [node name="CheckButton" type="CheckButton" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1432791718]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
 [node name="ColorPickerButton" type="ColorPickerButton" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=840115404]
+unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(32, 0)
 layout_mode = 2
 color = Color(1, 1, 1, 1)
 
 [node name="LineEdit" type="LineEdit" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=804155128]
+unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(128, 0)
 layout_mode = 2
 
 [node name="SpinBox" type="SpinBox" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1053394272]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 update_on_text_changed = true
 
 [node name="CustomHSlider" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1116808900 instance=ExtResource("2_8q6o3")]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
@@ -70,6 +87,7 @@ layout_mode = 2
 custom_minimum_size = Vector2(100, 0)
 
 [node name="OptionButton" type="OptionButton" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1932618024]
+unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
@@ -77,6 +95,7 @@ clip_text = true
 fit_to_longest_item = false
 
 [node name="TextEdit" type="TextEdit" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1358945300]
+unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(128, 64)
 layout_mode = 2

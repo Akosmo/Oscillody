@@ -36,18 +36,17 @@ var _reset_value: Variant
 
 var _stop_signal: bool = false
 
-@onready var _value_label: Label = $MarginContainer/HBoxContainer/Label
-@onready var _reset_button: Button = $MarginContainer/HBoxContainer/Button
-
-@onready var _button: Button = $MarginContainer/HBoxContainer/HBoxContainer/Button
-@onready var _check_button: CheckButton = $MarginContainer/HBoxContainer/HBoxContainer/CheckButton
-@onready var _color_picker_button: ColorPickerButton = \
-$MarginContainer/HBoxContainer/HBoxContainer/ColorPickerButton
-@onready var _line_edit: LineEdit = $MarginContainer/HBoxContainer/HBoxContainer/LineEdit
-@onready var _spin_box: SpinBox = $MarginContainer/HBoxContainer/HBoxContainer/SpinBox
-@onready var _custom_h_slider: CustomHSlider = $MarginContainer/HBoxContainer/HBoxContainer/CustomHSlider
-@onready var _option_button: OptionButton = $MarginContainer/HBoxContainer/HBoxContainer/OptionButton
-@onready var _text_edit: TextEdit = $MarginContainer/HBoxContainer/HBoxContainer/TextEdit
+@onready var _property_label: Label = %PropertyLabel
+@onready var _reset_button: Button = %ResetButton
+@onready var _button: Button = %Button
+@onready var _file_dialog: FileDialog = %FileDialog
+@onready var _check_button: CheckButton = %CheckButton
+@onready var _color_picker_button: ColorPickerButton = %ColorPickerButton
+@onready var _line_edit: LineEdit = %LineEdit
+@onready var _spin_box: SpinBox = %SpinBox
+@onready var _custom_h_slider: CustomHSlider = %CustomHSlider
+@onready var _option_button: OptionButton = %OptionButton
+@onready var _text_edit: TextEdit = %TextEdit
 
 func _ready() -> void:
 	if _connect_signals():
@@ -64,9 +63,9 @@ func _ready() -> void:
 		_property_key_no_substr = property_key.replacen(property_key_substr, "")
 	else:
 		_property_key_no_substr = property_key
-	_value_label.set_text(_property_key_no_substr.capitalize())
+	_property_label.set_text(_property_key_no_substr.capitalize())
 	
-	set_name(_value_label.get_text().replacen(" ", ""))
+	set_name(_property_label.get_text().replacen(" ", ""))
 	
 	_update_property_configuration_dictionary()
 	
@@ -95,6 +94,8 @@ func _connect_signals() -> Error:
 		return ERR_INVALID_PARAMETER
 	
 	if _button.pressed.connect(_on_button_pressed):
+		return ERR_INVALID_PARAMETER
+	if _file_dialog.file_selected.connect(_on_file_selected):
 		return ERR_INVALID_PARAMETER
 	if _check_button.toggled.connect(_on_check_toggled):
 		return ERR_INVALID_PARAMETER
@@ -132,6 +133,7 @@ func _set_property_value_to_control() -> void:
 	match _control_node:
 		ElementUIConfigurations.ControlNode.BUTTON:
 			_button.show()
+			_button.set_text("Select Image")
 		ElementUIConfigurations.ControlNode.CHECK_BUTTON:
 			_check_button.show()
 			@warning_ignore("unsafe_cast")
@@ -212,7 +214,10 @@ func _update_property_configuration_dictionary() -> void:
 			var property_dict: Dictionary = all_configs.get(property_key)
 			_property_configurations = property_dict
 		element.ElementType.IMAGE:
-			pass
+			var config_resource: ElementImageUIConfigurations = preload("uid://d22vhxv5sqx2t")
+			var all_configs: Dictionary[StringName, Dictionary] = config_resource.get_property_configurations()
+			var property_dict: Dictionary = all_configs.get(property_key)
+			_property_configurations = property_dict
 		element.ElementType.POST_PROCESSING:
 			pass
 		element.ElementType.SHADER:
@@ -243,7 +248,10 @@ func _on_reset_pressed() -> void:
 	_reset_button.hide()
 
 func _on_button_pressed() -> void:
-	pass
+	_file_dialog.show()
+
+func _on_file_selected(p_path: String) -> void:
+	_set_value_to_property(p_path)
 
 func _on_check_toggled(p_toggled_on: bool) -> void:
 	if not _stop_signal:

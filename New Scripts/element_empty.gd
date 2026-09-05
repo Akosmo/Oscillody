@@ -25,6 +25,7 @@ func get_property_dictionary() -> Dictionary[StringName, Variant]:
 		SN_LAYER: _layer,
 		SN_VISIBILITY: _visibility
 	}
+	
 	return _property_dictionary
 
 func get_method_dictionary() -> Dictionary[StringName, StringName]:
@@ -34,4 +35,5 @@ func get_method_dictionary() -> Dictionary[StringName, StringName]:
 		SN_LAYER: set_layer.get_method(),
 		SN_VISIBILITY: set_visibility.get_method()
 	}
+	
 	return _method_dictionary

@@ -35,6 +35,9 @@ var _node_2d: Node2D
 # TODO: Add source selection: get streams from AudioManager.
 
 func _ready() -> void:
+	set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
+	set_layer(element.get_layer())
+	
 	_node_2d = Node2D.new()
 	_node_2d.set_script(preload("uid://cponhhfeulyxf"))
 	@warning_ignore("unsafe_property_access")

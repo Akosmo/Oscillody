@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="ElementImageUIConfigurations" format=3 uid="uid://d22vhxv5sqx2t"]
+
+[ext_resource type="Script" uid="uid://bgkckyyupi3t2" path="res://New Scripts/element_image_ui_configurations.gd" id="1_pmpux"]
+
+[resource]
+script = ExtResource("1_pmpux")
+metadata/_custom_type_script = "uid://bgkckyyupi3t2"

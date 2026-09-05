@@ -30,6 +30,11 @@ var _master_player: AudioStreamPlayer
 
 var element_empty_scene: PackedScene = PackedScene.new()
 var element_analyzer_scene: PackedScene = PackedScene.new()
+var element_image_scene: PackedScene = PackedScene.new()
+var element_post_processing_scene: PackedScene = PackedScene.new()
+var element_shader_scene: PackedScene = PackedScene.new()
+var element_shape_scene: PackedScene = PackedScene.new()
+var element_text_scene: PackedScene = PackedScene.new()
 
 @onready var sub_viewport: SubViewport = $SubViewport
 
@@ -38,6 +43,16 @@ func _ready() -> void:
 		printerr("Could not pack node.")
 	if element_analyzer_scene.pack(ElementCanvasAnalyzer.new()):
 		printerr("Could not pack node.")
+	if element_image_scene.pack(ElementCanvasImage.new()):
+		printerr("Could not pack node.")
+	#if element_post_processing_scene.pack(ElementCanvasPostProcessing.new()):
+		#printerr("Could not pack node.")
+	#if element_shader_scene.pack(ElementCanvasShader.new()):
+		#printerr("Could not pack node.")
+	#if element_shape_scene.pack(ElementCanvasShape.new()):
+		#printerr("Could not pack node.")
+	#if element_text_scene.pack(ElementCanvasText.new()):
+		#printerr("Could not pack node.")
 	
 	WindowUtilities.set_subviewport_size(sub_viewport.get_size())
 	
@@ -201,15 +216,29 @@ func _on_element_created(p_element: Element) -> void:
 			node_instance.element = p_element
 			sub_viewport.add_child(node_instance)
 		Element.ElementType.IMAGE:
-			pass
+			var node_instance: ElementCanvasImage = element_image_scene.instantiate()
+			node_instance.element = p_element
+			sub_viewport.add_child(node_instance)
 		Element.ElementType.POST_PROCESSING:
 			pass
+			#var node_instance: ElementCanvasPostProcessing = element_post_processing_scene.instantiate()
+			#node_instance.element = p_element
+			#sub_viewport.add_child(node_instance)
 		Element.ElementType.SHADER:
 			pass
+			#var node_instance: ElementCanvasShader = element_shader_scene.instantiate()
+			#node_instance.element = p_element
+			#sub_viewport.add_child(node_instance)
 		Element.ElementType.SHAPE:
 			pass
+			#var node_instance: ElementCanvasShape = element_shape_scene.instantiate()
+			#node_instance.element = p_element
+			#sub_viewport.add_child(node_instance)
 		Element.ElementType.TEXT:
 			pass
+			#var node_instance: ElementCanvasText = element_text_scene.instantiate()
+			#node_instance.element = p_element
+			#sub_viewport.add_child(node_instance)
 
 func _on_element_deleted(p_element: Element) -> void:
 	for node: Node in sub_viewport.get_children():
