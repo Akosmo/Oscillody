@@ -46,6 +46,8 @@ enum ControlNode {
 const CONTROL_NODE: StringName = &"control_node"
 ## The dictionary key for the property's default value, used when reseting.
 const DEFAULT_VALUE: StringName = &"default_value"
+## The dictionary key for the node's visibility.
+const VISIBLE: StringName = &"visible"
 
 ## The dictionary key for the minimum value in a [constant ControlNode.NUMERICAL] [Control] node.
 const MINIMUM: StringName = &"minimum"
@@ -58,9 +60,6 @@ const ROUNDED: StringName = &"rounded"
 
 ## The dictionary key for the available options for [constant ControlNode.OPTION_BUTTON] node.
 const OPTIONS: StringName = &"options"
-
-#var _property_configurations: Dictionary[StringName, Dictionary]:
-	#get = get_property_configurations
 
 ## Returns an updated list of all the property configurations.
 @abstract func get_property_configurations() -> Dictionary[StringName, Dictionary]

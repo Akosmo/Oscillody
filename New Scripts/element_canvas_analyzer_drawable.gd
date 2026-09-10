@@ -20,12 +20,15 @@ extends Node2D
 var element: ElementAnalyzer
 var capture_effect: AudioEffectCapture
 
-var _audio_data: RealTimeAudioData = RealTimeAudioData.new()
+var _audio_data: RealTimeAudioData
 
 var _waveform_data: PackedFloat32Array
 var _spacing: Vector2
 var _height: float
 var _waveform_points: PackedVector2Array
+
+func _ready() -> void:
+	_audio_data = RealTimeAudioData.new()
 
 func _draw() -> void:
 	if element.get_analyzer_type() == ElementAnalyzer.AnalyzerType.WAVEFORM:
@@ -33,15 +36,18 @@ func _draw() -> void:
 	#else:
 		#_draw_spectrum()
 
+func set_capture_effect(p_effect: AudioEffectCapture) -> void:
+	_audio_data.set_capture_effect(p_effect)
+
+func set_sample_history_length(p_length: int) -> void:
+	_audio_data.set_sample_history_length(p_length)
+
 func _draw_waveform() -> void:
 	if is_zero_approx(element.get_waveform_color().a):
 		return
 	
 	#if capture_effect != null:
-	_waveform_data = _audio_data.get_waveform_data(
-		capture_effect,
-		element.get_waveform_sample_history_length()
-	)
+	_waveform_data = _audio_data.get_waveform_data()
 	#else:
 		#_waveform_data.fill(0.0)
 	

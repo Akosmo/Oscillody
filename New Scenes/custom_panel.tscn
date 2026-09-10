@@ -2,7 +2,7 @@
 
 [sub_resource type="LabelSettings" id="LabelSettings_cwemf"]
 font_size = 32
-font_color = Color(1, 1, 1, 0.1254902)
+font_color = Color(1, 1, 1, 0.0627451)
 
 [node name="PanelContainer" type="PanelContainer" unique_id=1985883545]
 

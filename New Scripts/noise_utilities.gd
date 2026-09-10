@@ -1,7 +1,7 @@
 # Oscillody
 # Copyright (C) 2025-present Akosmo
 
-# element_shake_utilities.gd is part of Oscillody.
+# noise_utilities.gd is part of Oscillody.
 # Unless specified otherwise, it is under the license below:
 
 # Oscillody is free software: you can redistribute it and/or modify it
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-class_name ElementShakeUtilities
+class_name NoiseUtilities
 extends RefCounted
 
 var _noise: FastNoiseLite = FastNoiseLite.new()

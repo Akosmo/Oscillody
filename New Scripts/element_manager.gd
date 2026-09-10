@@ -29,6 +29,8 @@ signal element_deleted(p_element: Element)
 signal element_type_changed(p_element: Element)
 ## Emitted when [member Element._layer] is updated in all Elements.
 signal element_layers_updated
+## Emitted when one or multiple property nodes change visibility. See [ElementPropertyContainer].
+signal property_node_visibility_changed
 
 var _elements: Array[Element] # This array is sorted by layer order.
 
@@ -137,15 +139,17 @@ func reindex_layer(p_element: Element, p_to_index: int) -> void:
 	_elements.insert(p_to_index, p_element)
 	_update_layers()
 
+func notify_property_node_visibility_changed() -> void:
+	property_node_visibility_changed.emit()
+
 func _on_stream_list_updated() -> void:
 	if not AudioManager.get_master_name().is_empty():
 		return
 	
 	for element: Element in _elements:
-		match element.get_type():
-			Element.ElementType.ANALYZER:
-				@warning_ignore("unsafe_method_access")
-				element.set_audio_source(&"")
+		if element.has_method(&"set_audio_source"):
+			@warning_ignore("unsafe_method_access")
+			element.set_audio_source(&"")
 
 func _get_next_available_uid() -> int:
 	_element_unique_id += 1

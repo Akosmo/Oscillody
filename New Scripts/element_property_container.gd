@@ -77,6 +77,10 @@ func _ready() -> void:
 	if _reset_value != null and _property_value != _reset_value:
 		_reset_button.show()
 	
+	if _property_configurations.has(ElementUIConfigurations.VISIBLE):
+		@warning_ignore("unsafe_cast")
+		set_visible(_property_configurations.get(ElementUIConfigurations.VISIBLE) as bool)
+	
 	_set_property_value_to_control()
 
 func _connect_signals() -> Error:
@@ -86,6 +90,8 @@ func _connect_signals() -> Error:
 	if ElementManager.element_created.connect(_on_external_options_changed):
 		return ERR_INVALID_PARAMETER
 	if ElementManager.element_deleted.connect(_on_external_options_changed):
+		return ERR_INVALID_PARAMETER
+	if ElementManager.property_node_visibility_changed.connect(_on_property_visibility_changed):
 		return ERR_INVALID_PARAMETER
 	if AudioManager.stream_list_updated.connect(_on_external_options_changed_no_parameter):
 		return ERR_INVALID_PARAMETER
@@ -240,6 +246,12 @@ func _on_external_options_changed_no_parameter() -> void:
 	if property_dict.get(property_key) != _property_value:
 		_property_value = property_dict.get(property_key)
 	_set_property_value_to_control()
+
+func _on_property_visibility_changed() -> void:
+	_update_property_configuration_dictionary()
+	if _property_configurations.has(ElementUIConfigurations.VISIBLE):
+		@warning_ignore("unsafe_cast")
+		set_visible(_property_configurations.get(ElementUIConfigurations.VISIBLE) as bool)
 
 func _on_reset_pressed() -> void:
 	_property_value = _reset_value

@@ -18,21 +18,9 @@
 class_name ElementCanvasAnalyzer
 extends ElementCanvas
 
-const _SAMPLE_AMOUNT: int = 1024
-
 var element: ElementAnalyzer
 
 var _node_2d: Node2D
-#var _audio_data: AudioData = AudioData.new()
-
-# Internals: Waveform
-#var _capture_effect: AudioEffectCapture
-#var _waveform_data: PackedFloat32Array
-#var _waveform_point_spacing: Vector2
-#var _waveform_points: PackedVector2Array
-
-# TODO: Add proper waveform spacing, point position with dot product, and height.
-# TODO: Add source selection: get streams from AudioManager.
 
 func _ready() -> void:
 	set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
@@ -43,6 +31,9 @@ func _ready() -> void:
 	@warning_ignore("unsafe_property_access")
 	_node_2d.element = element
 	add_child(_node_2d)
+	_on_stream_list_updated()
+	@warning_ignore("unsafe_method_access")
+	_node_2d.set_sample_history_length(element.get_waveform_sample_history_length())
 	
 	if element.property_changed.connect(_on_element_property_changed):
 		printerr("Could not connect signal.")
@@ -68,23 +59,20 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			set_visible(element.get_visibility())
 			set_process(element.get_visibility())
 		ElementAnalyzer.SN_AUDIO_SOURCE:
-			if not element.get_audio_source().is_empty():
-				@warning_ignore("unsafe_property_access")
-				_node_2d.capture_effect = AudioServer.get_bus_effect(
-					AudioServer.get_bus_index(element.get_audio_source()),
-					0
-				)
-			else:
-				@warning_ignore("unsafe_property_access")
-				_node_2d.capture_effect = null
+			_on_stream_list_updated()
+		ElementAnalyzer.SN_WAVEFORM_SAMPLE_HISTORY_LENGTH:
+			@warning_ignore("unsafe_method_access")
+			_node_2d.set_sample_history_length(element.get_waveform_sample_history_length())
 
 func _on_stream_list_updated() -> void:
 	if not element.get_audio_source().is_empty():
-		@warning_ignore("unsafe_property_access")
-		_node_2d.capture_effect = AudioServer.get_bus_effect(
-			AudioServer.get_bus_index(element.get_audio_source()),
-			0
+		@warning_ignore("unsafe_method_access")
+		_node_2d.set_capture_effect(
+			AudioServer.get_bus_effect(
+				AudioServer.get_bus_index(element.get_audio_source()),
+				0
+			)
 		)
 	else:
-		@warning_ignore("unsafe_property_access")
-		_node_2d.capture_effect = null
+		@warning_ignore("unsafe_method_access")
+		_node_2d.set_capture_effect(null)

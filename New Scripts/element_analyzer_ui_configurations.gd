@@ -97,7 +97,7 @@ func get_property_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementAnalyzer.SN_WAVEFORM_THICKNESS: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
-			DEFAULT_VALUE: 1.0,
+			DEFAULT_VALUE: 2.0,
 			MINIMUM: 1.0,
 			MAXIMUM: 10.0,
 			STEP: 1.0,

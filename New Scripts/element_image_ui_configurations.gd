@@ -18,6 +18,15 @@
 class_name ElementImageUIConfigurations
 extends ElementUIConfigurations
 
+var _reaction_visibility: bool = false
+
+func set_reaction_visibility(p_value: bool) -> void:
+	_reaction_visibility = p_value
+	ElementManager.notify_property_node_visibility_changed()
+
+#func get_reaction_visibility() -> bool:
+	#return _reaction_visibility
+
 func get_property_configurations() -> Dictionary[StringName, Dictionary]:
 	var ret: Dictionary[StringName, Dictionary] = {
 		ElementImage.SN_NAME: {
@@ -75,13 +84,9 @@ func get_property_configurations() -> Dictionary[StringName, Dictionary]:
 			STEP: 0.1,
 			ROUNDED: false
 		},
-		ElementImage.SN_OPACITY: {
-			CONTROL_NODE: ControlNode.NUMERICAL,
-			DEFAULT_VALUE: 1.0,
-			MINIMUM: 0.0,
-			MAXIMUM: 1.0,
-			STEP: 0.05,
-			ROUNDED: false
+		ElementImage.SN_IMAGE_COLOR: {
+			CONTROL_NODE: ControlNode.COLOR_PICKER_BUTTON,
+			DEFAULT_VALUE: Color.WHITE,
 		},
 		ElementImage.SN_BLUR: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
@@ -99,6 +104,10 @@ func get_property_configurations() -> Dictionary[StringName, Dictionary]:
 			STEP: 0.05,
 			ROUNDED: false
 		},
+		ElementImage.SN_SHAKE_AMPLITUDE_COMPENSATION: {
+			CONTROL_NODE: ControlNode.CHECK_BUTTON,
+			DEFAULT_VALUE: true
+		},
 		ElementImage.SN_SHAKE_FREQUENCY: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 0.0,
@@ -114,6 +123,96 @@ func get_property_configurations() -> Dictionary[StringName, Dictionary]:
 			MAXIMUM: 100.0,
 			STEP: 1.0,
 			ROUNDED: true
+		},
+		ElementImage.SN_AUDIO_SOURCE: {
+			CONTROL_NODE: ControlNode.OPTION_BUTTON,
+			OPTIONS: AudioManager.get_streams().keys()
+		},
+		ElementImage.SN_BEGIN_FREQUENCY: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 20.0,
+			VISIBLE: _reaction_visibility,
+			MINIMUM: 20.0,
+			MAXIMUM: 60.0,
+			STEP: 5.0,
+			ROUNDED: true
+		},
+		ElementImage.SN_END_FREQUENCY: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 80.0,
+			VISIBLE: _reaction_visibility,
+			MINIMUM: 60.0,
+			MAXIMUM: 150.0,
+			STEP: 5.0,
+			ROUNDED: true
+		},
+		ElementImage.SN_MINIMUM_DECIBELS: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: -25.0,
+			VISIBLE: _reaction_visibility,
+			MINIMUM: -100.0,
+			MAXIMUM: -10.0,
+			STEP: 5.0,
+			ROUNDED: true
+		},
+		ElementImage.SN_SMOOTHING_TYPE: {
+			CONTROL_NODE: ControlNode.OPTION_BUTTON,
+			DEFAULT_VALUE: ElementImage.ReactiveSmoothingType.DECAY,
+			VISIBLE: _reaction_visibility,
+			OPTIONS: ElementImage.SMOOTHING_TYPES
+		},
+		ElementImage.SN_SMOOTHING_AMOUNT: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 0.5,
+			VISIBLE: _reaction_visibility,
+			MINIMUM: 0.1,
+			MAXIMUM: 1.0,
+			STEP: 0.1,
+			ROUNDED: false
+		},
+		#ElementImage.SN_POSITION_REACTION: {
+			#CONTROL_NODE: ControlNode.NUMERICAL,
+			#DEFAULT_VALUE: 0.0,
+			#MINIMUM: 0.0,
+			#MAXIMUM: 1.0,
+			#STEP: 0.05,
+			#ROUNDED: false
+		#},
+		ElementImage.SN_ROTATION_REACTION: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 0.0,
+			VISIBLE: _reaction_visibility,
+			MINIMUM: -1.0,
+			MAXIMUM: 1.0,
+			STEP: 0.1,
+			ROUNDED: false
+		},
+		ElementImage.SN_SCALE_REACTION: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 0.0,
+			VISIBLE: _reaction_visibility,
+			MINIMUM: 0.0,
+			MAXIMUM: 1.0,
+			STEP: 0.05,
+			ROUNDED: false
+		},
+		ElementImage.SN_SHAKE_AMPLITUDE_REACTION: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 0.0,
+			VISIBLE: _reaction_visibility,
+			MINIMUM: 0.0,
+			MAXIMUM: 1.0,
+			STEP: 0.05,
+			ROUNDED: false
+		},
+		ElementImage.SN_SHAKE_FREQUENCY_REACTION: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 0.0,
+			VISIBLE: _reaction_visibility,
+			MINIMUM: 0.0,
+			MAXIMUM: 1.0,
+			STEP: 0.05,
+			ROUNDED: false
 		}
 	}
 	

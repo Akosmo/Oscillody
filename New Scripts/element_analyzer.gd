@@ -52,7 +52,7 @@ var _end_y_position: float = 0.5
 var _height: float = 0.5
 
 var _waveform_sample_history_length: int = 4
-var _waveform_thickness: float = 1.0
+var _waveform_thickness: float = 2.0
 var _waveform_color: Color = Color.WHITE
 var _waveform_antialiasing: bool = true
 
