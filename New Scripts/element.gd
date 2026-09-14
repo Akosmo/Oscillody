@@ -39,14 +39,12 @@ enum ElementType {
 	ANALYZER,
 	## An image type, containing data for the display of images.
 	IMAGE,
-	## A post-processing type, containing data for the display of post-processing effects.
-	POST_PROCESSING,
 	## A shader type, containing data for the display of shaders.
 	SHADER,
-	## A shape type, containing data for the display of shapes.
-	SHAPE,
 	## A text type, containing data for the display of text.
-	TEXT
+	TEXT,
+	## A visual effect type, containing data for the display of visual effect effects.
+	VISUAL_EFFECT
 }
 
 ## [StringName]s for each Element type.
@@ -54,10 +52,9 @@ const ELEMENT_TYPES: Array[StringName] = [
 	&"Empty",
 	&"Analyzer",
 	&"Image",
-	&"Post-Processing",
 	&"Shader",
-	&"Shape",
-	&"Text"
+	&"Text",
+	&"Visual Effect"
 ]
 
 ## The [StringName] for [member _unique_id].
@@ -107,7 +104,6 @@ func get_unique_id() -> int:
 ## Sets the name of the Element.
 func set_element_name(p_value: String) -> void:
 	_element_name = p_value
-	#_update_property_dictionary()
 	property_changed.emit(SN_NAME)
 
 ## Returns the name of the Element.
@@ -119,7 +115,6 @@ func get_element_name() -> String:
 ## See [method ElementManager.change_element_type].
 func set_type(p_value: ElementType, p_initializing: bool = false) -> void:
 	_type = p_value
-	#_update_property_dictionary()
 	property_changed.emit(SN_TYPE)
 	if not p_initializing:
 		ElementManager.change_element_type(self)
@@ -134,7 +129,6 @@ func get_type() -> ElementType:
 ## with [param p_value].
 func set_layer(p_value: int, p_reindex: bool = true) -> void:
 	_layer = p_value
-	#_update_property_dictionary()
 	if p_reindex:
 		ElementManager.reindex_layer(self, p_value)
 	property_changed.emit(SN_LAYER)
@@ -146,7 +140,6 @@ func get_layer() -> int:
 ## Sets the visibility of the Element.
 func set_visibility(p_value: bool) -> void:
 	_visibility = p_value
-	#_update_property_dictionary()
 	property_changed.emit(SN_VISIBILITY)
 
 ## Returns the visibility of the Element.

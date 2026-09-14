@@ -46,10 +46,7 @@ func _draw_waveform() -> void:
 	if is_zero_approx(element.get_waveform_color().a):
 		return
 	
-	#if capture_effect != null:
 	_waveform_data = _audio_data.get_waveform_data()
-	#else:
-		#_waveform_data.fill(0.0)
 	
 	_waveform_points.clear()
 	if _waveform_points.resize(_waveform_data.size()):
@@ -80,14 +77,12 @@ func _draw_waveform() -> void:
 		base_line[point_idx].y = begin_pos.y + point_idx * _spacing.y
 	
 	# 2: Modify points of the line based on the audio amplitude times positive_direction times height
-	#if _audio_data._get_distributed_audio_samples_size() == element.get_waveform_sample_history_length():
 	for point_idx: int in _waveform_data.size():
 		_waveform_points[point_idx].x = \
 		base_line[point_idx].x + _waveform_data[point_idx] * _height * positive_direction.x
 		_waveform_points[point_idx].y = \
 		base_line[point_idx].y + _waveform_data[point_idx] * _height * positive_direction.y
 	
-	#if _waveform_points.size() > 1 and _audio_data._get_distributed_audio_samples_size() > 0:
 	draw_polyline(
 		_waveform_points,
 		element.get_waveform_color(),

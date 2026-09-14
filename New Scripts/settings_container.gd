@@ -17,8 +17,6 @@
 
 extends PanelContainer
 
-#var _settings_property_container_script: Script = preload("res://New Scripts/settings_property_container.gd")
-
 @onready var _input_device_container: PanelContainer = %InputDeviceContainer
 @onready var _output_device_container: PanelContainer = %OutputDeviceContainer
 @onready var _export_resolution_container: PanelContainer = %ExportResolutionContainer
@@ -26,23 +24,18 @@ extends PanelContainer
 @onready var _switch_to_sliders_container: PanelContainer = %SwitchToSlidersContainer
 
 func _ready() -> void:
-	#_input_device_container.set_script(_settings_property_container_script)
 	@warning_ignore("unsafe_property_access")
 	_input_device_container.container_property = SettingsManager.ContainerProperty.INPUT_DEVICE
 	
-	#_output_device_container.set_script(_settings_property_container_script)
 	@warning_ignore("unsafe_property_access")
 	_output_device_container.container_property = SettingsManager.ContainerProperty.OUTPUT_DEVICE
 	
-	#_export_resolution_container.set_script(_settings_property_container_script)
 	@warning_ignore("unsafe_property_access")
 	_export_resolution_container.container_property = SettingsManager.ContainerProperty.EXPORT_RESOLUTION
 	
-	#_theme_container.set_script(_settings_property_container_script)
 	@warning_ignore("unsafe_property_access")
 	_theme_container.container_property = SettingsManager.ContainerProperty.THEME
 	
-	#_switch_to_sliders_container.set_script(_settings_property_container_script)
 	@warning_ignore("unsafe_property_access")
 	_switch_to_sliders_container.container_property = SettingsManager.ContainerProperty.SLIDER_SWITCH
 	

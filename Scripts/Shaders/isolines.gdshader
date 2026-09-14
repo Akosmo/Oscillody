@@ -26,11 +26,11 @@ shader_type canvas_item;
 
 uniform mediump vec4 line_color : source_color = vec4(1.0);
 uniform mediump vec4 background_color : source_color = vec4(vec3(0.0), 1.0);
+uniform mediump float uv_scale : hint_range(1.0, 20.0, 0.5) = 5.0;
 uniform bool filled = false;
 uniform lowp float line_thickness : hint_range(1.0, 20.0, 1.0) = 10.0;
 uniform mediump float thickness_variation : hint_range(0.5, 1.2, 0.01) = 0.5;
 uniform lowp float line_amount : hint_range(1.0, 50.0, 1.0) = 10.0;
-uniform mediump float uv_scale : hint_range(1.0, 20.0, 0.5) = 5.0;
 uniform highp float speed = 0.0;
 
 // Random gradient function from https://github.com/SuboptimalEng/shader-tutorials

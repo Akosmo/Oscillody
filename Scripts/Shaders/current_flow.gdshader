@@ -24,11 +24,11 @@ shader_type canvas_item;
 
 // This shader creates an almost wavy background without using noise.
 
-uniform mediump vec4 main_color : source_color = vec4(1.0);
+uniform mediump vec4 wave_color : source_color = vec4(1.0);
 uniform mediump vec4 background_color : source_color = vec4(vec3(0.0), 1.0);
-uniform bool filled = false;
-uniform mediump float uv_scale : hint_range(1.0, 20.0, 0.5) = 5.0;
 uniform lowp float iterations : hint_range(3.0, 16.0, 1.0) = 10.0;
+uniform mediump float uv_scale : hint_range(1.0, 20.0, 0.5) = 5.0;
+uniform bool filled = false;
 uniform mediump float wave_thickness : hint_range(0.01, 0.5, 0.01) = 0.05;
 uniform highp float speed = 0.0;
 
@@ -66,7 +66,7 @@ void fragment() {
 	uv.y = 1.0 - uv.y; // Invert Y coord
 	uv.x *= 16.0 / 9.0; // Adjust ratio
 
-	highp vec3 output_color = vec3(waves(uv).x * main_color.rgb);
+	highp vec3 output_color = vec3(waves(uv).x * wave_color.rgb);
 
 	if (output_color.r * waves(uv).y < 0.0001 && output_color.g * waves(uv).y < 0.0001 && output_color.b * waves(uv).y < 0.0001) {
 		output_color = background_color.rgb;

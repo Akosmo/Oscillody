@@ -163,6 +163,7 @@ func get_current_magnitude() -> float:
 			if is_equal_approx(_smoothing_amount, 0.95):
 				_smoothing_amount = 1.0
 	
+	_current_magnitude = clampf(_current_magnitude, 0.0, 1.0)
 	_previous_magnitude = _current_magnitude
 	
-	return clampf(_current_magnitude, 0.0, 1.0)
+	return _current_magnitude

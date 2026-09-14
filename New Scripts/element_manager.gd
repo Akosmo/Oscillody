@@ -36,14 +36,21 @@ var _elements: Array[Element] # This array is sorted by layer order.
 
 var _element_unique_id: int = -1
 
+var _element_empty_ui_configurations: ElementEmptyUIConfigurations
+var _element_analyzer_ui_configurations: ElementAnalyzerUIConfigurations
+var _element_image_ui_configurations: ElementImageUIConfigurations
+var _element_shader_ui_configurations: ElementShaderUIConfigurations
+#var _element_text_ui_configurations: ElementTextUIConfigurations
+#var _element_visual_effect_ui_configurations: ElementVisualEffectUIConfigurations
+
 func _init() -> void:
-	@warning_ignore("return_value_discarded")
-	element_created.connect(_print_elements)
-	@warning_ignore("return_value_discarded")
-	element_deleted.connect(_print_elements)
-	
 	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
 		printerr("Could not connect signal.")
+	
+	_element_empty_ui_configurations = preload("uid://c5noed3x5ibew")
+	_element_analyzer_ui_configurations = preload("uid://blysgijw0k6ah")
+	_element_image_ui_configurations = preload("uid://d22vhxv5sqx2t")
+	_element_shader_ui_configurations = preload("uid://ccdqa8ifs0fso")
 
 ## Returns the number of existing Elements.
 func get_element_count() -> int:
@@ -66,20 +73,12 @@ func create_element() -> Element:
 	
 	element_created.emit(element)
 	
-	# Debug only.
-	@warning_ignore("return_value_discarded")
-	element.property_changed.connect(_print_elements)
-	
 	return element
 
 ## Deletes the given [Element].
 ## This automatically sets the correct [member Element._layer] of all remaining Elements.[br]
 ## This should only be called by pressing the delete button in an [ElementContainer].
 func delete_element(p_element: Element) -> void:
-	# Debug only.
-	if p_element.property_changed.is_connected(_print_elements):
-		p_element.property_changed.disconnect(_print_elements)
-	
 	_elements.erase(p_element)
 	
 	_update_layers()
@@ -98,18 +97,14 @@ func change_element_type(p_element: Element) -> void:
 			new_element = ElementAnalyzer.new() as ElementAnalyzer
 		p_element.ElementType.IMAGE:
 			new_element = ElementImage.new() as ElementImage
-		p_element.ElementType.POST_PROCESSING:
-			pass
-			#new_element = ElementPostProcessing.new() as ElementPostProcessing
 		p_element.ElementType.SHADER:
-			pass
-			#new_element = ElementShader.new() as ElementShader
-		p_element.ElementType.SHAPE:
-			pass
-			#new_element = ElementShape.new() as ElementShape
+			new_element = ElementShader.new() as ElementShader
 		p_element.ElementType.TEXT:
 			pass
 			#new_element = ElementText.new() as ElementText
+		p_element.ElementType.VISUAL_EFFECT:
+			pass
+			#new_element = ElementVisualEffect.new() as ElementVisualEffect
 	
 	new_element.set_unique_id(p_element.get_unique_id())
 	new_element.set_element_name(p_element.get_element_name())
@@ -117,15 +112,7 @@ func change_element_type(p_element: Element) -> void:
 	new_element.set_layer(p_element.get_layer(), false)
 	new_element.set_visibility(p_element.get_visibility())
 	
-	# Debug only.
-	if p_element.property_changed.is_connected(_print_elements):
-		p_element.property_changed.disconnect(_print_elements)
-	
 	_elements.erase(p_element)
-	
-	# Debug only.
-	@warning_ignore("return_value_discarded")
-	new_element.property_changed.connect(_print_elements)
 	
 	@warning_ignore("return_value_discarded")
 	_elements.insert(new_element.get_layer(), new_element)
@@ -138,6 +125,26 @@ func reindex_layer(p_element: Element, p_to_index: int) -> void:
 	@warning_ignore("return_value_discarded")
 	_elements.insert(p_to_index, p_element)
 	_update_layers()
+
+func get_element_ui_configurations(p_type: Element.ElementType) -> ElementUIConfigurations:
+	match p_type:
+		Element.ElementType.EMPTY:
+			return _element_empty_ui_configurations
+		Element.ElementType.ANALYZER:
+			return _element_analyzer_ui_configurations
+		Element.ElementType.IMAGE:
+			return _element_image_ui_configurations
+		Element.ElementType.SHADER:
+			return _element_shader_ui_configurations
+		Element.ElementType.TEXT:
+			pass
+			#new_element = ElementText.new() as ElementText
+		Element.ElementType.VISUAL_EFFECT:
+			pass
+			#new_element = ElementVisualEffect.new() as ElementVisualEffect
+	
+	printerr("Unknown type.")
+	return _element_empty_ui_configurations
 
 func notify_property_node_visibility_changed() -> void:
 	property_node_visibility_changed.emit()
@@ -160,12 +167,3 @@ func _update_layers() -> void:
 		element.set_layer(_elements.find(element), false)
 	
 	element_layers_updated.emit()
-
-# Debug.
-func _print_elements(_p_value: Variant) -> void:
-	for element: Element in _elements:
-		var less_formatted_string: String = str(element.get_property_dictionary())
-		less_formatted_string += "\n"
-		print(less_formatted_string)
-	
-	print("================================================================================================")

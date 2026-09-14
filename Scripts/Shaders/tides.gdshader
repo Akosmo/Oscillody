@@ -28,7 +28,7 @@ uniform mediump vec4 wave_color : source_color = vec4(1.0);
 uniform mediump vec4 tint : source_color = vec4(vec3(0.0), 1.0);
 uniform bool color_mix = false;
 uniform bool invert_colors = false;
-uniform mediump float hue_shift_amt : hint_range(-3.14, 3.14, 0.01) = 0.0;
+uniform mediump float hue_shift : hint_range(-3.14, 3.14, 0.01) = 0.0;
 uniform lowp int iterations : hint_range(1, 6, 1) = 6;
 uniform highp float speed = 0.0;
 
@@ -59,8 +59,8 @@ vec3 hue_shift_yiq(highp vec3 col) {
 	highp vec3 color_in_yiq = to_yiq(col);
 
 	mediump mat2 rotation_matrix = mat2(
-		vec2(cos(hue_shift_amt), -sin(hue_shift_amt)),
-		vec2(sin(hue_shift_amt), cos(hue_shift_amt))
+		vec2(cos(hue_shift), -sin(hue_shift)),
+		vec2(sin(hue_shift), cos(hue_shift))
 		);
 
 	color_in_yiq.yz *= rotation_matrix;
@@ -94,7 +94,7 @@ void fragment() {
 		output_color = vec3(1.0) - output_color;
 	}
 
-	if (abs(hue_shift_amt) > 0.0) {
+	if (abs(hue_shift) > 0.0) {
 		output_color = hue_shift_yiq(output_color);
 	}
 

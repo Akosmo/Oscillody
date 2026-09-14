@@ -51,7 +51,6 @@ func _update_properties_container(p_element: Element) -> void:
 	
 	if _properties_box_container.get_child_count():
 		for node: ElementPropertyContainer in _properties_box_container.get_children():
-			#_properties_box_container.remove_child(node)
 			node.queue_free()
 	
 	_current_element_selected = p_element
@@ -70,7 +69,6 @@ func _on_element_container_deleted(p_element: Element) -> void:
 	if p_element == _current_element_selected:
 		if _properties_box_container.get_child_count():
 			for node: ElementPropertyContainer in _properties_box_container.get_children():
-				#_properties_box_container.remove_child(node)
 				node.queue_free()
 
 func _on_element_layers_updated() -> void:

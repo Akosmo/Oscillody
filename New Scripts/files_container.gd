@@ -20,8 +20,6 @@ extends PanelContainer
 var _files_property_container_script: Script = preload("res://New Scripts/files_property_container.gd")
 
 @onready var _save_preset_button: Button = %SavePresetButton
-@onready var _refresh_preset_button: Button = %RefreshPresetButton
-@onready var _delete_preset_button: Button = %DeletePresetButton
 @onready var _open_preset_folder_button: Button = %OpenPresetFolderButton
 @onready var _import_audio_button: Button = %ImportAudioButton
 @onready var _export_video_button: Button = %ExportVideoButton
@@ -41,10 +39,6 @@ func _ready() -> void:
 func _connect_signals() -> Error:
 	if _save_preset_button.pressed.connect(_on_save_pressed):
 		return ERR_INVALID_PARAMETER
-	#if _refresh_preset_button.pressed.connect(_on_refresh_pressed):
-		#return ERR_INVALID_PARAMETER
-	#if _delete_preset_button.pressed.connect(_on_delete_pressed):
-		#return ERR_INVALID_PARAMETER
 	if _open_preset_folder_button.pressed.connect(_on_open_folder_pressed):
 		return ERR_INVALID_PARAMETER
 	if _import_audio_button.pressed.connect(_on_import_audio_pressed):
@@ -59,12 +53,6 @@ func _connect_signals() -> Error:
 
 func _on_save_pressed() -> void:
 	pass
-
-#func _on_refresh_pressed() -> void:
-	#pass
-#
-#func _on_delete_pressed() -> void:
-	#pass
 
 func _on_open_folder_pressed() -> void:
 	pass

@@ -30,7 +30,6 @@ var _image_texture: ImageTexture
 
 var _noise_utilities: NoiseUtilities
 var _audio_data: RealTimeAudioData
-#var _spectrum_analyzer_effect: AudioEffectSpectrumAnalyzer
 
 # TEST: Setting reaction controls to non-zero, then removing the audio source, to see if things break.
 
@@ -85,20 +84,19 @@ func _ready() -> void:
 		printerr("Could not connect signal.")
 
 func _process(_delta: float) -> void:
-	if not is_equal_approx(element.get_rotation_reaction(), 0.0):
+	if not is_equal_approx(element.get_image_rotation_reaction(), 0.0):
 		_texture_rect.set_rotation_degrees(
 			element.get_image_rotation() + \
-			(_get_reaction_magnitude(element.get_rotation_reaction() * 50.0) - 1.0)
+			(_get_reaction_magnitude(element.get_image_rotation_reaction() * 50.0) - 1.0)
 		)
 	else:
 		_texture_rect.set_rotation_degrees(element.get_image_rotation())
 	
-	if element.get_scale_reaction() > 0.0:
-		#_texture_rect.set_pivot_offset(WindowUtilities.get_subviewport_size() * 0.5)
+	if element.get_image_scale_reaction() > 0.0:
 		_texture_rect.set_scale(
 			Vector2.ONE * \
 			element.get_image_scale() * \
-			_get_reaction_magnitude(element.get_scale_reaction()) + \
+			_get_reaction_magnitude(element.get_image_scale_reaction()) + \
 			_get_scale_for_amplitude()
 		)
 	else:
@@ -112,7 +110,6 @@ func _process(_delta: float) -> void:
 		)
 	elif element.get_shake_frequency_reaction() > 0.0:
 		_noise_utilities.increment_noise_scroll(
-			#element.get_shake_frequency_reaction() * \
 			100.0 * \
 			(_get_reaction_magnitude(element.get_shake_frequency_reaction()) - 1.0)
 		)
@@ -124,7 +121,6 @@ func _process(_delta: float) -> void:
 				element.get_shake_amplitude() * \
 				200.0 * \
 				_get_reaction_magnitude(element.get_shake_amplitude_reaction())
-				#(_get_reaction_magnitude(element.get_shake_amplitude_reaction()) - 1.0)
 			)
 			_texture_rect.set_scale(Vector2.ONE * element.get_image_scale() + _get_scale_for_amplitude())
 		elif element.get_shake_amplitude_reaction() > 0.0:
@@ -191,20 +187,15 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			
 			_texture_rect.set_position(_get_fixed_position())
 		ElementImage.SN_IMAGE_X_POSITION, ElementImage.SN_IMAGE_Y_POSITION:
-			#_texture_rect.set_position(_get_fixed_position())
 			pass
 		ElementImage.SN_IMAGE_ROTATION:
-			#_texture_rect.set_pivot_offset(WindowUtilities.get_subviewport_size() * 0.5)
-			#_texture_rect.set_rotation_degrees(element.get_image_rotation())
 			pass
 		ElementImage.SN_IMAGE_SCALE:
-			#_texture_rect.set_pivot_offset(WindowUtilities.get_subviewport_size() * 0.5)
-			#_texture_rect.set_scale(Vector2.ONE * element.get_image_scale() + _get_scale_for_amplitude())
 			pass
 		ElementImage.SN_IMAGE_COLOR:
 			_texture_rect.set_self_modulate(element.get_image_color())
-		ElementImage.SN_BLUR:
-			_shader_material.set_shader_parameter("blur_amount", element.get_blur() * 5.0)
+		ElementImage.SN_IMAGE_BLUR:
+			_shader_material.set_shader_parameter("blur_amount", element.get_image_blur() * 5.0)
 		ElementImage.SN_SHAKE_AMPLITUDE:
 			_texture_rect.set_scale(Vector2.ONE * element.get_image_scale() + _get_scale_for_amplitude())
 		ElementImage.SN_SHAKE_AMPLITUDE_COMPENSATION:
@@ -226,11 +217,9 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			_audio_data.set_smoothing_type(element.get_smoothing_type())
 		ElementImage.SN_SMOOTHING_AMOUNT:
 			_audio_data.set_smoothing_amount(element.get_smoothing_amount())
-		#ElementImage.SN_POSITION_REACTION:
-			#pass
-		ElementImage.SN_ROTATION_REACTION:
+		ElementImage.SN_IMAGE_ROTATION_REACTION:
 			pass
-		ElementImage.SN_SCALE_REACTION:
+		ElementImage.SN_IMAGE_SCALE_REACTION:
 			pass
 		ElementImage.SN_SHAKE_AMPLITUDE_REACTION:
 			_texture_rect.set_scale(Vector2.ONE * element.get_image_scale() + _get_scale_for_amplitude())

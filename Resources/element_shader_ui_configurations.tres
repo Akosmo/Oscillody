@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="ElementShaderUIConfigurations" format=3 uid="uid://ccdqa8ifs0fso"]
+
+[ext_resource type="Script" uid="uid://wc81mdrlmstr" path="res://New Scripts/element_shader_ui_configurations.gd" id="1_brakr"]
+
+[resource]
+script = ExtResource("1_brakr")
+metadata/_custom_type_script = "uid://wc81mdrlmstr"

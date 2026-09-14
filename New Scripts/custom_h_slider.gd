@@ -79,4 +79,4 @@ func _set_value_to_label() -> void:
 		if str(_value).containsn(".0"):
 			_label.set_text(str(_value).replace(".0", ""))
 	else:
-		_label.set_text(str(_value))
+		_label.set_text(str(_value).pad_decimals(2))
