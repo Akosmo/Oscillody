@@ -18,22 +18,22 @@
 class_name ElementEmpty
 extends Element
 
-func get_property_dictionary() -> Dictionary[StringName, Variant]:
+func get_properties() -> Dictionary[StringName, Variant]:
 	var _property_dictionary: Dictionary[StringName, Variant] = {
-		SN_NAME: _element_name,
-		SN_TYPE: _type,
-		SN_LAYER: _layer,
-		SN_VISIBILITY: _visibility
+		SN_ELEMENT_NAME: _element_name,
+		SN_ELEMENT_TYPE: _element_type,
+		SN_ELEMENT_LAYER: _element_layer,
+		SN_ELEMENT_VISIBILITY: _element_visibility
 	}
 	
 	return _property_dictionary
 
-func get_method_dictionary() -> Dictionary[StringName, StringName]:
-	var _method_dictionary: Dictionary[StringName, StringName] = {
-		SN_NAME: set_element_name.get_method(),
-		SN_TYPE: set_type.get_method(),
-		SN_LAYER: set_layer.get_method(),
-		SN_VISIBILITY: set_visibility.get_method()
+func get_setters() -> Dictionary[StringName, StringName]:
+	var _setter_dictionary: Dictionary[StringName, StringName] = {
+		SN_ELEMENT_NAME: set_element_name.get_method(),
+		SN_ELEMENT_TYPE: set_element_type.get_method(),
+		SN_ELEMENT_LAYER: set_element_layer.get_method(),
+		SN_ELEMENT_VISIBILITY: set_element_visibility.get_method()
 	}
 	
-	return _method_dictionary
+	return _setter_dictionary

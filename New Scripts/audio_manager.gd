@@ -147,13 +147,16 @@ func clear_streams() -> void:
 	_streams.clear()
 	_time_duration = 0.0
 	
-	new_audio_imported.emit()
+	#new_audio_imported.emit()
+	#master_play_state_changed.emit()
+
+func notify_cleared_streams() -> void:
 	master_play_state_changed.emit()
 
 ## Converts audio files to the appropriate [AudioStream] type. If the conversion is successful,
 ## the stream is added to [member _streams], with its filename as the key. Otherwise, returns
 ## [constant @GlobalScope.FAILED].
-func test_and_import_audio_files(p_paths: PackedStringArray) -> Error:
+func import_audio_files(p_paths: PackedStringArray) -> Error:
 	if p_paths.is_empty():
 		return FAILED
 	
@@ -199,6 +202,6 @@ audio in the Ogg file container.".format({"filename": filename})
 				)
 				return FAILED
 	
-	new_audio_imported.emit()
+	#new_audio_imported.emit()
 	
 	return OK

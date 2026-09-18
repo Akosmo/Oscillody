@@ -34,11 +34,11 @@ var _audio_data: RealTimeAudioData
 # TEST: Setting reaction controls to non-zero, then removing the audio source, to see if things break.
 
 func _ready() -> void:
-	set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
-	set_layer(element.get_layer())
+	#set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
+	#set_layer(element.get_layer())
 	
-	_element_ui_configurations = preload("uid://d22vhxv5sqx2t")
-	_element_ui_configurations.set_reaction_visibility(not element.get_audio_source().is_empty())
+	_element_ui_configurations = ElementManager.get_element_ui_configurations(element.get_element_type())
+	#_element_ui_configurations.set_reaction_visibility(not element.get_audio_source().is_empty())
 	
 	_texture_rect = TextureRect.new()
 	_texture_rect.set_expand_mode(TextureRect.EXPAND_IGNORE_SIZE)
@@ -53,25 +53,28 @@ func _ready() -> void:
 	add_child(_color_rect)
 	
 	_noise_utilities = NoiseUtilities.new()
-	_noise_utilities.set_seed(element.get_shake_seed())
-	_noise_utilities.reset_noise_scroll()
+	#_noise_utilities.set_seed(element.get_shake_seed())
+	#_noise_utilities.reset_noise_scroll()
 	
 	_audio_data = RealTimeAudioData.new()
-	if not element.get_audio_source().is_empty():
-		var spectrum_analyzer_effect_instance: AudioEffectSpectrumAnalyzerInstance
-		spectrum_analyzer_effect_instance = AudioServer.get_bus_effect_instance(
-			AudioServer.get_bus_index(element.get_audio_source()),
-			0,
-			0
-		)
-		_audio_data.set_spectrum_analyzer_effect_instance(spectrum_analyzer_effect_instance)
-	else:
-		_audio_data.set_spectrum_analyzer_effect_instance(null)
-	_audio_data.set_begin_frequency(element.get_begin_frequency())
-	_audio_data.set_end_frequency(element.get_end_frequency())
-	_audio_data.set_minimum_decibels(element.get_minimum_decibels())
-	_audio_data.set_smoothing_type(element.get_smoothing_type())
-	_audio_data.set_smoothing_amount(element.get_smoothing_amount())
+	#if not element.get_audio_source().is_empty():
+		#var spectrum_analyzer_effect_instance: AudioEffectSpectrumAnalyzerInstance
+		#spectrum_analyzer_effect_instance = AudioServer.get_bus_effect_instance(
+			#AudioServer.get_bus_index(element.get_audio_source()),
+			#0,
+			#0
+		#)
+		#_audio_data.set_spectrum_analyzer_effect_instance(spectrum_analyzer_effect_instance)
+	#else:
+		#_audio_data.set_spectrum_analyzer_effect_instance(null)
+	#_audio_data.set_begin_frequency(element.get_begin_frequency())
+	#_audio_data.set_end_frequency(element.get_end_frequency())
+	#_audio_data.set_minimum_decibels(element.get_minimum_decibels())
+	#_audio_data.set_smoothing_type(element.get_smoothing_type())
+	#_audio_data.set_smoothing_amount(element.get_smoothing_amount())
+	
+	for property_key: StringName in element.get_properties().keys():
+		_on_element_property_changed(property_key)
 	
 	if element.property_changed.connect(_on_element_property_changed):
 		printerr("Could not connect signal.")
@@ -167,15 +170,16 @@ func _get_reaction_magnitude(p_amount: float) -> float:
 
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:
-		ElementImage.SN_NAME:
-			set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
-		ElementImage.SN_TYPE:
-			queue_free()
-		ElementImage.SN_LAYER:
-			set_layer(element.get_layer())
-		ElementImage.SN_VISIBILITY:
-			set_visible(element.get_visibility())
-			set_process(element.get_visibility())
+		ElementImage.SN_ELEMENT_NAME:
+			set_name(element.get_element_name() + "_" + str(element.get_element_unique_id()))
+		ElementImage.SN_ELEMENT_TYPE:
+			if element.get_element_type() != Element.ElementType.IMAGE:
+				queue_free()
+		ElementImage.SN_ELEMENT_LAYER:
+			set_layer(element.get_element_layer())
+		ElementImage.SN_ELEMENT_VISIBILITY:
+			set_visible(element.get_element_visibility())
+			set_process(element.get_element_visibility())
 		ElementImage.SN_IMAGE_PATH:
 			if not element.get_image_path().is_empty():
 				_native_image = Image.load_from_file(element.get_image_path())

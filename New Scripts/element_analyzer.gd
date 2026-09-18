@@ -16,7 +16,7 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 class_name ElementAnalyzer
-extends Element
+extends ElementWithAudio
 
 enum AnalyzerType {
 	WAVEFORM,
@@ -28,28 +28,26 @@ const ANALYZER_TYPES: Array[StringName] = [
 	&"Spectrum"
 ]
 
-const SN_ANALYZER_TYPE: StringName = &"_analyzer_type"
-const SN_AUDIO_SOURCE: StringName = &"_audio_source"
+const SN_ANALYZER_TYPE: StringName = &"Analyzer_Type"
 
-const SN_BEGIN_X_POSITION: StringName = &"_begin_x_position"
-const SN_BEGIN_Y_POSITION: StringName = &"_begin_y_position"
-const SN_END_X_POSITION: StringName = &"_end_x_position"
-const SN_END_Y_POSITION: StringName = &"_end_y_position"
-const SN_HEIGHT: StringName = &"_height"
+const SN_ANALYZER_BEGIN_X_POSITION: StringName = &"(Analyzer)_Begin_X_Position"
+const SN_ANALYZER_BEGIN_Y_POSITION: StringName = &"(Analyzer)_Begin_Y_Position"
+const SN_ANALYZER_END_X_POSITION: StringName = &"(Analyzer)_End_X_Position"
+const SN_ANALYZER_END_Y_POSITION: StringName = &"(Analyzer)_End_Y_Position"
+const SN_ANALYZER_HEIGHT: StringName = &"(Analyzer)_Height"
 
-const SN_WAVEFORM_SAMPLE_HISTORY_LENGTH: StringName = &"(waveform)_sample_history_length"
-const SN_WAVEFORM_THICKNESS: StringName = &"(waveform)_thickness"
-const SN_WAVEFORM_COLOR: StringName = &"(waveform)_color"
-const SN_WAVEFORM_ANTIALIASING: StringName = &"(waveform)_antialiasing"
+const SN_WAVEFORM_SAMPLE_HISTORY_LENGTH: StringName = &"(Waveform)_Sample_History_Length"
+const SN_WAVEFORM_THICKNESS: StringName = &"(Waveform)_Thickness"
+const SN_WAVEFORM_COLOR: StringName = &"(Waveform)_Color"
+const SN_WAVEFORM_ANTIALIASING: StringName = &"(Waveform)_Antialiasing"
 
 var _analyzer_type: AnalyzerType = AnalyzerType.WAVEFORM
-var _audio_source: StringName = &""
 
-var _begin_x_position: float = 0.0
-var _begin_y_position: float = 0.5
-var _end_x_position: float = 1.0
-var _end_y_position: float = 0.5
-var _height: float = 0.5
+var _analyzer_begin_x_position: float = 0.0
+var _analyzer_begin_y_position: float = 0.5
+var _analyzer_end_x_position: float = 1.0
+var _analyzer_end_y_position: float = 0.5
+var _analyzer_height: float = 0.5
 
 var _waveform_sample_history_length: int = 4
 var _waveform_thickness: float = 2.0
@@ -63,47 +61,40 @@ func set_analyzer_type(p_value: AnalyzerType) -> void:
 func get_analyzer_type() -> AnalyzerType:
 	return _analyzer_type
 
-func set_audio_source(p_value: StringName) -> void:
-	_audio_source = p_value
-	property_changed.emit(SN_AUDIO_SOURCE)
+func set_analyzer_begin_x_position(p_value: float) -> void:
+	_analyzer_begin_x_position = p_value
+	property_changed.emit(SN_ANALYZER_BEGIN_X_POSITION)
 
-func get_audio_source() -> StringName:
-	return _audio_source
+func get_analyzer_begin_x_position() -> float:
+	return _analyzer_begin_x_position
 
-func set_begin_x_position(p_value: float) -> void:
-	_begin_x_position = p_value
-	property_changed.emit(SN_BEGIN_X_POSITION)
+func set_analyzer_begin_y_position(p_value: float) -> void:
+	_analyzer_begin_y_position = p_value
+	property_changed.emit(SN_ANALYZER_BEGIN_Y_POSITION)
 
-func get_begin_x_position() -> float:
-	return _begin_x_position
+func get_analyzer_begin_y_position() -> float:
+	return _analyzer_begin_y_position
 
-func set_begin_y_position(p_value: float) -> void:
-	_begin_y_position = p_value
-	property_changed.emit(SN_BEGIN_Y_POSITION)
+func set_analyzer_end_x_position(p_value: float) -> void:
+	_analyzer_end_x_position = p_value
+	property_changed.emit(SN_ANALYZER_END_X_POSITION)
 
-func get_begin_y_position() -> float:
-	return _begin_y_position
+func get_analyzer_end_x_position() -> float:
+	return _analyzer_end_x_position
 
-func set_end_x_position(p_value: float) -> void:
-	_end_x_position = p_value
-	property_changed.emit(SN_END_X_POSITION)
+func set_analyzer_end_y_position(p_value: float) -> void:
+	_analyzer_end_y_position = p_value
+	property_changed.emit(SN_ANALYZER_END_Y_POSITION)
 
-func get_end_x_position() -> float:
-	return _end_x_position
+func get_analyzer_end_y_position() -> float:
+	return _analyzer_end_y_position
 
-func set_end_y_position(p_value: float) -> void:
-	_end_y_position = p_value
-	property_changed.emit(SN_END_Y_POSITION)
+func set_analyzer_height(p_value: float) -> void:
+	_analyzer_height = p_value
+	property_changed.emit(SN_ANALYZER_HEIGHT)
 
-func get_end_y_position() -> float:
-	return _end_y_position
-
-func set_height(p_value: float) -> void:
-	_height = p_value
-	property_changed.emit(SN_HEIGHT)
-
-func get_height() -> float:
-	return _height
+func get_analyzer_height() -> float:
+	return _analyzer_height
 
 func set_waveform_sample_history_length(p_value: int) -> void:
 	_waveform_sample_history_length = p_value
@@ -133,19 +124,19 @@ func set_waveform_antialiasing(p_value: bool) -> void:
 func get_waveform_antialiasing() -> bool:
 	return _waveform_antialiasing
 
-func get_property_dictionary() -> Dictionary[StringName, Variant]:
+func get_properties() -> Dictionary[StringName, Variant]:
 	var _property_dictionary: Dictionary[StringName, Variant] = {
-		SN_NAME: _element_name,
-		SN_TYPE: _type,
-		SN_LAYER: _layer,
-		SN_VISIBILITY: _visibility,
-		SN_ANALYZER_TYPE: _analyzer_type,
+		SN_ELEMENT_NAME: _element_name,
+		SN_ELEMENT_TYPE: _element_type,
+		SN_ELEMENT_LAYER: _element_layer,
+		SN_ELEMENT_VISIBILITY: _element_visibility,
 		SN_AUDIO_SOURCE: _audio_source,
-		SN_BEGIN_X_POSITION: _begin_x_position,
-		SN_BEGIN_Y_POSITION: _begin_y_position,
-		SN_END_X_POSITION: _end_x_position,
-		SN_END_Y_POSITION: _end_y_position,
-		SN_HEIGHT: _height,
+		SN_ANALYZER_TYPE: _analyzer_type,
+		SN_ANALYZER_BEGIN_X_POSITION: _analyzer_begin_x_position,
+		SN_ANALYZER_BEGIN_Y_POSITION: _analyzer_begin_y_position,
+		SN_ANALYZER_END_X_POSITION: _analyzer_end_x_position,
+		SN_ANALYZER_END_Y_POSITION: _analyzer_end_y_position,
+		SN_ANALYZER_HEIGHT: _analyzer_height,
 		SN_WAVEFORM_SAMPLE_HISTORY_LENGTH: _waveform_sample_history_length,
 		SN_WAVEFORM_THICKNESS: _waveform_thickness,
 		SN_WAVEFORM_COLOR: _waveform_color,
@@ -154,23 +145,23 @@ func get_property_dictionary() -> Dictionary[StringName, Variant]:
 	
 	return _property_dictionary
 
-func get_method_dictionary() -> Dictionary[StringName, StringName]:
-	var _method_dictionary: Dictionary[StringName, StringName] = {
-		SN_NAME: set_element_name.get_method(),
-		SN_TYPE: set_type.get_method(),
-		SN_LAYER: set_layer.get_method(),
-		SN_VISIBILITY: set_visibility.get_method(),
-		SN_ANALYZER_TYPE: set_analyzer_type.get_method(),
+func get_setters() -> Dictionary[StringName, StringName]:
+	var _setter_dictionary: Dictionary[StringName, StringName] = {
+		SN_ELEMENT_NAME: set_element_name.get_method(),
+		SN_ELEMENT_TYPE: set_element_type.get_method(),
+		SN_ELEMENT_LAYER: set_element_layer.get_method(),
+		SN_ELEMENT_VISIBILITY: set_element_visibility.get_method(),
 		SN_AUDIO_SOURCE: set_audio_source.get_method(),
-		SN_BEGIN_X_POSITION: set_begin_x_position.get_method(),
-		SN_BEGIN_Y_POSITION: set_begin_y_position.get_method(),
-		SN_END_X_POSITION: set_end_x_position.get_method(),
-		SN_END_Y_POSITION: set_end_y_position.get_method(),
-		SN_HEIGHT: set_height.get_method(),
+		SN_ANALYZER_TYPE: set_analyzer_type.get_method(),
+		SN_ANALYZER_BEGIN_X_POSITION: set_analyzer_begin_x_position.get_method(),
+		SN_ANALYZER_BEGIN_Y_POSITION: set_analyzer_begin_y_position.get_method(),
+		SN_ANALYZER_END_X_POSITION: set_analyzer_end_x_position.get_method(),
+		SN_ANALYZER_END_Y_POSITION: set_analyzer_end_y_position.get_method(),
+		SN_ANALYZER_HEIGHT: set_analyzer_height.get_method(),
 		SN_WAVEFORM_SAMPLE_HISTORY_LENGTH: set_waveform_sample_history_length.get_method(),
 		SN_WAVEFORM_THICKNESS: set_waveform_thickness.get_method(),
 		SN_WAVEFORM_COLOR: set_waveform_color.get_method(),
 		SN_WAVEFORM_ANTIALIASING: set_waveform_antialiasing.get_method()
 	}
 	
-	return _method_dictionary
+	return _setter_dictionary

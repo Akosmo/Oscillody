@@ -18,15 +18,15 @@
 class_name ElementImage
 extends ElementShakable
 
-const SN_IMAGE_PATH: StringName = &"_image_path"
-const SN_IMAGE_X_POSITION: StringName = &"(image)_x_position"
-const SN_IMAGE_Y_POSITION: StringName = &"(image)_y_position"
-const SN_IMAGE_ROTATION: StringName = &"(image)_rotation"
-const SN_IMAGE_SCALE: StringName = &"(image)_scale"
-const SN_IMAGE_COLOR: StringName = &"(image)_color"
-const SN_IMAGE_BLUR: StringName = &"(image)_blur"
-const SN_IMAGE_ROTATION_REACTION: StringName = &"(image)_rotation_reaction"
-const SN_IMAGE_SCALE_REACTION: StringName = &"(image)_scale_reaction"
+const SN_IMAGE_PATH: StringName = &"Image_Path"
+const SN_IMAGE_X_POSITION: StringName = &"(Image)_X_Position"
+const SN_IMAGE_Y_POSITION: StringName = &"(Image)_Y_Position"
+const SN_IMAGE_ROTATION: StringName = &"(Image)_Rotation"
+const SN_IMAGE_SCALE: StringName = &"(Image)_Scale"
+const SN_IMAGE_COLOR: StringName = &"(Image)_Color"
+const SN_IMAGE_BLUR: StringName = &"(Image)_Blur"
+const SN_IMAGE_ROTATION_REACTION: StringName = &"(Image)_Rotation_Reaction"
+const SN_IMAGE_SCALE_REACTION: StringName = &"(Image)_Scale_Reaction"
 
 var _image_path: String = ""
 var _image_x_position: float = 0.5
@@ -101,12 +101,12 @@ func set_image_scale_reaction(p_value: float) -> void:
 func get_image_scale_reaction() -> float:
 	return _image_scale_reaction
 
-func get_property_dictionary() -> Dictionary[StringName, Variant]:
+func get_properties() -> Dictionary[StringName, Variant]:
 	var _property_dictionary: Dictionary[StringName, Variant] = {
-		SN_NAME: _element_name,
-		SN_TYPE: _type,
-		SN_LAYER: _layer,
-		SN_VISIBILITY: _visibility,
+		SN_ELEMENT_NAME: _element_name,
+		SN_ELEMENT_TYPE: _element_type,
+		SN_ELEMENT_LAYER: _element_layer,
+		SN_ELEMENT_VISIBILITY: _element_visibility,
 		SN_IMAGE_PATH: _image_path,
 		SN_IMAGE_X_POSITION: _image_x_position,
 		SN_IMAGE_Y_POSITION: _image_y_position,
@@ -132,12 +132,12 @@ func get_property_dictionary() -> Dictionary[StringName, Variant]:
 	
 	return _property_dictionary
 
-func get_method_dictionary() -> Dictionary[StringName, StringName]:
-	var _method_dictionary: Dictionary[StringName, StringName] = {
-		SN_NAME: set_element_name.get_method(),
-		SN_TYPE: set_type.get_method(),
-		SN_LAYER: set_layer.get_method(),
-		SN_VISIBILITY: set_visibility.get_method(),
+func get_setters() -> Dictionary[StringName, StringName]:
+	var _setter_dictionary: Dictionary[StringName, StringName] = {
+		SN_ELEMENT_NAME: set_element_name.get_method(),
+		SN_ELEMENT_TYPE: set_element_type.get_method(),
+		SN_ELEMENT_LAYER: set_element_layer.get_method(),
+		SN_ELEMENT_VISIBILITY: set_element_visibility.get_method(),
 		SN_IMAGE_PATH: set_image_path.get_method(),
 		SN_IMAGE_X_POSITION: set_image_x_position.get_method(),
 		SN_IMAGE_Y_POSITION: set_image_y_position.get_method(),
@@ -161,4 +161,4 @@ func get_method_dictionary() -> Dictionary[StringName, StringName]:
 		SN_SHAKE_FREQUENCY_REACTION: set_shake_frequency_reaction.get_method()
 	}
 	
-	return _method_dictionary
+	return _setter_dictionary

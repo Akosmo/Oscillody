@@ -24,6 +24,8 @@ extends Node
 signal setup_requested
 ## Emitted when [method enable_sliders] is called.
 signal slider_preference_changed
+## Emitted when requesting all [ElementShakable] instances
+## to call [method NoiseUtilities.reset_noise_scroll].
 signal sync_element_shake_requested
 
 ## All possible properties that a property container can be linked to.
@@ -43,6 +45,7 @@ const RESOLUTION_1080P: StringName = &"1080p"
 ## The [StringName] for 1440p export resolution.
 const RESOLUTION_1440P: StringName = &"1440p"
 
+# TODO: Maybe make some of these StringNames.
 var _input_device: String
 var _output_device: String
 var _export_resolution: String
@@ -104,6 +107,9 @@ func set_app_theme(p_theme: String) -> Error:
 	# TODO: Check if it's in a list.
 	
 	return OK
+
+func get_app_theme() -> String:
+	return _theme
 
 ## If [param p_enable] is [code]true[/code], [ElementPropertyContainer] will use [CustomHSlider]s instead
 ## of [SpinBox]es.

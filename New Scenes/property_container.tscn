@@ -1,15 +1,17 @@
 [gd_scene format=3 uid="uid://bfv2ne33xxlso"]
 
+[ext_resource type="Script" uid="uid://cs1fahg27mkye" path="res://New Scripts/basic_property_container.gd" id="1_8q6o3"]
 [ext_resource type="PackedScene" uid="uid://dmhreh16g5u1n" path="res://New Scenes/custom_h_slider.tscn" id="2_8q6o3"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jtfbr"]
 
-[node name="PanelContainer" type="PanelContainer" unique_id=803774841]
+[node name="PropertyContainer" type="PanelContainer" unique_id=803774841]
 custom_minimum_size = Vector2(0, 39)
 offset_right = 8.0
 offset_bottom = 39.0
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxEmpty_jtfbr")
+script = ExtResource("1_8q6o3")
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=1597294885]
 layout_mode = 2
@@ -35,6 +37,7 @@ size_flags_horizontal = 8
 text = "R"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=1197491246]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 8
 theme_override_constants/separation = 10
@@ -51,7 +54,6 @@ title = "Open a File"
 dialog_hide_on_ok = true
 file_mode = 0
 access = 2
-filters = PackedStringArray("*.png, *.jpg, *.jpeg ; Supported Formats")
 use_native_dialog = true
 
 [node name="CheckButton" type="CheckButton" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1432791718]

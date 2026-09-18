@@ -17,7 +17,7 @@
 
 @abstract
 class_name ElementReactive
-extends Element
+extends ElementWithAudio
 
 enum ReactiveSmoothingType {
 	BOTH,
@@ -33,26 +33,17 @@ const SMOOTHING_TYPES: Array[StringName] = [
 	&"None"
 ]
 
-const SN_AUDIO_SOURCE: StringName = &"_audio_source"
-const SN_BEGIN_FREQUENCY: StringName = &"_begin_frequency"
-const SN_END_FREQUENCY: StringName = &"_end_frequency"
-const SN_MINIMUM_DECIBELS: StringName = &"_minimum_decibels"
-const SN_SMOOTHING_TYPE: StringName = &"_smoothing_type"
-const SN_SMOOTHING_AMOUNT: StringName = &"_smoothing_amount"
+const SN_BEGIN_FREQUENCY: StringName = &"(Reactive)_Begin_Frequency"
+const SN_END_FREQUENCY: StringName = &"(Reactive)_End_Frequency"
+const SN_MINIMUM_DECIBELS: StringName = &"(Reactive)_Minimum_Decibels"
+const SN_SMOOTHING_TYPE: StringName = &"(Reactive)_Smoothing_Type"
+const SN_SMOOTHING_AMOUNT: StringName = &"(Reactive)_Smoothing_Amount"
 
-var _audio_source: StringName = &""
 var _begin_frequency: int = 20
 var _end_frequency: int = 80
 var _minimum_decibels: int = -25
 var _smoothing_type: ReactiveSmoothingType = ReactiveSmoothingType.DECAY
 var _smoothing_amount: float = 0.5
-
-func set_audio_source(p_value: StringName) -> void:
-	_audio_source = p_value
-	property_changed.emit(SN_AUDIO_SOURCE)
-
-func get_audio_source() -> StringName:
-	return _audio_source
 
 func set_begin_frequency(p_value: int) -> void:
 	_begin_frequency = p_value
@@ -89,6 +80,6 @@ func set_smoothing_amount(p_value: float) -> void:
 func get_smoothing_amount() -> float:
 	return _smoothing_amount
 
-@abstract func get_property_dictionary() -> Dictionary[StringName, Variant]
+@abstract func get_properties() -> Dictionary[StringName, Variant]
 
-@abstract func get_method_dictionary() -> Dictionary[StringName, StringName]
+@abstract func get_setters() -> Dictionary[StringName, StringName]

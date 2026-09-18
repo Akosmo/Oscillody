@@ -31,7 +31,7 @@ var element: Element
 
 func _ready() -> void:
 	element = ElementManager.create_element()
-	set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
+	set_name(element.get_element_name() + "_" + str(element.get_element_unique_id()))
 	_element_name_button.set_text(element.get_element_name())
 	
 	if _connect_signals():
@@ -60,11 +60,11 @@ func _on_element_name_button_pressed() -> void:
 	element_selected.emit(element)
 
 func _on_element_name_changed(p_property: StringName) -> void:
-	if p_property == Element.SN_NAME:
+	if p_property == Element.SN_ELEMENT_NAME:
 		_element_name_button.set_text(element.get_element_name())
 
 func _on_element_type_changed(p_element: Element) -> void:
-	if element.get_unique_id() == p_element.get_unique_id():
+	if element.get_element_unique_id() == p_element.get_element_unique_id():
 		element = p_element
 		
 		@warning_ignore("return_value_discarded")

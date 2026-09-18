@@ -1,7 +1,7 @@
 # Oscillody
 # Copyright (C) 2025-present Akosmo
 
-# element_visual_effect.gd is part of Oscillody.
+# element_with_audio.gd is part of Oscillody.
 # Unless specified otherwise, it is under the license below:
 
 # Oscillody is free software: you can redistribute it and/or modify it
@@ -15,11 +15,21 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-class_name ElementVisualEffect
-extends ElementReactive
+@abstract
+class_name ElementWithAudio
+extends Element
 
-func get_properties() -> Dictionary[StringName, Variant]:
-	return {}
+const SN_AUDIO_SOURCE: StringName = &"Audio_Source"
 
-func get_setters() -> Dictionary[StringName, StringName]:
-	return {}
+var _audio_source: StringName = &""
+
+func set_audio_source(p_value: StringName) -> void:
+	_audio_source = p_value
+	property_changed.emit(SN_AUDIO_SOURCE)
+
+func get_audio_source() -> StringName:
+	return _audio_source
+
+@abstract func get_properties() -> Dictionary[StringName, Variant]
+
+@abstract func get_setters() -> Dictionary[StringName, StringName]

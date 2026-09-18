@@ -64,68 +64,68 @@ const SIMPLE_GRADIENT_DIRECTIONS: Array[StringName] = [
 	&"Top"
 ]
 
-const SN_SHADER_TYPE: StringName = &"_shader_type"
+const SN_SHADER_TYPE: StringName = &"Shader_Type"
 
-const SN_CURRENT_FLOW_WAVE_COLOR: StringName = &"(current_flow)_wave_color"
-const SN_CURRENT_FLOW_BACKGROUND_COLOR: StringName = &"(current_flow)_background_color"
-const SN_CURRENT_FLOW_ITERATIONS: StringName = &"(current_flow)_iterations"
-const SN_CURRENT_FLOW_UV_SCALE: StringName = &"(current_flow)_uv_scale"
-const SN_CURRENT_FLOW_FILLED: StringName = &"(current_flow)_filled"
-const SN_CURRENT_FLOW_WAVE_THICKNESS: StringName = &"(current_flow)_wave_thickness"
+const SN_CURRENT_FLOW_WAVE_COLOR: StringName = &"(Current_Flow)_Wave_Color"
+const SN_CURRENT_FLOW_BACKGROUND_COLOR: StringName = &"(Current_Flow)_Background_Color"
+const SN_CURRENT_FLOW_ITERATIONS: StringName = &"(Current_Flow)_Iterations"
+const SN_CURRENT_FLOW_UV_SCALE: StringName = &"(Current_Flow)_UV_Scale"
+const SN_CURRENT_FLOW_FILLED: StringName = &"(Current_Flow)_Filled"
+const SN_CURRENT_FLOW_WAVE_THICKNESS: StringName = &"(Current_Flow)_Wave_Thickness"
 
-const SN_DOMAIN_WARPING_COLOR: StringName = &"(domain_warping)_color"
-const SN_DOMAIN_WARPING_COLOR_MIX: StringName = &"(domain_warping)_color_mix"
-const SN_DOMAIN_WARPING_INVERT_COLORS: StringName = &"(domain_warping)_invert_colors"
-const SN_DOMAIN_WARPING_HUE_SHIFT: StringName = &"(domain_warping)_hue_shift"
-const SN_DOMAIN_WARPING_OCTAVES: StringName = &"(domain_warping)_octaves"
-const SN_DOMAIN_WARPING_FREQUENCY_FACTOR: StringName = &"(domain_warping)_frequency_factor"
-const SN_DOMAIN_WARPING_AMPLITUDE: StringName = &"(domain_warping)_amplitude"
-const SN_DOMAIN_WARPING_FREQUENCY_INCREMENT: StringName = &"(domain_warping)_frequency_increment"
-const SN_DOMAIN_WARPING_AMPLITUDE_DECREMENT: StringName = &"(domain_warping)_amplitude_decrement"
+const SN_DOMAIN_WARPING_COLOR: StringName = &"(Domain_Warping)_Color"
+const SN_DOMAIN_WARPING_COLOR_MIX: StringName = &"(Domain_Warping)_Color_Mix"
+const SN_DOMAIN_WARPING_INVERT_COLORS: StringName = &"(Domain_Warping)_Invert_Colors"
+const SN_DOMAIN_WARPING_HUE_SHIFT: StringName = &"(Domain_Warping)_Hue_Shift"
+const SN_DOMAIN_WARPING_OCTAVES: StringName = &"(Domain_Warping)_Octaves"
+const SN_DOMAIN_WARPING_FREQUENCY_FACTOR: StringName = &"(Domain_Warping)_Frequency_Factor"
+const SN_DOMAIN_WARPING_AMPLITUDE: StringName = &"(Domain_Warping)_Amplitude"
+const SN_DOMAIN_WARPING_FREQUENCY_INCREMENT: StringName = &"(Domain_Warping)_Frequency_Increment"
+const SN_DOMAIN_WARPING_AMPLITUDE_DECREMENT: StringName = &"(Domain_Warping)_Amplitude_Decrement"
 
-const SN_ECHOES_PULSE_COLOR: StringName = &"(echoes)_pulse_color"
-const SN_ECHOES_BACKGROUND_COLOR: StringName = &"(echoes)_background_color"
-const SN_ECHOES_ITERATIONS: StringName = &"(echoes)_iterations"
-const SN_ECHOES_UV_SCALE: StringName = &"(echoes)_uv_scale"
-const SN_ECHOES_FRACTIONAL_UV: StringName = &"(echoes)_fractional_uv"
-const SN_ECHOES_SPLIT: StringName = &"(echoes)_split"
-const SN_ECHOES_ITERATOR_FACTOR: StringName = &"(echoes)_iterator_factor"
-const SN_ECHOES_PULSE_DURATION: StringName = &"(echoes)_pulse_duration"
-const SN_ECHOES_PULSE_OSCILLATION: StringName = &"(echoes)_pulse_oscillation"
-const SN_ECHOES_PULSE_THICKNESS: StringName = &"(echoes)_pulse_thickness"
-const SN_ECHOES_PULSE_MODE: StringName = &"(echoes)_pulse_mode"
+const SN_ECHOES_PULSE_COLOR: StringName = &"(Echoes)_Pulse_Color"
+const SN_ECHOES_BACKGROUND_COLOR: StringName = &"(Echoes)_Background_Color"
+const SN_ECHOES_ITERATIONS: StringName = &"(Echoes)_Iterations"
+const SN_ECHOES_UV_SCALE: StringName = &"(Echoes)_UV_Scale"
+const SN_ECHOES_FRACTIONAL_UV: StringName = &"(Echoes)_Fractional_UV"
+const SN_ECHOES_SPLIT: StringName = &"(Echoes)_Split"
+const SN_ECHOES_ITERATOR_FACTOR: StringName = &"(Echoes)_Iterator_Factor"
+const SN_ECHOES_PULSE_DURATION: StringName = &"(Echoes)_Pulse_Duration"
+const SN_ECHOES_PULSE_OSCILLATION: StringName = &"(Echoes)_Pulse_Oscillation"
+const SN_ECHOES_PULSE_THICKNESS: StringName = &"(Echoes)_Pulse_Thickness"
+const SN_ECHOES_PULSE_MODE: StringName = &"(Echoes)_Pulse_Mode"
 
-const SN_ISOLINES_LINE_COLOR: StringName = &"(isolines)_line_color"
-const SN_ISOLINES_BACKGROUND_COLOR: StringName = &"(isolines)_background_color"
-const SN_ISOLINES_UV_SCALE: StringName = &"(isolines)_uv_scale"
-const SN_ISOLINES_FILLED: StringName = &"(isolines)_filled"
-const SN_ISOLINES_LINE_THICKNESS: StringName = &"(isolines)_line_thickness"
-const SN_ISOLINES_THICKNESS_VARIATION: StringName = &"(isolines)_thickness_variation"
-const SN_ISOLINES_LINE_AMOUNT: StringName = &"(isolines)_line_amount"
+const SN_ISOLINES_LINE_COLOR: StringName = &"(Isolines)_Line_Color"
+const SN_ISOLINES_BACKGROUND_COLOR: StringName = &"(Isolines)_Background_Color"
+const SN_ISOLINES_UV_SCALE: StringName = &"(Isolines)_UV_Scale"
+const SN_ISOLINES_FILLED: StringName = &"(Isolines)_Filled"
+const SN_ISOLINES_LINE_THICKNESS: StringName = &"(Isolines)_Line_Thickness"
+const SN_ISOLINES_THICKNESS_VARIATION: StringName = &"(Isolines)_Thickness_Variation"
+const SN_ISOLINES_LINE_AMOUNT: StringName = &"(Isolines)_Line_Amount"
 
-const SN_SIMPLE_GRADIENT_COLOR_1: StringName = &"(simple_gradient)_color_1"
-const SN_SIMPLE_GRADIENT_COLOR_2: StringName = &"(simple_gradient)_color_2"
-const SN_SIMPLE_GRADIENT_DIRECTION: StringName = &"(simple_gradient)_direction"
+const SN_SIMPLE_GRADIENT_COLOR_1: StringName = &"(Simple_Gradient)_Color_1"
+const SN_SIMPLE_GRADIENT_COLOR_2: StringName = &"(Simple_Gradient)_Color_2"
+const SN_SIMPLE_GRADIENT_DIRECTION: StringName = &"(Simple_Gradient)_Direction"
 
-const SN_TIDES_COLOR: StringName = &"(tides)_color"
-const SN_TIDES_TINT: StringName = &"(tides)_tint"
-const SN_TIDES_COLOR_MIX: StringName = &"(tides)_color_mix"
-const SN_TIDES_INVERT_COLORS: StringName = &"(tides)_invert_colors"
-const SN_TIDES_HUE_SHIFT: StringName = &"(tides)_hue_shift"
-const SN_TIDES_ITERATIONS: StringName = &"(tides)_iterations"
+const SN_TIDES_COLOR: StringName = &"(Tides)_Color"
+const SN_TIDES_TINT: StringName = &"(Tides)_Tint"
+const SN_TIDES_COLOR_MIX: StringName = &"(Tides)_Color_Mix"
+const SN_TIDES_INVERT_COLORS: StringName = &"(Tides)_Invert_Colors"
+const SN_TIDES_HUE_SHIFT: StringName = &"(Tides)_Hue_Shift"
+const SN_TIDES_ITERATIONS: StringName = &"(Tides)_Iterations"
 
-const SN_SHADER_SPEED: StringName = &"(shader)_speed"
+const SN_SHADER_SPEED: StringName = &"(Shader)_Speed"
 
-const SN_SHADER_X_POSITION: StringName = &"(shader)_x_position"
-const SN_SHADER_Y_POSITION: StringName = &"(shader)_y_position"
-const SN_SHADER_ROTATION: StringName = &"(shader)_rotation"
-const SN_SHADER_SCALE: StringName = &"(shader)_scale"
-const SN_SHADER_BLUR: StringName = &"(shader)_blur"
-const SN_SHADER_BRIGHTNESS: StringName = &"(shader)_brightness"
+const SN_SHADER_X_POSITION: StringName = &"(Shader)_X_Position"
+const SN_SHADER_Y_POSITION: StringName = &"(Shader)_Y_Position"
+const SN_SHADER_ROTATION: StringName = &"(Shader)_Rotation"
+const SN_SHADER_SCALE: StringName = &"(Shader)_Scale"
+const SN_SHADER_BLUR: StringName = &"(Shader)_Blur"
+const SN_SHADER_BRIGHTNESS: StringName = &"(Shader)_Brightness"
 
-const SN_SHADER_SPEED_REACTION: StringName = &"(shader)_speed_reaction"
-const SN_SHADER_ROTATION_REACTION: StringName = &"(shader)_rotation_reaction"
-const SN_SHADER_SCALE_REACTION: StringName = &"(shader)_scale_reaction"
+const SN_SHADER_SPEED_REACTION: StringName = &"(Shader)_Speed_Reaction"
+const SN_SHADER_ROTATION_REACTION: StringName = &"(Shader)_Rotation_Reaction"
+const SN_SHADER_SCALE_REACTION: StringName = &"(Shader)_Scale_Reaction"
 
 var _shader_type: ShaderType = ShaderType.DOMAIN_WARPING
 
@@ -561,12 +561,12 @@ func set_shader_scale_reaction(p_value: float) -> void:
 func get_shader_scale_reaction() -> float:
 	return _shader_scale_reaction
 
-func get_property_dictionary() -> Dictionary[StringName, Variant]:
+func get_properties() -> Dictionary[StringName, Variant]:
 	var _property_dictionary: Dictionary[StringName, Variant] = {
-		SN_NAME: _element_name,
-		SN_TYPE: _type,
-		SN_LAYER: _layer,
-		SN_VISIBILITY: _visibility,
+		SN_ELEMENT_NAME: _element_name,
+		SN_ELEMENT_TYPE: _element_type,
+		SN_ELEMENT_LAYER: _element_layer,
+		SN_ELEMENT_VISIBILITY: _element_visibility,
 		SN_SHADER_TYPE: _shader_type,
 		SN_CURRENT_FLOW_WAVE_COLOR: _current_flow_wave_color,
 		SN_CURRENT_FLOW_BACKGROUND_COLOR: _current_flow_background_color,
@@ -636,12 +636,12 @@ func get_property_dictionary() -> Dictionary[StringName, Variant]:
 	
 	return _property_dictionary
 
-func get_method_dictionary() -> Dictionary[StringName, StringName]:
-	var _method_dictionary: Dictionary[StringName, StringName] = {
-		SN_NAME: set_element_name.get_method(),
-		SN_TYPE: set_type.get_method(),
-		SN_LAYER: set_layer.get_method(),
-		SN_VISIBILITY: set_visibility.get_method(),
+func get_setters() -> Dictionary[StringName, StringName]:
+	var _setter_dictionary: Dictionary[StringName, StringName] = {
+		SN_ELEMENT_NAME: set_element_name.get_method(),
+		SN_ELEMENT_TYPE: set_element_type.get_method(),
+		SN_ELEMENT_LAYER: set_element_layer.get_method(),
+		SN_ELEMENT_VISIBILITY: set_element_visibility.get_method(),
 		SN_SHADER_TYPE: set_shader_type.get_method(),
 		SN_CURRENT_FLOW_WAVE_COLOR: set_current_flow_wave_color.get_method(),
 		SN_CURRENT_FLOW_BACKGROUND_COLOR: set_current_flow_background_color.get_method(),
@@ -709,4 +709,4 @@ func get_method_dictionary() -> Dictionary[StringName, StringName]:
 		SN_SHAKE_FREQUENCY_REACTION: set_shake_frequency_reaction.get_method()
 	}
 	
-	return _method_dictionary
+	return _setter_dictionary

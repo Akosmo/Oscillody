@@ -201,7 +201,7 @@ func _on_master_finished() -> void:
 		AudioManager.set_master_playing(false)
 
 func _on_element_created(p_element: Element) -> void:
-	match p_element.get_type():
+	match p_element.get_element_type():
 		Element.ElementType.EMPTY:
 			var node_instance: ElementCanvasEmpty = element_empty_scene.instantiate()
 			node_instance.element = p_element

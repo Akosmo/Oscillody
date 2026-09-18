@@ -24,24 +24,24 @@ func set_reaction_visibility(p_value: bool) -> void:
 	_reaction_visibility = p_value
 	ElementManager.notify_property_node_visibility_changed()
 
-func get_property_configurations() -> Dictionary[StringName, Dictionary]:
+func get_configurations() -> Dictionary[StringName, Dictionary]:
 	var ret: Dictionary[StringName, Dictionary] = {
-		ElementImage.SN_NAME: {
+		ElementImage.SN_ELEMENT_NAME: {
 			CONTROL_NODE: ControlNode.LINE_EDIT,
 		},
-		ElementImage.SN_TYPE: {
+		ElementImage.SN_ELEMENT_TYPE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
 			DEFAULT_VALUE: ElementImage.ElementType.EMPTY,
 			OPTIONS: ElementImage.ELEMENT_TYPES
 		},
-		ElementImage.SN_LAYER: {
+		ElementImage.SN_ELEMENT_LAYER: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			MINIMUM: 0.0,
 			MAXIMUM: ElementManager.get_element_count() - 1.0,
 			STEP: 1.0,
 			ROUNDED: true
 		},
-		ElementImage.SN_VISIBILITY: {
+		ElementImage.SN_ELEMENT_VISIBILITY: {
 			CONTROL_NODE: ControlNode.CHECK_BUTTON,
 			DEFAULT_VALUE: true
 		},

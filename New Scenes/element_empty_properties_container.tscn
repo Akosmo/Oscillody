@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://pg330n4h8v6n"]
+
+[ext_resource type="Script" uid="uid://blqtjes2jqa26" path="res://New Scripts/element_properties_container.gd" id="1_y02dc"]
+[ext_resource type="Resource" uid="uid://c5noed3x5ibew" path="res://Resources/element_empty_ui_configurations.tres" id="2_yygas"]
+
+[node name="ElementEmptyPropertiesContainer" type="VBoxContainer" unique_id=951264533]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_y02dc")
+_ui_configurations = ExtResource("2_yygas")

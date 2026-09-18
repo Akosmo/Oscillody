@@ -62,4 +62,4 @@ const ROUNDED: StringName = &"rounded"
 const OPTIONS: StringName = &"options"
 
 ## Returns an updated list of all the property configurations.
-@abstract func get_property_configurations() -> Dictionary[StringName, Dictionary]
+@abstract func get_configurations() -> Dictionary[StringName, Dictionary]

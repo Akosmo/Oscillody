@@ -18,24 +18,24 @@
 class_name ElementEmptyUIConfigurations
 extends ElementUIConfigurations
 
-func get_property_configurations() -> Dictionary[StringName, Dictionary]:
+func get_configurations() -> Dictionary[StringName, Dictionary]:
 	var ret: Dictionary[StringName, Dictionary] = {
-		ElementEmpty.SN_NAME: {
+		ElementEmpty.SN_ELEMENT_NAME: {
 			CONTROL_NODE: ControlNode.LINE_EDIT,
 		},
-		ElementEmpty.SN_TYPE: {
+		ElementEmpty.SN_ELEMENT_TYPE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
 			DEFAULT_VALUE: ElementEmpty.ElementType.EMPTY,
 			OPTIONS: ElementEmpty.ELEMENT_TYPES
 		},
-		ElementEmpty.SN_LAYER: {
+		ElementEmpty.SN_ELEMENT_LAYER: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			MINIMUM: 0.0,
 			MAXIMUM: ElementManager.get_element_count() - 1.0,
 			STEP: 1.0,
 			ROUNDED: true
 		},
-		ElementEmpty.SN_VISIBILITY: {
+		ElementEmpty.SN_ELEMENT_VISIBILITY: {
 			CONTROL_NODE: ControlNode.CHECK_BUTTON,
 			DEFAULT_VALUE: true
 		}

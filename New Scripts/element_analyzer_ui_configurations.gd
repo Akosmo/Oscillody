@@ -18,36 +18,36 @@
 class_name ElementAnalyzerUIConfigurations
 extends ElementUIConfigurations
 
-func get_property_configurations() -> Dictionary[StringName, Dictionary]:
+func get_configurations() -> Dictionary[StringName, Dictionary]:
 	var ret: Dictionary[StringName, Dictionary] = {
-		ElementAnalyzer.SN_NAME: {
+		ElementAnalyzer.SN_ELEMENT_NAME: {
 			CONTROL_NODE: ControlNode.LINE_EDIT,
 		},
-		ElementAnalyzer.SN_TYPE: {
+		ElementAnalyzer.SN_ELEMENT_TYPE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
 			DEFAULT_VALUE: ElementAnalyzer.ElementType.EMPTY,
 			OPTIONS: ElementAnalyzer.ELEMENT_TYPES
 		},
-		ElementAnalyzer.SN_LAYER: {
+		ElementAnalyzer.SN_ELEMENT_LAYER: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			MINIMUM: 0.0,
 			MAXIMUM: ElementManager.get_element_count() - 1.0,
 			STEP: 1.0,
 			ROUNDED: true
 		},
-		ElementAnalyzer.SN_VISIBILITY: {
+		ElementAnalyzer.SN_ELEMENT_VISIBILITY: {
 			CONTROL_NODE: ControlNode.CHECK_BUTTON,
 			DEFAULT_VALUE: true
-		},
-		ElementAnalyzer.SN_ANALYZER_TYPE: {
-			CONTROL_NODE: ControlNode.OPTION_BUTTON,
-			OPTIONS: ElementAnalyzer.ANALYZER_TYPES
 		},
 		ElementAnalyzer.SN_AUDIO_SOURCE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
 			OPTIONS: AudioManager.get_streams().keys()
 		},
-		ElementAnalyzer.SN_BEGIN_X_POSITION: {
+		ElementAnalyzer.SN_ANALYZER_TYPE: {
+			CONTROL_NODE: ControlNode.OPTION_BUTTON,
+			OPTIONS: ElementAnalyzer.ANALYZER_TYPES
+		},
+		ElementAnalyzer.SN_ANALYZER_BEGIN_X_POSITION: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 0.0,
 			MINIMUM: 0.0,
@@ -55,7 +55,7 @@ func get_property_configurations() -> Dictionary[StringName, Dictionary]:
 			STEP: 0.01,
 			ROUNDED: false
 		},
-		ElementAnalyzer.SN_BEGIN_Y_POSITION: {
+		ElementAnalyzer.SN_ANALYZER_BEGIN_Y_POSITION: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 0.5,
 			MINIMUM: 0.0,
@@ -63,7 +63,7 @@ func get_property_configurations() -> Dictionary[StringName, Dictionary]:
 			STEP: 0.01,
 			ROUNDED: false
 		},
-		ElementAnalyzer.SN_END_X_POSITION: {
+		ElementAnalyzer.SN_ANALYZER_END_X_POSITION: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 1.0,
 			MINIMUM: 0.0,
@@ -71,7 +71,7 @@ func get_property_configurations() -> Dictionary[StringName, Dictionary]:
 			STEP: 0.01,
 			ROUNDED: false
 		},
-		ElementAnalyzer.SN_END_Y_POSITION: {
+		ElementAnalyzer.SN_ANALYZER_END_Y_POSITION: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 0.5,
 			MINIMUM: 0.0,
@@ -79,7 +79,7 @@ func get_property_configurations() -> Dictionary[StringName, Dictionary]:
 			STEP: 0.01,
 			ROUNDED: false
 		},
-		ElementAnalyzer.SN_HEIGHT: {
+		ElementAnalyzer.SN_ANALYZER_HEIGHT: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 0.5,
 			MINIMUM: 0.0,

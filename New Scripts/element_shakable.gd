@@ -19,12 +19,12 @@
 class_name ElementShakable
 extends ElementReactive
 
-const SN_SHAKE_AMPLITUDE: StringName = &"_shake_amplitude"
-const SN_SHAKE_AMPLITUDE_COMPENSATION: StringName = &"(shake)_amplitude_compensation"
-const SN_SHAKE_FREQUENCY: StringName = &"_shake_frequency"
-const SN_SHAKE_SEED: StringName = &"_shake_seed"
-const SN_SHAKE_AMPLITUDE_REACTION: StringName = &"(shake)_amplitude_reaction"
-const SN_SHAKE_FREQUENCY_REACTION: StringName = &"(shake)_frequency_reaction"
+const SN_SHAKE_AMPLITUDE: StringName = &"Shake_Amplitude"
+const SN_SHAKE_AMPLITUDE_COMPENSATION: StringName = &"(Shake)_Amplitude_Compensation"
+const SN_SHAKE_FREQUENCY: StringName = &"Shake_Frequency"
+const SN_SHAKE_SEED: StringName = &"Shake_seed"
+const SN_SHAKE_AMPLITUDE_REACTION: StringName = &"(Shake)_Amplitude_Reaction"
+const SN_SHAKE_FREQUENCY_REACTION: StringName = &"(Shake)_Frequency_Reaction"
 
 var _shake_amplitude: float = 0.0
 var _shake_amplitude_compensation: bool = true
@@ -75,6 +75,6 @@ func set_shake_frequency_reaction(p_value: float) -> void:
 func get_shake_frequency_reaction() -> float:
 	return _shake_frequency_reaction
 
-@abstract func get_property_dictionary() -> Dictionary[StringName, Variant]
+@abstract func get_properties() -> Dictionary[StringName, Variant]
 
-@abstract func get_method_dictionary() -> Dictionary[StringName, StringName]
+@abstract func get_setters() -> Dictionary[StringName, StringName]

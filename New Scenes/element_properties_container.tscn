@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://b8e8erhj4yg58"]
+
+[ext_resource type="Script" uid="uid://blqtjes2jqa26" path="res://New Scripts/element_properties_container.gd" id="1_pgata"]
+
+[node name="ElementPropertiesContainer" type="VBoxContainer" unique_id=951264533]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_pgata")

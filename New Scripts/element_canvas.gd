@@ -24,7 +24,7 @@ extends CanvasLayer
 ##
 ## This class is used to actually display Elements in the visualizer.
 ## Data mostly comes from a given [Element]. The [CanvasLayer] node may instantiate child nodes
-## for specific functionality, such as drawing waveforms with [Node2D], using [method CanvasItem._draw].
+## for specific functionality, such as [Node2D] for drawing waveforms with, using [method CanvasItem._draw].
 
 @abstract func _ready() -> void
 

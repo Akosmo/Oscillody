@@ -40,7 +40,7 @@ func _ready() -> void:
 	#set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
 	#set_layer(element.get_layer())
 	
-	_element_ui_configurations = preload("uid://ccdqa8ifs0fso")
+	_element_ui_configurations = ElementManager.get_element_ui_configurations(element.get_element_type())
 	#_element_ui_configurations.enable_shader_visibility(element.get_shader_type())
 	#_element_ui_configurations.set_reaction_visibility(not element.get_audio_source().is_empty())
 	
@@ -91,7 +91,7 @@ func _ready() -> void:
 	
 	_shader_time = 0.0
 	
-	for property_key: StringName in element.get_property_dictionary().keys():
+	for property_key: StringName in element.get_properties().keys():
 		_on_element_property_changed(property_key)
 	
 	if element.property_changed.connect(_on_element_property_changed):
@@ -211,16 +211,16 @@ func _get_reaction_magnitude(p_amount: float) -> float:
 
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:
-		ElementShader.SN_NAME:
-			set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
-		ElementShader.SN_TYPE:
-			if element.get_type() != Element.ElementType.SHADER:
+		ElementShader.SN_ELEMENT_NAME:
+			set_name(element.get_element_name() + "_" + str(element.get_element_unique_id()))
+		ElementShader.SN_ELEMENT_TYPE:
+			if element.get_element_type() != Element.ElementType.SHADER:
 				queue_free()
-		ElementShader.SN_LAYER:
-			set_layer(element.get_layer())
-		ElementShader.SN_VISIBILITY:
-			set_visible(element.get_visibility())
-			set_process(element.get_visibility())
+		ElementShader.SN_ELEMENT_LAYER:
+			set_layer(element.get_element_layer())
+		ElementShader.SN_ELEMENT_VISIBILITY:
+			set_visible(element.get_element_visibility())
+			set_process(element.get_element_visibility())
 		ElementShader.SN_SHADER_TYPE:
 			_shader_material.set_shader(_get_shader_for_material(element.get_shader_type()))
 			_element_ui_configurations.enable_shader_visibility(element.get_shader_type())

@@ -63,11 +63,11 @@ func get_element_count() -> int:
 ## This should only be done by instantiating a new [ElementContainer].
 func create_element() -> Element:
 	var element: ElementEmpty = ElementEmpty.new()
-	element.set_unique_id(_get_next_available_uid())
-	element.set_element_name("Element_" + str(element.get_unique_id()))
-	element.set_type(element.ElementType.EMPTY, true)
-	element.set_layer(_elements.size(), false)
-	element.set_visibility(true)
+	element.set_element_unique_id(_get_next_available_uid())
+	element.set_element_name("Element_" + str(element.get_element_unique_id()))
+	element.set_element_type(element.ElementType.EMPTY, true)
+	element.set_element_layer(_elements.size(), false)
+	element.set_element_visibility(true)
 	
 	_elements.append(element)
 	
@@ -90,7 +90,7 @@ func delete_element(p_element: Element) -> void:
 ## with the same basic property values as the given [param p_element], and deletes the old Element.
 func change_element_type(p_element: Element) -> void:
 	var new_element: Element
-	match p_element.get_type():
+	match p_element.get_element_type():
 		p_element.ElementType.EMPTY:
 			new_element = ElementEmpty.new() as ElementEmpty
 		p_element.ElementType.ANALYZER:
@@ -106,16 +106,16 @@ func change_element_type(p_element: Element) -> void:
 			pass
 			#new_element = ElementVisualEffect.new() as ElementVisualEffect
 	
-	new_element.set_unique_id(p_element.get_unique_id())
+	new_element.set_element_unique_id(p_element.get_element_unique_id())
 	new_element.set_element_name(p_element.get_element_name())
-	new_element.set_type(p_element.get_type(), true)
-	new_element.set_layer(p_element.get_layer(), false)
-	new_element.set_visibility(p_element.get_visibility())
+	new_element.set_element_type(p_element.get_element_type(), true)
+	new_element.set_element_layer(p_element.get_element_layer(), false)
+	new_element.set_element_visibility(p_element.get_element_visibility())
 	
 	_elements.erase(p_element)
 	
 	@warning_ignore("return_value_discarded")
-	_elements.insert(new_element.get_layer(), new_element)
+	_elements.insert(new_element.get_element_layer(), new_element)
 	element_type_changed.emit(new_element)
 
 ## Moves the given [param p_element] to the given [param p_to_index] in the internal Element array.[br]
@@ -164,6 +164,6 @@ func _get_next_available_uid() -> int:
 
 func _update_layers() -> void:
 	for element: Element in _elements:
-		element.set_layer(_elements.find(element), false)
+		element.set_element_layer(_elements.find(element), false)
 	
 	element_layers_updated.emit()
