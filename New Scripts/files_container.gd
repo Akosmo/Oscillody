@@ -17,8 +17,8 @@
 
 extends PanelContainer
 
-const MASTER_PROPERTY_KEY: StringName = &"Master"
-const PRESET_PROPERTY_KEY: StringName = &"Preset"
+const _MASTER_PROPERTY_KEY: StringName = &"Master"
+const _PRESET_PROPERTY_KEY: StringName = &"Preset"
 
 #var _files_property_container_script: Script = preload("res://New Scripts/files_property_container.gd")
 
@@ -38,7 +38,7 @@ func _ready() -> void:
 	
 	#_master_container.set_script(_files_property_container_script)
 	_master_container.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
-	_master_container.set_property_key(MASTER_PROPERTY_KEY)
+	_master_container.set_property_key(_MASTER_PROPERTY_KEY)
 	_master_container.set_property_value(&"")
 	_master_container.set_reset_value(&"")
 
@@ -100,12 +100,12 @@ func _on_audio_files_selected(p_paths: PackedStringArray) -> void:
 	_update_stream_list()
 
 func _on_property_value_changed(p_property_key: StringName, p_property_value: Variant) -> void:
-	if p_property_key == MASTER_PROPERTY_KEY:
+	if p_property_key == _MASTER_PROPERTY_KEY:
 		AudioManager.set_master_name(p_property_value as StringName)
 		AudioManager.notify_updated_streams(false)
 
 func _on_property_reset_pressed(p_property_key: StringName) -> void:
-	if p_property_key == MASTER_PROPERTY_KEY:
+	if p_property_key == _MASTER_PROPERTY_KEY:
 		AudioManager.clear_streams()
 		_update_stream_list()
 		AudioManager.notify_cleared_streams()

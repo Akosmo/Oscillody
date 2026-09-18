@@ -17,18 +17,19 @@
 
 extends VSplitContainer
 
-var _element_container: PackedScene = preload("uid://bpi6qpn388std")
+const _ELEMENT_CONTAINER: PackedScene = preload("uid://bpi6qpn388std")
+const _ELEMENT_PROPERTIES_CONTAINER: PackedScene = preload("uid://b8e8erhj4yg58")
+
 #var _property_container: PackedScene = preload("res://New Scenes/property_container.tscn")
 #var _element_property_container_script: Script = preload("res://New Scripts/element_property_container.gd")
-var _element_properties_container: PackedScene = preload("uid://b8e8erhj4yg58")
 
 var _current_element_selected: Element = null
 
 @onready var _add_element_button: Button = %AddElementButton
 @onready var _element_box_container: VBoxContainer = \
 $PanelContainer/MarginContainer/ScrollContainer/VBoxContainer
-@onready var _properties_box_container: VBoxContainer = \
-$PanelContainer2/MarginContainer/ScrollContainer/VBoxContainer
+#@onready var _properties_box_container: VBoxContainer = \
+#$PanelContainer2/MarginContainer/ScrollContainer/VBoxContainer
 @onready var _scroll_container: ScrollContainer = $PanelContainer2/MarginContainer/ScrollContainer
 
 
@@ -43,7 +44,7 @@ func _ready() -> void:
 		printerr("Could not connect signal.")
 
 func _on_add_element_pressed() -> void:
-	var element_node: ElementContainer = _element_container.instantiate()
+	var element_node: ElementContainer = _ELEMENT_CONTAINER.instantiate()
 	_element_box_container.add_child(element_node)
 	if element_node.element_selected.connect(_update_properties_container):
 		printerr("Could not connect signal.")
@@ -84,7 +85,7 @@ func _update_properties_container(p_element: Element) -> void:
 			#property_node.property_key = property_key
 			#_properties_box_container.add_child(property_node)
 	if p_element != null:
-		var node: ElementPropertiesContainer = _element_properties_container.instantiate()
+		var node: ElementPropertiesContainer = _ELEMENT_PROPERTIES_CONTAINER.instantiate()
 		node.element = p_element
 		_scroll_container.add_child(node)
 

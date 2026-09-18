@@ -18,10 +18,11 @@
 class_name ElementPropertiesContainer
 extends VBoxContainer
 
+const _PROPERTY_CONTAINER: PackedScene = preload("uid://bfv2ne33xxlso")
+
 var element: Element
 
 var _ui_configurations: ElementUIConfigurations
-var _property_container: PackedScene = preload("uid://bfv2ne33xxlso")
 
 func _ready() -> void:
 	#SettingsManager.slider_preference_changed.connect(_on_slider_preference_changed)
@@ -72,7 +73,7 @@ func _ready() -> void:
 	
 	for property_key: StringName in element_ui_configs.keys():
 		
-		var property_container_node: BasicPropertyContainer = _property_container.instantiate()
+		var property_container_node: BasicPropertyContainer = _PROPERTY_CONTAINER.instantiate()
 		#var start_time: int = Time.get_ticks_msec()
 		add_child(property_container_node)
 		#print(Time.get_ticks_msec() - start_time)

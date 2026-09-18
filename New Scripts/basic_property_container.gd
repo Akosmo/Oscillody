@@ -40,6 +40,8 @@ enum ControlNode {
 	TEXT_EDIT
 }
 
+const _CUSTOM_H_SLIDER_SCENE: PackedScene = preload("uid://dmhreh16g5u1n")
+
 var _control_node: ControlNode
 
 var _property_key: StringName
@@ -49,57 +51,96 @@ var _reset_value: Variant
 var _use_file_dialog: bool
 
 @onready var property_label: Label = %PropertyLabel
-@onready var reset_button: Button = %ResetButton
+@onready var reset_button: Button
 
-#@onready var h_box_container: HBoxContainer = %HBoxContainer
+@onready var h_box_container: HBoxContainer = %HBoxContainer
+@onready var control_node_box_container: HBoxContainer = %ControlNodeBoxContainer
 
-@onready var button: Button = %Button
-@onready var file_dialog: FileDialog = %FileDialog
-@onready var check_button: CheckButton = %CheckButton
-@onready var color_picker_button: ColorPickerButton = %ColorPickerButton
-@onready var line_edit: LineEdit = %LineEdit
-@onready var spin_box: SpinBox = %SpinBox
-@onready var custom_h_slider: CustomHSlider = %CustomHSlider
-@onready var option_button: OptionButton = %OptionButton
-@onready var text_edit: TextEdit = %TextEdit
+@onready var button: Button
+@onready var file_dialog: FileDialog
+@onready var check_button: CheckButton
+@onready var color_picker_button: ColorPickerButton
+@onready var line_edit: LineEdit
+@onready var spin_box: SpinBox
+@onready var custom_h_slider: CustomHSlider
+@onready var option_button: OptionButton
+@onready var text_edit: TextEdit
 
 func _ready() -> void:
 	SettingsManager.slider_preference_changed.connect(_on_slider_preference_changed)
 	
-	reset_button.pressed.connect(_on_reset_pressed)
-	button.pressed.connect(_on_button_pressed)
-	file_dialog.file_selected.connect(_on_file_selected)
-	check_button.toggled.connect(_on_check_toggled)
-	color_picker_button.color_changed.connect(_on_color_changed)
-	line_edit.text_changed.connect(_on_line_edit_text_changed)
-	spin_box.value_changed.connect(_on_spin_box_value_changed)
-	custom_h_slider.value_changed.connect(_on_slider_value_changed)
-	option_button.item_selected.connect(_on_option_item_selected)
-	text_edit.text_changed.connect(_on_text_edit_text_changed)
-	
-	# TODO: Handle slider switch here.
+	#reset_button.pressed.connect(_on_reset_pressed)
+	#button.pressed.connect(_on_button_pressed)
+	#file_dialog.file_selected.connect(_on_file_selected)
+	#check_button.toggled.connect(_on_check_toggled)
+	#color_picker_button.color_changed.connect(_on_color_changed)
+	#line_edit.text_changed.connect(_on_line_edit_text_changed)
+	#spin_box.value_changed.connect(_on_spin_box_value_changed)
+	#custom_h_slider.value_changed.connect(_on_slider_value_changed)
+	#option_button.item_selected.connect(_on_option_item_selected)
+	#text_edit.text_changed.connect(_on_text_edit_text_changed)
 
 func set_control_node(p_control_node: ControlNode) -> void:
 	_control_node = p_control_node
 	
+	if control_node_box_container.get_child_count():
+		printerr("A ControlNode is already set.")
+		return
+	
 	match _control_node:
 		ControlNode.BUTTON:
-			button.show()
+			#button.show()
+			button = Button.new()
+			control_node_box_container.add_child(button)
+			button.pressed.connect(_on_button_pressed)
 		ControlNode.CHECK_BUTTON:
-			check_button.show()
+			#check_button.show()
+			check_button = CheckButton.new()
+			control_node_box_container.add_child(check_button)
+			check_button.toggled.connect(_on_check_toggled)
 		ControlNode.COLOR_PICKER_BUTTON:
-			color_picker_button.show()
+			#color_picker_button.show()
+			color_picker_button = ColorPickerButton.new()
+			color_picker_button.set_pick_color(Color.WHITE)
+			color_picker_button.set_custom_minimum_size(Vector2(32.0, 0.0))
+			control_node_box_container.add_child(color_picker_button)
+			color_picker_button.color_changed.connect(_on_color_changed)
 		ControlNode.LINE_EDIT:
-			line_edit.show()
+			#line_edit.show()
+			line_edit = LineEdit.new()
+			line_edit.set_custom_minimum_size(Vector2(128.0, 0.0))
+			control_node_box_container.add_child(line_edit)
+			line_edit.text_changed.connect(_on_line_edit_text_changed)
 		ControlNode.NUMERICAL:
+			spin_box = SpinBox.new()
+			spin_box.set_update_on_text_changed(true)
+			control_node_box_container.add_child(spin_box)
+			spin_box.value_changed.connect(_on_spin_box_value_changed)
+			custom_h_slider = _CUSTOM_H_SLIDER_SCENE.instantiate()
+			custom_h_slider.set_custom_minimum_size(Vector2(100.0, 0.0))
+			control_node_box_container.add_child(custom_h_slider)
+			custom_h_slider.value_changed.connect(_on_slider_value_changed)
 			if not SettingsManager.are_sliders_enabled():
-				spin_box.show()
+				custom_h_slider.hide()
 			else:
-				custom_h_slider.show()
+				spin_box.hide()
 		ControlNode.OPTION_BUTTON:
-			option_button.show()
+			#option_button.show()
+			option_button = OptionButton.new()
+			option_button.set_fit_to_longest_item(false)
+			option_button.set_clip_text(true)
+			option_button.set_custom_minimum_size(Vector2(120.0, 0.0))
+			control_node_box_container.add_child(option_button)
+			option_button.item_selected.connect(_on_option_item_selected)
 		ControlNode.TEXT_EDIT:
-			text_edit.show()
+			#text_edit.show()
+			text_edit = TextEdit.new()
+			text_edit.set_custom_minimum_size(Vector2(128.0, 64.0))
+			control_node_box_container.add_child(text_edit)
+			text_edit.text_changed.connect(_on_text_edit_text_changed)
+	
+	if reset_button != null:
+		h_box_container.move_child(reset_button, 1)
 
 #func get_control_node() -> ControlNode:
 	#return _control_node
@@ -175,14 +216,41 @@ func set_property_value_with_node(p_value: Variant) -> void:
 			text_edit.set_text(p_value as String)
 
 func set_reset_value(p_value: Variant) -> void:
+	if _property_value == null:
+		printerr("Set a property value first.")
+		return
+	
 	_reset_value = p_value
+	
+	if reset_button == null:
+		reset_button = Button.new()
+		reset_button.set_text("R")
+		reset_button.set_h_size_flags(Control.SIZE_SHRINK_END)
+		h_box_container.add_child(reset_button)
+		reset_button.pressed.connect(_on_reset_pressed)
+		if reset_button.get_index() != 1:
+			h_box_container.move_child(reset_button, 1)
+	
 	_set_reset_button_visibility()
 
 func use_file_dialog(p_enable: bool = true) -> void:
 	_use_file_dialog = p_enable
+	
+	if file_dialog != null:
+		file_dialog.free()
+	
+	if p_enable:
+		file_dialog = FileDialog.new()
+		file_dialog.set_file_mode(FileDialog.FILE_MODE_OPEN_FILE)
+		file_dialog.set_access(FileDialog.ACCESS_FILESYSTEM)
+		file_dialog.set_use_native_dialog(true)
+		file_dialog.set_hide_on_ok(true)
+		#file_dialog.set_title("Open a File")
+		button.add_child(file_dialog)
+		file_dialog.file_selected.connect(_on_file_selected)
 
 func _set_reset_button_visibility() -> void:
-	if _reset_value != null:
+	if _reset_value != null and reset_button != null:
 		if _reset_value != _property_value:
 			reset_button.show()
 		else:

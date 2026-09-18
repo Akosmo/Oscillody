@@ -19,6 +19,7 @@ class_name NoiseUtilities
 extends RefCounted
 
 var _noise: FastNoiseLite = FastNoiseLite.new()
+
 var _seed: int = 0
 var _noise_scroll: float
 
