@@ -11,11 +11,11 @@ shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear;
 
-uniform highp float strength : hint_range(0.0, 0.01, 0.0001) = 0.0;
+uniform highp float amount : hint_range(0.0, 0.01, 0.0001) = 0.0;
 
 void fragment() {
-	COLOR.r = texture(SCREEN_TEXTURE, vec2(SCREEN_UV.x + strength, SCREEN_UV.y)).r;
+	COLOR.r = texture(SCREEN_TEXTURE, vec2(SCREEN_UV.x + amount, SCREEN_UV.y)).r;
 	COLOR.g = texture(SCREEN_TEXTURE, SCREEN_UV).g;
-	COLOR.b = texture(SCREEN_TEXTURE, vec2(SCREEN_UV.x - strength, SCREEN_UV.y)).b;
+	COLOR.b = texture(SCREEN_TEXTURE, vec2(SCREEN_UV.x - amount, SCREEN_UV.y)).b;
 	COLOR.a = texture(SCREEN_TEXTURE, SCREEN_UV).a;
 }

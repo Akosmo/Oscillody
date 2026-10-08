@@ -28,22 +28,22 @@ var _step: float = 1.0
 var _value: float = 0.0
 var _rounded: bool = false
 
-@onready var _h_slider: HSlider = $HSlider
+@onready var h_slider: HSlider = $HSlider
 @onready var _label: Label = $Label
 
 func _ready() -> void:
 	_set_value_to_label()
 	
-	_h_slider.value_changed.connect(_on_value_changed)
+	h_slider.value_changed.connect(_on_value_changed)
 
 func configure_slider(p_min: float, p_max: float, p_step: float, p_rounded: bool) -> Error:
 	if p_min > p_max or (p_rounded and fmod(p_step, 1.0) != 0):
 		return FAILED
 	
-	_h_slider.set_min(p_min)
-	_h_slider.set_max(p_max)
-	_h_slider.set_step(p_step)
-	_h_slider.set_use_rounded_values(p_rounded)
+	h_slider.set_min(p_min)
+	h_slider.set_max(p_max)
+	h_slider.set_step(p_step)
+	h_slider.set_use_rounded_values(p_rounded)
 	
 	_min_value = p_min
 	_max_value = p_max
@@ -70,15 +70,15 @@ func _set_value(p_value: float, p_signal: bool = true) -> Error:
 	_value = p_value
 	
 	if p_signal:
-		_h_slider.set_value(p_value)
+		h_slider.set_value(p_value)
 	else:
-		_h_slider.set_value_no_signal(p_value)
+		h_slider.set_value_no_signal(p_value)
 	_set_value_to_label()
 	
 	return OK
 
 func _set_value_to_label() -> void:
-	if _h_slider.is_using_rounded_values():
+	if h_slider.is_using_rounded_values():
 		if str(_value).containsn(".0"):
 			_label.set_text(str(_value).replace(".0", ""))
 	else:

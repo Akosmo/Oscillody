@@ -98,6 +98,8 @@ func set_element_unique_id(p_value: int) -> void:
 	if not _unique_id_locked:
 		_element_unique_id = p_value
 		_unique_id_locked = true
+	else:
+		printerr("Can't change Element Unique ID, since it's already set.")
 
 ## Returns the unique identifier of the Element.
 func get_element_unique_id() -> int:

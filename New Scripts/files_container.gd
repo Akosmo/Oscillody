@@ -17,8 +17,8 @@
 
 extends PanelContainer
 
-const _MASTER_PROPERTY_KEY: StringName = &"Master"
 const _PRESET_PROPERTY_KEY: StringName = &"Preset"
+const _MASTER_PROPERTY_KEY: StringName = &"Master"
 
 #var _files_property_container_script: Script = preload("res://New Scripts/files_property_container.gd")
 

@@ -27,7 +27,7 @@ func _ready() -> void:
 	#set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
 	#set_layer(element.get_layer())
 	
-	_element_ui_configurations = ElementManager.get_element_ui_configurations(element.get_element_type())
+	_element_ui_configurations = ElementManager.get_configurations_for_element(element)
 	
 	_node_2d = Node2D.new()
 	_node_2d.set_script(preload("uid://cponhhfeulyxf"))
@@ -45,6 +45,8 @@ func _ready() -> void:
 		printerr("Could not connect signal.")
 	
 	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
+		printerr("Could not connect signal.")
+	if WindowUtilities.subviewport_size_changed.connect(_on_subviewport_size_changed):
 		printerr("Could not connect signal.")
 
 func _process(_delta: float) -> void:
@@ -100,3 +102,12 @@ func _on_stream_list_updated() -> void:
 	else:
 		@warning_ignore("unsafe_method_access")
 		_node_2d.set_capture_effect(null)
+
+func _on_subviewport_size_changed() -> void:
+	_node_2d.set_analyzer_begin_position(
+		Vector2(element.get_analyzer_begin_x_position(), element.get_analyzer_begin_y_position())
+	)
+	_node_2d.set_analyzer_end_position(
+		Vector2(element.get_analyzer_end_x_position(), element.get_analyzer_end_y_position())
+	)
+	_node_2d.set_analyzer_height(element.get_analyzer_height())

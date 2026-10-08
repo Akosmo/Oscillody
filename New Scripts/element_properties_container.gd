@@ -67,17 +67,20 @@ func _ready() -> void:
 		#preload("uid://ccdqa8ifs0fso"): # ElementShaderUIConfigurations
 			#pass
 	
-	_ui_configurations = ElementManager.get_element_ui_configurations(element.get_element_type())
+	_ui_configurations = ElementManager.get_configurations_for_element(element)
 	
 	var element_ui_configs: Dictionary[StringName, Dictionary] = _ui_configurations.get_configurations()
 	
 	for property_key: StringName in element_ui_configs.keys():
+		var property_configs: Dictionary = element_ui_configs.get(property_key)
+		if not property_configs.has(ElementUIConfigurations.CONTROL_NODE):
+			printerr(
+				"{property_key} does not have the Control Node key.".format({"property_key": property_key})
+			)
+			return
 		
 		var property_container_node: BasicPropertyContainer = _PROPERTY_CONTAINER.instantiate()
-		#var start_time: int = Time.get_ticks_msec()
 		add_child(property_container_node)
-		#print(Time.get_ticks_msec() - start_time)
-		# 15 ms.
 		
 		#var property_str: String = String(property_key)
 		#var open_parenthesis_idx: int = property_str.findn("(")
@@ -95,8 +98,6 @@ func _ready() -> void:
 		#property_container_node.set_name(property_key_no_substr.replacen(" ", ""))
 		
 		property_container_node.set_property_key(property_key)
-		
-		var property_configs: Dictionary = element_ui_configs.get(property_key)
 		
 		if property_configs.has(ElementUIConfigurations.VISIBLE):
 			@warning_ignore("unsafe_cast")
@@ -133,7 +134,7 @@ func _ready() -> void:
 			ElementUIConfigurations.ControlNode.OPTION_BUTTON:
 				property_container_node.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
 				for item: StringName in property_configs.get(ElementUIConfigurations.OPTIONS):
-					property_container_node.option_button.add_item(item)
+					property_container_node.option_button.add_item(item.get_slice(")_", 1).replace("_", " "))
 			ElementUIConfigurations.ControlNode.TEXT_EDIT:
 				property_container_node.set_control_node(BasicPropertyContainer.ControlNode.TEXT_EDIT)
 		
@@ -211,6 +212,8 @@ func _on_number_of_layers_changed(_p_element: Element) -> void:
 	@warning_ignore("return_value_discarded")
 	node.custom_h_slider.configure_slider(_min, _max, _step, _rounded)
 
+# TODO: Optimize this? Maybe it doesn't need to rebuild everything, especially in cases where something is
+# changed that calls this twice (e.g. changing Visual Effect Type).
 func _on_property_visibility_changed() -> void:
 	var element_ui_configs: Dictionary[StringName, Dictionary] = _ui_configurations.get_configurations()
 	for node: BasicPropertyContainer in get_children():
@@ -229,7 +232,10 @@ func _on_stream_list_updated() -> void:
 				node.option_button.add_item(item)
 			node.option_button.select(-1)
 			for idx: int in node.option_button.get_item_count():
-				if node.option_button.get_item_text(idx) == String(node.get_property_value()):
+				if (
+					node.option_button.get_item_text(idx) == String(node.get_property_value()) and
+					node.get_property_value() == element.get_audio_source()
+				):
 					node.option_button.select(idx)
 					break
 				#if item == node.get_property_value():

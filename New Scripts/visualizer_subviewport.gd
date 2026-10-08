@@ -46,10 +46,10 @@ func _ready() -> void:
 		printerr("Could not pack node.")
 	if element_shader_scene.pack(ElementCanvasShader.new()):
 		printerr("Could not pack node.")
-	#if element_text_scene.pack(ElementCanvasText.new()):
-		#printerr("Could not pack node.")
-	#if element_visual_effect_scene.pack(ElementCanvasVisualEffect.new()):
-		#printerr("Could not pack node.")
+	if element_text_scene.pack(ElementCanvasText.new()):
+		printerr("Could not pack node.")
+	if element_visual_effect_scene.pack(ElementCanvasVisualEffect.new()):
+		printerr("Could not pack node.")
 	
 	WindowUtilities.set_subviewport_size(sub_viewport.get_size())
 	
@@ -61,6 +61,10 @@ func _process(_delta: float) -> void:
 		if AudioManager.is_master_playing():
 			AudioManager.set_master_position(_master_player.get_playback_position())
 	
+	#set_size(get_size().snappedf(2.0))
+	#sub_viewport.set_size_2d_override(sub_viewport.get_size().snappedi(2))
+	#sub_viewport.set_size_2d_override(Vector2i.ZERO)
+	#WindowUtilities.set_subviewport_size(sub_viewport.get_size_2d_override())
 	WindowUtilities.set_subviewport_size(sub_viewport.get_size())
 
 func _connect_signals() -> Error:
@@ -82,7 +86,7 @@ func _connect_signals() -> Error:
 		return ERR_INVALID_PARAMETER
 	if ElementManager.element_deleted.connect(_on_element_deleted):
 		return ERR_INVALID_PARAMETER
-	if ElementManager.element_type_changed.connect(_on_element_created):
+	if ElementManager.element_type_changed.connect(_on_element_type_changed):
 		return ERR_INVALID_PARAMETER
 	
 	return OK
@@ -219,18 +223,19 @@ func _on_element_created(p_element: Element) -> void:
 			node_instance.element = p_element
 			sub_viewport.add_child(node_instance)
 		Element.ElementType.TEXT:
-			pass
-			#var node_instance: ElementCanvasText = element_text_scene.instantiate()
-			#node_instance.element = p_element
-			#sub_viewport.add_child(node_instance)
+			var node_instance: ElementCanvasText = element_text_scene.instantiate()
+			node_instance.element = p_element
+			sub_viewport.add_child(node_instance)
 		Element.ElementType.VISUAL_EFFECT:
-			pass
-			#var node_instance: ElementCanvasVisualEffect = element_visual_effect_scene.instantiate()
-			#node_instance.element = p_element
-			#sub_viewport.add_child(node_instance)
+			var node_instance: ElementCanvasVisualEffect = element_visual_effect_scene.instantiate()
+			node_instance.element = p_element
+			sub_viewport.add_child(node_instance)
 
 func _on_element_deleted(p_element: Element) -> void:
 	for node: Node in sub_viewport.get_children():
 		@warning_ignore("unsafe_method_access")
 		if node is ElementCanvas and node.get_element() == p_element:
 			node.queue_free()
+
+func _on_element_type_changed(_p_old_element: Element, p_new_element: Element) -> void:
+	_on_element_created(p_new_element)

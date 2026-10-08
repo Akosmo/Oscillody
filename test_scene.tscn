@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://djwy4gjxggs1b"]
+
+[ext_resource type="Texture2D" uid="uid://csjehne85bikb" path="res://Images/1_bloom_test.png" id="1_ia1lp"]
+[ext_resource type="Shader" uid="uid://nghg812oe6nb" path="res://Scripts/Shaders/bloom.gdshader" id="2_sasra"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_a7053"]
+shader = ExtResource("2_sasra")
+shader_parameter/opacity = 1.0
+shader_parameter/radius = 1.0000000149012
+shader_parameter/blend_mode = 0
+shader_parameter/blur_mode = 2
+
+[node name="CanvasLayer" type="CanvasLayer" unique_id=2010952292]
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1012145362]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_ia1lp")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=662196749]
+material = SubResource("ShaderMaterial_a7053")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=233372837]

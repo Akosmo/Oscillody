@@ -13,3 +13,4 @@ size_flags_vertical = 4
 
 [node name="Label" type="Label" parent="." unique_id=949838969]
 layout_mode = 2
+text = "aaaa"

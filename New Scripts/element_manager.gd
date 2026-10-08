@@ -26,13 +26,14 @@ signal element_created(p_element: Element)
 ## Emitted when an [Element] is deleted.
 signal element_deleted(p_element: Element)
 ## Emitted when an [Element] changes type.
-signal element_type_changed(p_element: Element)
+signal element_type_changed(p_old_element: Element, p_new_element: Element)
 ## Emitted when [member Element._layer] is updated in all Elements.
 signal element_layers_updated
 ## Emitted when one or multiple property nodes change visibility. See [ElementPropertyContainer].
 signal property_node_visibility_changed
 
 var _elements: Array[Element] # This array is sorted by layer order.
+var _element_ui_configurations: Dictionary[Element, ElementUIConfigurations]
 
 var _element_unique_id: int = -1
 
@@ -40,8 +41,8 @@ var _element_empty_ui_configurations: ElementEmptyUIConfigurations
 var _element_analyzer_ui_configurations: ElementAnalyzerUIConfigurations
 var _element_image_ui_configurations: ElementImageUIConfigurations
 var _element_shader_ui_configurations: ElementShaderUIConfigurations
-#var _element_text_ui_configurations: ElementTextUIConfigurations
-#var _element_visual_effect_ui_configurations: ElementVisualEffectUIConfigurations
+var _element_text_ui_configurations: ElementTextUIConfigurations
+var _element_visual_effect_ui_configurations: ElementVisualEffectUIConfigurations
 
 func _init() -> void:
 	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
@@ -51,6 +52,8 @@ func _init() -> void:
 	_element_analyzer_ui_configurations = preload("uid://blysgijw0k6ah")
 	_element_image_ui_configurations = preload("uid://d22vhxv5sqx2t")
 	_element_shader_ui_configurations = preload("uid://ccdqa8ifs0fso")
+	_element_text_ui_configurations = preload("uid://c4nnun8qgukty")
+	_element_visual_effect_ui_configurations = preload("uid://0sc0lp6palt8")
 
 ## Returns the number of existing Elements.
 func get_element_count() -> int:
@@ -70,6 +73,8 @@ func create_element() -> Element:
 	element.set_element_visibility(true)
 	
 	_elements.append(element)
+	if not _element_ui_configurations.set(element, _get_configurations_basic(element.ElementType.EMPTY)):
+		printerr("Could not add config to dictionary.")
 	
 	element_created.emit(element)
 	
@@ -79,6 +84,8 @@ func create_element() -> Element:
 ## This automatically sets the correct [member Element._layer] of all remaining Elements.[br]
 ## This should only be called by pressing the delete button in an [ElementContainer].
 func delete_element(p_element: Element) -> void:
+	if not _element_ui_configurations.erase(p_element):
+		printerr("Could not find Element in config dictionary.")
 	_elements.erase(p_element)
 	
 	_update_layers()
@@ -100,11 +107,9 @@ func change_element_type(p_element: Element) -> void:
 		p_element.ElementType.SHADER:
 			new_element = ElementShader.new() as ElementShader
 		p_element.ElementType.TEXT:
-			pass
-			#new_element = ElementText.new() as ElementText
+			new_element = ElementText.new() as ElementText
 		p_element.ElementType.VISUAL_EFFECT:
-			pass
-			#new_element = ElementVisualEffect.new() as ElementVisualEffect
+			new_element = ElementVisualEffect.new() as ElementVisualEffect
 	
 	new_element.set_element_unique_id(p_element.get_element_unique_id())
 	new_element.set_element_name(p_element.get_element_name())
@@ -112,11 +117,18 @@ func change_element_type(p_element: Element) -> void:
 	new_element.set_element_layer(p_element.get_element_layer(), false)
 	new_element.set_element_visibility(p_element.get_element_visibility())
 	
+	if not _element_ui_configurations.erase(p_element):
+		printerr("Could not find Element in config dictionary.")
 	_elements.erase(p_element)
 	
 	@warning_ignore("return_value_discarded")
 	_elements.insert(new_element.get_element_layer(), new_element)
-	element_type_changed.emit(new_element)
+	if not _element_ui_configurations.set(
+		new_element, _get_configurations_basic(new_element.get_element_type())
+	):
+		printerr("Could not add config to dictionary.")
+	
+	element_type_changed.emit(p_element, new_element)
 
 ## Moves the given [param p_element] to the given [param p_to_index] in the internal Element array.[br]
 ## Should only be used by calling [method Element.set_layer].
@@ -126,37 +138,29 @@ func reindex_layer(p_element: Element, p_to_index: int) -> void:
 	_elements.insert(p_to_index, p_element)
 	_update_layers()
 
-func get_element_ui_configurations(p_type: Element.ElementType) -> ElementUIConfigurations:
-	match p_type:
-		Element.ElementType.EMPTY:
-			return _element_empty_ui_configurations
-		Element.ElementType.ANALYZER:
-			return _element_analyzer_ui_configurations
-		Element.ElementType.IMAGE:
-			return _element_image_ui_configurations
-		Element.ElementType.SHADER:
-			return _element_shader_ui_configurations
-		Element.ElementType.TEXT:
-			pass
-			#new_element = ElementText.new() as ElementText
-		Element.ElementType.VISUAL_EFFECT:
-			pass
-			#new_element = ElementVisualEffect.new() as ElementVisualEffect
-	
-	printerr("Unknown type.")
-	return _element_empty_ui_configurations
+func get_configurations_for_element(p_element: Element) -> ElementUIConfigurations:
+	return _element_ui_configurations.get(p_element)
 
 func notify_property_node_visibility_changed() -> void:
 	property_node_visibility_changed.emit()
 
-func _on_stream_list_updated() -> void:
-	if not AudioManager.get_master_name().is_empty():
-		return
+func _get_configurations_basic(p_type: Element.ElementType) -> ElementUIConfigurations:
+	match p_type:
+		Element.ElementType.EMPTY:
+			return _element_empty_ui_configurations.duplicate_deep(Resource.DEEP_DUPLICATE_ALL)
+		Element.ElementType.ANALYZER:
+			return _element_analyzer_ui_configurations.duplicate_deep(Resource.DEEP_DUPLICATE_ALL)
+		Element.ElementType.IMAGE:
+			return _element_image_ui_configurations.duplicate_deep(Resource.DEEP_DUPLICATE_ALL)
+		Element.ElementType.SHADER:
+			return _element_shader_ui_configurations.duplicate_deep(Resource.DEEP_DUPLICATE_ALL)
+		Element.ElementType.TEXT:
+			return _element_text_ui_configurations.duplicate_deep(Resource.DEEP_DUPLICATE_ALL)
+		Element.ElementType.VISUAL_EFFECT:
+			return _element_visual_effect_ui_configurations.duplicate_deep(Resource.DEEP_DUPLICATE_ALL)
 	
-	for element: Element in _elements:
-		if element.has_method(&"set_audio_source"):
-			@warning_ignore("unsafe_method_access")
-			element.set_audio_source(&"")
+	printerr("Unknown type.")
+	return _element_empty_ui_configurations
 
 func _get_next_available_uid() -> int:
 	_element_unique_id += 1
@@ -167,3 +171,12 @@ func _update_layers() -> void:
 		element.set_element_layer(_elements.find(element), false)
 	
 	element_layers_updated.emit()
+
+func _on_stream_list_updated() -> void:
+	if not AudioManager.get_master_name().is_empty():
+		return
+	
+	for element: Element in _elements:
+		if element.has_method(&"set_audio_source"):
+			@warning_ignore("unsafe_method_access")
+			element.set_audio_source(&"")

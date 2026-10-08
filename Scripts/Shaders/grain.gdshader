@@ -9,15 +9,24 @@ shader_type canvas_item;
 
 // This shader creates noise and adds to the visualizer with the soft light blend mode.
 
+#include "res://Scripts/Shaders/Includes/blend_modes.gdshaderinc"
+
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear;
 
 uniform mediump float opacity : hint_range(0.0, 1.0, 0.05) = 0.0;
+uniform lowp int blend_mode : hint_enum("Normal", "Soft-Light") = 1;
+uniform bool static = false;
+uniform bool blur = true;
 
 // Hash function from https://www.shadertoy.com/view/MdcfDj
 // This hash function is dedicated to the public domain under the Unlicense.
 // See [http://unlicense.org/] for more details.
-float hash(in highp vec2 seed) {
-	highp uvec2 a = uvec2(seed);
+float hash(in highp vec2 p_seed) {
+	if (!static) {
+		p_seed += fract(TIME) * 8192.0;
+	}
+	
+	highp uvec2 a = uvec2(p_seed);
 	highp uint m1 = 1597334677U;
 	highp uint m2 = 3812015801U;
 
@@ -27,46 +36,55 @@ float hash(in highp vec2 seed) {
 	return float(b) * (1.0/float(0xffffffffU));
 }
 
-// The Soft Light functions below are under the MIT (especifically Expat) License.
-// Source: https://github.com/jamieowen/glsl-blend
-// Copyright (C) 2015 Jamie Owen
+// Value Noise function. Cheaper than gradient, but produces blocky patterns.
+// Watch: https://www.youtube.com/watch?v=DxUY42r_6Cg
+float value_noise(in mediump vec2 p_uv) {
+	// UV is scaled down when calling this function (and it's already modified when calling `fbm()`),
+	// since it's being passed multiplied by `frequency_factor`.
+	// This looks like the original UV map becomes repeated and form a grid, where
+	// each integer part is where the UV repeats, and the fractional part is each UV map.
+	// Read: https://thebookofshaders.com/10/
+	mediump vec2 integer_part = floor(p_uv);
+	highp vec2 fractional_part = fract(p_uv);
 
-// Permission is hereby granted, free of charge,
-// to any person obtaining a copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation the rights to use,
-// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
-// and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+	// Assigning pseudo-random values to vertices that will compose the final lattice.
+	// This works in GPU because the same seed will return the same value, that's why
+	// a single vertex will have the same value attached to it.
+	highp float vert_00 = hash(integer_part);
+	highp float vert_10 = hash(integer_part + vec2(1.0, 0.0));
+	highp float vert_01 = hash(integer_part + vec2(0.0, 1.0));
+	highp float vert_11 = hash(integer_part + vec2(1.0, 1.0));
 
-// The above copyright notice and this permission notice shall be included in all copies or
-// substantial portions of the Software.
+	// Using Hermite interpolation (smoothstep) to get the weight for linear interpolation.
+	// Since fractional part is already between 0.0 and 1.0, we only perform the last part of the process.
+	// Read: https://registry.khronos.org/OpenGL-Refpages/gl4/html/smoothstep.xhtml
+	// Read: https://thebookofshaders.com/11/
+	highp vec2 weight = pow(fractional_part, vec2(2.0)) * (3.0 - 2.0 * fractional_part);
 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-float soft_light_float(in highp float base, in highp float blend) {
-	return (blend < 0.5) ? (2.0 * base * blend + base * base * (1.0 - 2.0 * blend)) : (sqrt(base) * (2.0 * blend - 1.0) + 2.0 * base * (1.0 - blend));
+	// Bilinear interpolation, with a "smoothstep'd" weight.
+	// This is basically blurring the grid.
+	highp float x1 = mix(vert_00, vert_10, weight.x);
+	highp float x2 = mix(vert_01, vert_11, weight.x);
+	return mix(x1, x2, weight.y);
 }
-
-vec3 soft_light_vec3(in highp vec3 base, in highp vec3 blend) {
-	return vec3(soft_light_float(base.r, blend.r), soft_light_float(base.g, blend.g), soft_light_float(base.b, blend.b));
-}
-
-vec3 soft_light_opacity(highp vec3 base, highp vec3 blend, mediump float _opacity) {
-	return (soft_light_vec3(base, blend) * _opacity + base * (1.0 - _opacity));
-}
-
-// End of the Soft Light functions.
 
 void fragment() {
+	highp vec2 uv = UV;
+	uv.y = 1.0 - uv.y; // Invert `Y` coord.
+	uv.x *= 16.0 / 9.0; // Adjust ratio.
+	
 	highp vec4 screen_tex = texture(SCREEN_TEXTURE, SCREEN_UV);
 
-	highp vec3 noise = vec3(hash(FRAGCOORD.xy + TIME * 8192.0));
+	highp vec3 noise = vec3(0.0);
+	if (blur) {
+		noise = vec3(value_noise(FRAGCOORD.xy));
+	} else {
+		noise = vec3(hash(FRAGCOORD.xy));
+	}
 
-	highp vec3 output_color = soft_light_opacity(screen_tex.rgb, noise, opacity);
-
-	COLOR = vec4(vec3(output_color), 1.0);
+	if (blend_mode == 0) {
+		COLOR = vec4(noise, opacity);
+	} else {
+		COLOR = vec4(blend_mode_soft_light(screen_tex.rgb, noise), opacity);
+	}
 }

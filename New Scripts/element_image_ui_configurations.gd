@@ -76,14 +76,14 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		ElementImage.SN_IMAGE_SCALE: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 1.0,
-			MINIMUM: 0.1,
+			MINIMUM: 0.05,
 			MAXIMUM: 2.0,
-			STEP: 0.1,
+			STEP: 0.05,
 			ROUNDED: false
 		},
 		ElementImage.SN_IMAGE_COLOR: {
 			CONTROL_NODE: ControlNode.COLOR_PICKER_BUTTON,
-			DEFAULT_VALUE: Color.WHITE,
+			DEFAULT_VALUE: Color.WHITE
 		},
 		ElementImage.SN_IMAGE_BLUR: {
 			CONTROL_NODE: ControlNode.NUMERICAL,

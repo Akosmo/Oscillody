@@ -43,23 +43,23 @@ enum ControlNode {
 }
 
 ## The dictionary key for [ControlNode].
-const CONTROL_NODE: StringName = &"control_node"
+const CONTROL_NODE: StringName = &"ui_control_node"
 ## The dictionary key for the property's default value, used when reseting.
-const DEFAULT_VALUE: StringName = &"default_value"
+const DEFAULT_VALUE: StringName = &"ui_default_value"
 ## The dictionary key for the node's visibility.
-const VISIBLE: StringName = &"visible"
+const VISIBLE: StringName = &"ui_visible"
 
 ## The dictionary key for the minimum value in a [constant ControlNode.NUMERICAL] [Control] node.
-const MINIMUM: StringName = &"minimum"
+const MINIMUM: StringName = &"ui_minimum"
 ## The dictionary key for the maximum value in a [constant ControlNode.NUMERICAL] [Control] node.
-const MAXIMUM: StringName = &"maximum"
+const MAXIMUM: StringName = &"ui_maximum"
 ## The dictionary key for the step value in a [constant ControlNode.NUMERICAL] [Control] node.
-const STEP: StringName = &"step"
+const STEP: StringName = &"ui_step"
 ## The dictionary key for the rounded value in a [constant ControlNode.NUMERICAL] [Control] node.
-const ROUNDED: StringName = &"rounded"
+const ROUNDED: StringName = &"ui_rounded"
 
 ## The dictionary key for the available options for [constant ControlNode.OPTION_BUTTON] node.
-const OPTIONS: StringName = &"options"
+const OPTIONS: StringName = &"ui_options"
 
 ## Returns an updated list of all the property configurations.
 @abstract func get_configurations() -> Dictionary[StringName, Dictionary]

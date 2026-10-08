@@ -23,6 +23,7 @@ const _ELEMENT_PROPERTIES_CONTAINER: PackedScene = preload("uid://b8e8erhj4yg58"
 #var _property_container: PackedScene = preload("res://New Scenes/property_container.tscn")
 #var _element_property_container_script: Script = preload("res://New Scripts/element_property_container.gd")
 
+var _properties_containers: Array[ElementPropertiesContainer]
 var _current_element_selected: Element = null
 
 @onready var _add_element_button: Button = %AddElementButton
@@ -38,23 +39,24 @@ func _ready() -> void:
 		printerr("Could not connect signal.")
 	#if ElementManager.element_deleted.connect(_on_element_deleted):
 		#printerr("Could not connect signal.")
-	if ElementManager.element_type_changed.connect(_update_properties_container):
+	if ElementManager.element_type_changed.connect(_on_element_type_changed):
 		printerr("Could not connect signal.")
 	if ElementManager.element_layers_updated.connect(_on_element_layers_updated):
 		printerr("Could not connect signal.")
 
 func _on_add_element_pressed() -> void:
 	var element_node: ElementContainer = _ELEMENT_CONTAINER.instantiate()
-	_element_box_container.add_child(element_node)
 	if element_node.element_selected.connect(_update_properties_container):
 		printerr("Could not connect signal.")
 	if element_node.element_container_deleted.connect(_on_element_container_deleted):
 		printerr("Could not connect signal.")
+	_element_box_container.add_child(element_node)
 
 func _update_properties_container(p_element: Element) -> void:
 	if p_element == _current_element_selected:
 		return
 	
+	#var previous_element: Element = _current_element_selected
 	_current_element_selected = p_element
 	
 	#if _properties_box_container.get_child_count():
@@ -85,6 +87,12 @@ func _update_properties_container(p_element: Element) -> void:
 			#property_node.property_key = property_key
 			#_properties_box_container.add_child(property_node)
 	if p_element != null:
+		#if _scroll_container.get_child_count():
+			#for node: Control in _scroll_container.get_children():
+				#if node.has_method("get_element"):
+					#if node.get_element() == previous_element:
+						#node.queue_free()
+						#break
 		var node: ElementPropertiesContainer = _ELEMENT_PROPERTIES_CONTAINER.instantiate()
 		node.element = p_element
 		_scroll_container.add_child(node)
@@ -100,6 +108,16 @@ func _on_element_container_deleted(p_element: Element) -> void:
 		#if _properties_box_container.get_child_count():
 			#for node: ElementPropertyContainer in _properties_box_container.get_children():
 				#node.queue_free()
+
+func _on_element_type_changed(p_old_element: Element, p_new_element: Element) -> void:
+	if _scroll_container.get_child_count():
+		for node: Control in _scroll_container.get_children():
+			if node.has_method("get_element"):
+				if node.get_element() == p_old_element:
+					node.queue_free()
+					break
+	
+	_update_properties_container(p_new_element)
 
 func _on_element_layers_updated() -> void:
 	for node: Node in _element_box_container.get_children():

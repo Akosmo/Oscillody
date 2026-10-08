@@ -24,8 +24,8 @@ enum AnalyzerType {
 }
 
 const ANALYZER_TYPES: Array[StringName] = [
-	&"Waveform",
-	&"Spectrum"
+	&"(Analyzer)_Waveform",
+	&"(Analyzer)_Spectrum"
 ]
 
 const SN_ANALYZER_TYPE: StringName = &"Analyzer_Type"

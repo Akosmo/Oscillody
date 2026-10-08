@@ -27,10 +27,10 @@ enum ReactiveSmoothingType {
 }
 
 const SMOOTHING_TYPES: Array[StringName] = [
-	&"Both",
-	&"Decay",
-	&"Interpolation",
-	&"None"
+	&"(Reactive)_Both",
+	&"(Reactive)_Decay",
+	&"(Reactive)_Interpolation",
+	&"(Reactive)_None"
 ]
 
 const SN_BEGIN_FREQUENCY: StringName = &"(Reactive)_Begin_Frequency"

@@ -38,9 +38,11 @@ SettingsManager="*uid://drrev0hbiwml8"
 WindowUtilities="*uid://bocv6duulp86s"
 AudioManager="*uid://ben01m561drjh"
 ElementManager="*uid://bnho77fgm8yog"
+TooltipManager="*uid://8rvhnap3x4h2"
 
 [debug]
 
+settings/stdout/verbose_stdout=true
 gdscript/warnings/untyped_declaration=2
 gdscript/warnings/inferred_declaration=1
 gdscript/warnings/unsafe_property_access=1

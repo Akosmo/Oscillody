@@ -69,6 +69,9 @@ var _use_file_dialog: bool
 func _ready() -> void:
 	SettingsManager.slider_preference_changed.connect(_on_slider_preference_changed)
 	
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
+	
 	#reset_button.pressed.connect(_on_reset_pressed)
 	#button.pressed.connect(_on_button_pressed)
 	#file_dialog.file_selected.connect(_on_file_selected)
@@ -113,12 +116,12 @@ func set_control_node(p_control_node: ControlNode) -> void:
 			line_edit.text_changed.connect(_on_line_edit_text_changed)
 		ControlNode.NUMERICAL:
 			spin_box = SpinBox.new()
-			spin_box.set_update_on_text_changed(true)
+			#spin_box.set_update_on_text_changed(true)
 			control_node_box_container.add_child(spin_box)
 			spin_box.value_changed.connect(_on_spin_box_value_changed)
 			custom_h_slider = _CUSTOM_H_SLIDER_SCENE.instantiate()
-			custom_h_slider.set_custom_minimum_size(Vector2(100.0, 0.0))
 			control_node_box_container.add_child(custom_h_slider)
+			custom_h_slider.h_slider.set_custom_minimum_size(Vector2(100.0, 0.0))
 			custom_h_slider.value_changed.connect(_on_slider_value_changed)
 			if not SettingsManager.are_sliders_enabled():
 				custom_h_slider.hide()
@@ -142,8 +145,8 @@ func set_control_node(p_control_node: ControlNode) -> void:
 	if reset_button != null:
 		h_box_container.move_child(reset_button, 1)
 
-#func get_control_node() -> ControlNode:
-	#return _control_node
+func get_control_node() -> ControlNode:
+	return _control_node
 
 func set_property_key(p_key: StringName) -> void:
 	_property_key = p_key
@@ -196,6 +199,7 @@ func set_property_value_with_node(p_value: Variant) -> void:
 			custom_h_slider.set_value_no_signal(p_value as float)
 		ControlNode.OPTION_BUTTON:
 			# TEST: Make sure this doesn't emit a signal.
+			option_button.select(-1)
 			if option_button.get_item_count() > 0:
 				if typeof(p_value) == TYPE_INT:
 					@warning_ignore("unsafe_cast")
@@ -339,6 +343,12 @@ func _on_slider_preference_changed() -> void:
 	if _control_node == ControlNode.NUMERICAL:
 		spin_box.set_visible(custom_h_slider.is_visible())
 		custom_h_slider.set_visible(not spin_box.is_visible())
+
+func _on_mouse_entered() -> void:
+	TooltipManager.notify_tooltip(true, self)
+
+func _on_mouse_exited() -> void:
+	TooltipManager.notify_tooltip(false, self)
 
 func _on_reset_pressed() -> void:
 	set_property_value(_reset_value)

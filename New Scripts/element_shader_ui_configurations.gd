@@ -25,6 +25,7 @@ var _isolines_visibility: bool = false
 var _simple_gradient_visibility: bool = false
 var _tides_visibility: bool = false
 
+var _speed_visibility: bool = false
 var _reaction_visibility: bool = false
 
 func enable_shader_visibility(p_shader: ElementShader.ShaderType) -> void:
@@ -35,19 +36,27 @@ func enable_shader_visibility(p_shader: ElementShader.ShaderType) -> void:
 	_simple_gradient_visibility = false
 	_tides_visibility = false
 	
+	_speed_visibility = false
+	
 	match p_shader:
 		ElementShader.ShaderType.CURRENT_FLOW:
 			_current_flow_visibility = true
+			_speed_visibility = true
 		ElementShader.ShaderType.DOMAIN_WARPING:
 			_domain_warping_visibility = true
+			_speed_visibility = true
 		ElementShader.ShaderType.ECHOES:
 			_echoes_visibility = true
+			_speed_visibility = true
 		ElementShader.ShaderType.ISOLINES:
 			_isolines_visibility = true
+			_speed_visibility = true
 		ElementShader.ShaderType.SIMPLE_GRADIENT:
 			_simple_gradient_visibility = true
+			_speed_visibility = false
 		ElementShader.ShaderType.TIDES:
 			_tides_visibility = true
+			_speed_visibility = true
 	
 	ElementManager.notify_property_node_visibility_changed()
 
@@ -332,10 +341,10 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 			DEFAULT_VALUE: Color.BLACK,
 			VISIBLE: _simple_gradient_visibility
 		},
-		ElementShader.SN_SIMPLE_GRADIENT_DIRECTION: {
+		ElementShader.SN_SIMPLE_GRADIENT_ORIGIN: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
 			VISIBLE: _simple_gradient_visibility,
-			OPTIONS: ElementShader.SIMPLE_GRADIENT_DIRECTIONS
+			OPTIONS: ElementShader.SIMPLE_GRADIENT_ORIGINS
 		},
 		ElementShader.SN_TIDES_COLOR: {
 			CONTROL_NODE: ControlNode.COLOR_PICKER_BUTTON,
@@ -378,10 +387,16 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		ElementShader.SN_SHADER_SPEED: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 0.1,
+			VISIBLE: _speed_visibility,
 			MINIMUM: 0.0,
 			MAXIMUM: 1.0,
 			STEP: 0.05,
 			ROUNDED: false
+		},
+		ElementShader.SN_SHADER_BLEND_MODE: {
+			CONTROL_NODE: ControlNode.OPTION_BUTTON,
+			DEFAULT_VALUE: ElementShader.ShaderBlendMode.NORMAL,
+			OPTIONS: ElementShader.SHADER_BLEND_MODES
 		},
 		ElementShader.SN_SHADER_X_POSITION: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
@@ -410,9 +425,9 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		ElementShader.SN_SHADER_SCALE: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 1.0,
-			MINIMUM: 0.1,
+			MINIMUM: 0.05,
 			MAXIMUM: 2.0,
-			STEP: 0.1,
+			STEP: 0.05,
 			ROUNDED: false
 		},
 		ElementShader.SN_SHADER_BLUR: {

@@ -12,14 +12,15 @@ shader_type canvas_item;
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear;
 
 uniform highp float block_offset_amount : hint_range(0.0, 0.02, 0.001) = 0.0;
-uniform highp float pixel_offset_amount : hint_range(0.0, 0.02, 0.001) = 0.0;
-uniform lowp float speed_factor : hint_range(0.0, 50.0, 1.0) = 100.0;
+uniform highp float line_offset_amount : hint_range(0.0, 0.02, 0.001) = 0.0;
+uniform mediump float block_time;
+uniform mediump float line_time;
 
 // Hash function from https://www.shadertoy.com/view/MdcfDj
 // This hash function is dedicated to the public domain under the Unlicense.
 // See [http://unlicense.org/] for more details.
-float hash(in highp vec2 seed) {
-	highp uvec2 a = uvec2(seed + TIME * speed_factor);
+float hash(in highp vec2 p_seed, in mediump float p_time) {
+	highp uvec2 a = uvec2(p_seed + p_time);
 	highp uint m1 = 1597334677U;
 	highp uint m2 = 3812015801U;
 
@@ -33,10 +34,10 @@ void fragment() {
 	highp vec2 uv = SCREEN_UV;
 
 	// Return value changes depending on UV.
-	highp float block_offset = hash(vec2(1.0, abs(sin(uv.y) * 20.0)));
-	highp float pixel_offset = hash(vec2(1.0, uv.y * sin(uv.y * 1000.0) * 1000.0));
+	highp float block_offset = hash(vec2(1.0, abs(sin(uv.y) * 20.0)), block_time);
+	highp float line_offset = hash(vec2(1.0, uv.y * sin(uv.y * 1000.0) * 1000.0), line_time);
 
-	highp float offset = block_offset * block_offset_amount - pixel_offset * pixel_offset_amount;
+	highp float offset = block_offset * block_offset_amount - line_offset * line_offset_amount;
 
 	highp vec4 screen_tex = vec4(0.0);
 	screen_tex.r = texture(SCREEN_TEXTURE, vec2(uv.x + offset, uv.y)).r;

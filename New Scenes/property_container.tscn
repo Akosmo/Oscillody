@@ -6,9 +6,8 @@
 
 [node name="PropertyContainer" type="PanelContainer" unique_id=803774841]
 custom_minimum_size = Vector2(0, 39)
-offset_right = 8.0
+offset_right = 76.0
 offset_bottom = 39.0
-size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxEmpty_jtfbr")
 script = ExtResource("1_8q6o3")
 
@@ -25,9 +24,11 @@ layout_mode = 2
 
 [node name="PropertyLabel" type="Label" parent="MarginContainer/HBoxContainer" unique_id=1523211957]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "PROPERTY TEXT"
+clip_text = true
+text_overrun_behavior = 5
 
 [node name="ControlNodeBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=1197491246]
 unique_name_in_owner = true

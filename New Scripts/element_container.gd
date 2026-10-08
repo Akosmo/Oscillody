@@ -36,6 +36,8 @@ func _ready() -> void:
 	
 	if _connect_signals():
 		printerr("Could not connect signals.")
+	
+	_element_name_button.pressed.emit()
 
 func _connect_signals() -> Error:
 	if _delete_button.pressed.connect(_on_delete_button_pressed):
@@ -63,9 +65,9 @@ func _on_element_name_changed(p_property: StringName) -> void:
 	if p_property == Element.SN_ELEMENT_NAME:
 		_element_name_button.set_text(element.get_element_name())
 
-func _on_element_type_changed(p_element: Element) -> void:
-	if element.get_element_unique_id() == p_element.get_element_unique_id():
-		element = p_element
+func _on_element_type_changed(_p_old_element: Element, p_new_element: Element) -> void:
+	if element.get_element_unique_id() == p_new_element.get_element_unique_id():
+		element = p_new_element
 		
 		@warning_ignore("return_value_discarded")
 		element.property_changed.connect(_on_element_name_changed)

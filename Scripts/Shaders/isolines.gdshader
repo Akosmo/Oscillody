@@ -24,6 +24,10 @@ shader_type canvas_item;
 
 // This shader creates a background with isolines.
 
+#include "res://Scripts/Shaders/Includes/blend_modes.gdshaderinc"
+
+uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
+
 uniform mediump vec4 line_color : source_color = vec4(1.0);
 uniform mediump vec4 background_color : source_color = vec4(vec3(0.0), 1.0);
 uniform mediump float uv_scale : hint_range(1.0, 20.0, 0.5) = 5.0;
@@ -31,7 +35,22 @@ uniform bool filled = false;
 uniform lowp float line_thickness : hint_range(1.0, 20.0, 1.0) = 10.0;
 uniform mediump float thickness_variation : hint_range(0.5, 1.2, 0.01) = 0.5;
 uniform lowp float line_amount : hint_range(1.0, 50.0, 1.0) = 10.0;
+
 uniform highp float speed = 0.0;
+uniform lowp int blend_mode : hint_enum(
+	"Normal",
+	"Multiply",
+	"Screen",
+	"Overlay",
+	"Soft-Light",
+	"Color Dodge",
+	"Linear Dodge",
+	"Color Burn",
+	"Linear Burn",
+	"Simple Divide",
+	"Simple Subtract",
+	"Simple Difference"
+) = 0;
 
 // Random gradient function from https://github.com/SuboptimalEng/shader-tutorials
 // This hash function is under the MIT (especifically Expat) License.
@@ -54,9 +73,9 @@ uniform highp float speed = 0.0;
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // Values slighly changed from original.
-vec2 random_gradient(highp vec2 seed) {
-	highp float x = dot(seed, vec2(742.0, 328.0)); // Random values
-	highp float y = dot(seed, vec2(138.0, 947.0));
+vec2 random_gradient(highp vec2 p_seed) {
+	highp float x = dot(p_seed, vec2(742.0, 328.0)); // Random values.
+	highp float y = dot(p_seed, vec2(138.0, 947.0));
 	highp vec2 gradient = sin(vec2(x, y));
 	gradient *= 3831.4389;
 	return sin(gradient + speed);
@@ -65,13 +84,13 @@ vec2 random_gradient(highp vec2 seed) {
 // Perlin Noise, better than value noise for smooth isolines.
 // Watch: https://www.youtube.com/watch?v=DxUY42r_6Cg
 // Watch: https://www.youtube.com/watch?v=7fd331zsie0
-float perlin_noise(in highp vec2 uv) {
+float perlin_noise(in highp vec2 p_uv) {
 	// UV is scaled down when calling this function.
 	// This looks like the original UV map becomes repeated and form a grid, where
 	// each integer part is where the UV repeats, and the fractional part is each UV map.
 	// Read: https://thebookofshaders.com/10/
-	mediump vec2 integer_part = floor(uv);
-	highp vec2 fractional_part = fract(uv);
+	mediump vec2 integer_part = floor(p_uv);
+	highp vec2 fractional_part = fract(p_uv);
 	
 	// Assigning pseudo-random gradients to vertices that will compose the final lattice
 	// (this works in GPU because the same seed will return the same value, that's why
@@ -89,34 +108,37 @@ float perlin_noise(in highp vec2 uv) {
 	// This is basically blurring the grid.
 	highp float x1 = mix(vert_00, vert_10, weight.x);
 	highp float x2 = mix(vert_01, vert_11, weight.x);
-	return mix(x1, x2, weight.y) * 0.7 + 0.5; // Balancing
+	return mix(x1, x2, weight.y) * 0.7 + 0.5; // Balancing.
 }
 
 void fragment() {
 	highp vec2 uv = UV;
-	uv.y = 1.0 - uv.y; // Invert Y coord
-	uv.x *= 16.0 / 9.0; // Adjust ratio
+	uv.y = 1.0 - uv.y; // Invert `Y` coord.
+	uv.x *= 16.0 / 9.0; // Adjust ratio.
 	
 	highp float noise = perlin_noise(uv * uv_scale);
 	
-	highp vec3 output_color = vec3(0.0);
+	highp vec4 output_color = vec4(0.0);
 	if (filled) {
-		output_color = step(noise, vec3(0.5));
+		output_color = step(noise, vec4(0.5));
 	}
 	else {
 		// Formula used in different isoline and grid shaders.
-		// I'm not skilled enough in math to explain fwidth() well.
-		// AFAIK, fwidth() is the sum of absolutes of x and y partial derivatives. It can be used to show
+		// I'm not skilled enough in math to explain `fwidth()` well.
+		// AFAIK, `fwidth()` is the sum of absolutes of `x` and `y` partial derivatives. It can be used to show
 		// where there's greater value change in the argument passed to it.
 		// What the formula does is computing anti-aliased screen-space grid lines... except it's not a grid,
 		// since noise is passed as an argument instead of UV.
-		// fract(number_of_lines * noise) is what creates something resembling isolines,
-		// by multiplying the noise and using fract() on it, so every time a value goes above 1.0,
+		// `fract(number_of_lines * noise)` is what creates something resembling isolines,
+		// by multiplying the noise and using `fract()` on it, so every time a value goes above 1.0,
 		// it returns to 0.0 and ramps up again.
-		// thickness_variation is used to darken the result, and we get the absolute to get a more "rounded" result.
+		// `thickness_variation` is used to darken the result, and we get the absolute to get a more "rounded" result.
 		highp float noise_weight = abs(fract(line_amount * noise) - thickness_variation) / fwidth(noise);
-		output_color = vec3(smoothstep(line_thickness, 0.0, noise_weight));
+		output_color = vec4(smoothstep(line_thickness, 0.0, noise_weight));
 	}
 	
-	COLOR = vec4(mix(background_color.rgb, line_color.rgb, output_color), 1.0);
+	output_color = mix(background_color, line_color, output_color);
+	
+	vec3 base_layer = texture(SCREEN_TEXTURE, SCREEN_UV).rgb;
+	COLOR = vec4(get_blend(blend_mode, base_layer, output_color.rgb), output_color.a);
 }

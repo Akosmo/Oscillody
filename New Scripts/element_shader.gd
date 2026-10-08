@@ -34,34 +34,64 @@ enum EchoesPulseMode {
 	SUBTRACTION
 }
 
-enum SimpleGradientDirection {
+enum SimpleGradientOrigin {
 	BOTTOM_LEFT,
 	LEFT,
 	TOP_LEFT,
 	TOP
 }
 
+enum ShaderBlendMode {
+	NORMAL,
+	MULTIPLY,
+	SCREEN,
+	OVERLAY,
+	SOFT_LIGHT,
+	COLOR_DODGE,
+	LINEAR_DODGE,
+	COLOR_BURN,
+	LINEAR_BURN,
+	SIMPLE_DIVIDE,
+	SIMPLE_SUBTRACT,
+	SIMPLE_DIFFERENCE
+}
+
 const SHADER_TYPES: Array[StringName] = [
-	&"Current Flow",
-	&"Domain Warping",
-	&"Echoes",
-	&"Isolines",
-	&"Simple Gradient",
-	&"Tides"
+	&"(Shader)_Current_Flow",
+	&"(Shader)_Domain_Warping",
+	&"(Shader)_Echoes",
+	&"(Shader)_Isolines",
+	&"(Shader)_Simple_Gradient",
+	&"(Shader)_Tides"
 ]
 
 const ECHOES_PULSE_MODES: Array[StringName] = [
-	&"Multiplication",
-	&"Division",
-	&"Addition",
-	&"Subtraction"
+	&"(Echoes)_Multiplication",
+	&"(Echoes)_Division",
+	&"(Echoes)_Addition",
+	&"(Echoes)_Subtraction"
 ]
 
-const SIMPLE_GRADIENT_DIRECTIONS: Array[StringName] = [
-	&"Bottom-Left",
-	&"Left",
-	&"Top-Left",
-	&"Top"
+const SIMPLE_GRADIENT_ORIGINS: Array[StringName] = [
+	&"(Simple_Gradient)_Bottom-Left",
+	&"(Simple_Gradient)_Left",
+	&"(Simple_Gradient)_Top-Left",
+	&"(Simple_Gradient)_Top"
+]
+
+const SHADER_BLEND_MODES: Array[StringName] = [
+	&"(Shader)_Normal",
+	&"(Shader)_Multiply",
+	&"(Shader)_Screen",
+	&"(Shader)_Overlay",
+	&"(Shader)_Soft-Light",
+	&"(Shader)_Color_Dodge",
+	&"(Shader)_Linear_Dodge",
+	&"(Shader)_Color_Burn",
+	&"(Shader)_Linear_Burn",
+	&"(Shader)_Simple_Divide",
+	&"(Shader)_Simple_Subtract",
+	&"(Shader)_Simple_Difference"
 ]
 
 const SN_SHADER_TYPE: StringName = &"Shader_Type"
@@ -105,7 +135,7 @@ const SN_ISOLINES_LINE_AMOUNT: StringName = &"(Isolines)_Line_Amount"
 
 const SN_SIMPLE_GRADIENT_COLOR_1: StringName = &"(Simple_Gradient)_Color_1"
 const SN_SIMPLE_GRADIENT_COLOR_2: StringName = &"(Simple_Gradient)_Color_2"
-const SN_SIMPLE_GRADIENT_DIRECTION: StringName = &"(Simple_Gradient)_Direction"
+const SN_SIMPLE_GRADIENT_ORIGIN: StringName = &"(Simple_Gradient)_Origin"
 
 const SN_TIDES_COLOR: StringName = &"(Tides)_Color"
 const SN_TIDES_TINT: StringName = &"(Tides)_Tint"
@@ -115,6 +145,7 @@ const SN_TIDES_HUE_SHIFT: StringName = &"(Tides)_Hue_Shift"
 const SN_TIDES_ITERATIONS: StringName = &"(Tides)_Iterations"
 
 const SN_SHADER_SPEED: StringName = &"(Shader)_Speed"
+const SN_SHADER_BLEND_MODE: StringName = &"(Shader)_Blend_Mode"
 
 const SN_SHADER_X_POSITION: StringName = &"(Shader)_X_Position"
 const SN_SHADER_Y_POSITION: StringName = &"(Shader)_Y_Position"
@@ -168,7 +199,7 @@ var _isolines_line_amount: float = 0.25 # TODO: `remap(x, 0.05, 1.0, 1.0, 50.0)`
 
 var _simple_gradient_color_1: Color = Color.WHITE
 var _simple_gradient_color_2: Color = Color.BLACK
-var _simple_gradient_direction: SimpleGradientDirection = SimpleGradientDirection.BOTTOM_LEFT
+var _simple_gradient_origin: SimpleGradientOrigin = SimpleGradientOrigin.BOTTOM_LEFT
 
 var _tides_color: Color = Color.WHITE
 var _tides_tint: Color = Color.BLACK
@@ -178,13 +209,14 @@ var _tides_hue_shift: float = 0.0
 var _tides_iterations: int = 6
 
 var _shader_speed: float = 0.1 # TODO: x * 20.0 (original: 0.0 to 20.0).
+var _shader_blend_mode: ShaderBlendMode = ShaderBlendMode.NORMAL
 
 var _shader_x_position: float = 0.5
 var _shader_y_position: float = 0.5
 var _shader_rotation: float = 0.0
 var _shader_scale: float = 1.0
 var _shader_blur: float = 0.0
-var _shader_brightness: float = 0.0
+var _shader_brightness: float = 0.0 # TODO: Hide this if unnecessary?
 
 var _shader_speed_reaction: float = 0.0
 var _shader_rotation_reaction: float = 0.0
@@ -442,12 +474,12 @@ func set_simple_gradient_color_2(p_value: Color) -> void:
 func get_simple_gradient_color_2() -> Color:
 	return _simple_gradient_color_2
 
-func set_simple_gradient_direction(p_value: SimpleGradientDirection) -> void:
-	_simple_gradient_direction = p_value
-	property_changed.emit(SN_SIMPLE_GRADIENT_DIRECTION)
+func set_simple_gradient_origin(p_value: SimpleGradientOrigin) -> void:
+	_simple_gradient_origin = p_value
+	property_changed.emit(SN_SIMPLE_GRADIENT_ORIGIN)
 
-func get_simple_gradient_direction() -> SimpleGradientDirection:
-	return _simple_gradient_direction
+func get_simple_gradient_origin() -> SimpleGradientOrigin:
+	return _simple_gradient_origin
 
 func set_tides_color(p_value: Color) -> void:
 	_tides_color = p_value
@@ -497,6 +529,13 @@ func set_shader_speed(p_value: float) -> void:
 
 func get_shader_speed() -> float:
 	return _shader_speed
+
+func set_shader_blend_mode(p_value: ShaderBlendMode) -> void:
+	_shader_blend_mode = p_value
+	property_changed.emit(SN_SHADER_BLEND_MODE)
+
+func get_shader_blend_mode() -> ShaderBlendMode:
+	return _shader_blend_mode
 
 func set_shader_x_position(p_value: float) -> void:
 	_shader_x_position = p_value
@@ -603,7 +642,7 @@ func get_properties() -> Dictionary[StringName, Variant]:
 		SN_ISOLINES_LINE_AMOUNT: _isolines_line_amount,
 		SN_SIMPLE_GRADIENT_COLOR_1: _simple_gradient_color_1,
 		SN_SIMPLE_GRADIENT_COLOR_2: _simple_gradient_color_2,
-		SN_SIMPLE_GRADIENT_DIRECTION: _simple_gradient_direction,
+		SN_SIMPLE_GRADIENT_ORIGIN: _simple_gradient_origin,
 		SN_TIDES_COLOR: _tides_color,
 		SN_TIDES_TINT: _tides_tint,
 		SN_TIDES_COLOR_MIX: _tides_color_mix,
@@ -611,6 +650,7 @@ func get_properties() -> Dictionary[StringName, Variant]:
 		SN_TIDES_HUE_SHIFT: _tides_hue_shift,
 		SN_TIDES_ITERATIONS: _tides_iterations,
 		SN_SHADER_SPEED: _shader_speed,
+		SN_SHADER_BLEND_MODE: _shader_blend_mode,
 		SN_SHADER_X_POSITION: _shader_x_position,
 		SN_SHADER_Y_POSITION: _shader_y_position,
 		SN_SHADER_ROTATION: _shader_rotation,
@@ -678,7 +718,7 @@ func get_setters() -> Dictionary[StringName, StringName]:
 		SN_ISOLINES_LINE_AMOUNT: set_isolines_line_amount.get_method(),
 		SN_SIMPLE_GRADIENT_COLOR_1: set_simple_gradient_color_1.get_method(),
 		SN_SIMPLE_GRADIENT_COLOR_2: set_simple_gradient_color_2.get_method(),
-		SN_SIMPLE_GRADIENT_DIRECTION: set_simple_gradient_direction.get_method(),
+		SN_SIMPLE_GRADIENT_ORIGIN: set_simple_gradient_origin.get_method(),
 		SN_TIDES_COLOR: set_tides_color.get_method(),
 		SN_TIDES_TINT: set_tides_tint.get_method(),
 		SN_TIDES_COLOR_MIX: set_tides_color_mix.get_method(),
@@ -686,6 +726,7 @@ func get_setters() -> Dictionary[StringName, StringName]:
 		SN_TIDES_HUE_SHIFT: set_tides_hue_shift.get_method(),
 		SN_TIDES_ITERATIONS: set_tides_iterations.get_method(),
 		SN_SHADER_SPEED: set_shader_speed.get_method(),
+		SN_SHADER_BLEND_MODE: set_shader_blend_mode.get_method(),
 		SN_SHADER_X_POSITION: set_shader_x_position.get_method(),
 		SN_SHADER_Y_POSITION: set_shader_y_position.get_method(),
 		SN_SHADER_ROTATION: set_shader_rotation.get_method(),

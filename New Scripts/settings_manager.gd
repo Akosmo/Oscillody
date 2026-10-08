@@ -45,6 +45,13 @@ const RESOLUTION_1080P: StringName = &"1080p"
 ## The [StringName] for 1440p export resolution.
 const RESOLUTION_1440P: StringName = &"1440p"
 
+const INPUT_DEVICE_PROPERTY_KEY: StringName = &"Input_Device"
+const OUTPUT_DEVICE_PROPERTY_KEY: StringName = &"Output_Device"
+const EXPORT_RESOLUTION_PROPERTY_KEY: StringName = &"Export_Resolution"
+const THEME_PROPERTY_KEY: StringName = &"Theme"
+const SWITCH_TO_SLIDERS_PROPERTY_KEY: StringName = &"Switch_To_Slider"
+const SYNC_ELEMENT_SHAKE_PROPERTY_KEY: StringName = &"Sync_Element_Shake"
+
 # TODO: Maybe make some of these StringNames.
 var _input_device: String
 var _output_device: String

@@ -37,7 +37,7 @@ func _ready() -> void:
 	#set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
 	#set_layer(element.get_layer())
 	
-	_element_ui_configurations = ElementManager.get_element_ui_configurations(element.get_element_type())
+	_element_ui_configurations = ElementManager.get_configurations_for_element(element)
 	#_element_ui_configurations.set_reaction_visibility(not element.get_audio_source().is_empty())
 	
 	_texture_rect = TextureRect.new()
@@ -116,6 +116,7 @@ func _process(_delta: float) -> void:
 			100.0 * \
 			(_get_reaction_magnitude(element.get_shake_frequency_reaction()) - 1.0)
 		)
+	
 	if element.get_shake_frequency() > 0.0 or element.get_shake_frequency_reaction() > 0.0:
 		if element.get_shake_amplitude() > 0.0:
 			_texture_rect.set_position(
@@ -146,6 +147,12 @@ func get_element() -> Element:
 func _get_fixed_position() -> Vector2:
 	return Vector2(element.get_image_x_position(), element.get_image_y_position()) * \
 	Vector2(WindowUtilities.get_subviewport_size()) - _texture_rect.get_pivot_offset()
+
+#func _get_fixed_pivot_offset() -> Vector2:
+	#return Vector2(
+		#ceilf(WindowUtilities.get_subviewport_size().x * 0.5),
+		#ceilf(WindowUtilities.get_subviewport_size().y * 0.5)
+	#)
 
 func _get_scale_for_amplitude() -> Vector2:
 	var ret: Vector2 = Vector2.ZERO

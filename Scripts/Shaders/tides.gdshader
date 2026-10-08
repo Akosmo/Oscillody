@@ -24,54 +24,38 @@ shader_type canvas_item;
 
 // This shader creates a wavy background without using noise.
 
+#include "res://Scripts/Shaders/Includes/hue_shift.gdshaderinc"
+#include "res://Scripts/Shaders/Includes/blend_modes.gdshaderinc"
+
+uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
+
 uniform mediump vec4 wave_color : source_color = vec4(1.0);
 uniform mediump vec4 tint : source_color = vec4(vec3(0.0), 1.0);
 uniform bool color_mix = false;
 uniform bool invert_colors = false;
 uniform mediump float hue_shift : hint_range(-3.14, 3.14, 0.01) = 0.0;
 uniform lowp int iterations : hint_range(1, 6, 1) = 6;
+
 uniform highp float speed = 0.0;
-
-// Using the FCC YIQ color space to rotate hue independent of grayscale.
-// Read: https://en.wikipedia.org/wiki/YIQ
-vec3 to_yiq(highp vec3 col) {
-	highp mat3 to_yiq_conversion_matrix = mat3(
-		vec3(0.30, 0.59, 0.11),
-		vec3(0.599, -0.2773, -0.3217),
-		vec3(0.213, -0.5251, 0.3121)
-		);
-
-	return col * to_yiq_conversion_matrix;
-}
-
-vec3 to_rgb(highp vec3 col) {
-	highp mat3 to_rgb_conversion_matrix = mat3(
-		vec3(1.0, 0.9496, 0.6236),
-		vec3(1.0, -0.2748, -0.6357),
-		vec3(1.0, -1.1, 1.7)
-		);
-
-	return col * to_rgb_conversion_matrix;
-}
-
-// Rotating hue.
-vec3 hue_shift_yiq(highp vec3 col) {
-	highp vec3 color_in_yiq = to_yiq(col);
-
-	mediump mat2 rotation_matrix = mat2(
-		vec2(cos(hue_shift), -sin(hue_shift)),
-		vec2(sin(hue_shift), cos(hue_shift))
-		);
-
-	color_in_yiq.yz *= rotation_matrix;
-
-	return to_rgb(color_in_yiq);
-}
+uniform lowp int blend_mode : hint_enum(
+	"Normal",
+	"Multiply",
+	"Screen",
+	"Overlay",
+	"Soft-Light",
+	"Color Dodge",
+	"Linear Dodge",
+	"Color Burn",
+	"Linear Burn",
+	"Simple Divide",
+	"Simple Subtract",
+	"Simple Difference"
+) = 0;
 
 void fragment() {
 	highp vec2 uv = UV;
-	uv.y = 1.0 - uv.y; // Invert Y coord
-	uv.x *= 16.0 / 9.0; // Adjust ratio
+	uv.y = 1.0 - uv.y; // Invert `Y` coord.
+	uv.x *= 16.0 / 9.0; // Adjust ratio.
 
 	// Distorting UV.
 	for (lowp int i = 1; i <= iterations; i++) {
@@ -95,8 +79,9 @@ void fragment() {
 	}
 
 	if (abs(hue_shift) > 0.0) {
-		output_color = hue_shift_yiq(output_color);
+		output_color = hue_shift_yiq(output_color, hue_shift);
 	}
 
-	COLOR = vec4(output_color, 1.0);
+	vec3 base_layer = texture(SCREEN_TEXTURE, SCREEN_UV).rgb;
+	COLOR = vec4(get_blend(blend_mode, base_layer, output_color), wave_color.a);
 }

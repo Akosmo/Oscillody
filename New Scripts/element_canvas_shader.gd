@@ -22,7 +22,12 @@ var element: ElementShader
 var _element_ui_configurations: ElementShaderUIConfigurations
 
 var _color_rect: ColorRect
-var _shader_material: ShaderMaterial
+var _current_flow_shader_material: ShaderMaterial
+var _domain_warping_shader_material: ShaderMaterial
+var _echoes_shader_material: ShaderMaterial
+var _isolines_shader_material: ShaderMaterial
+var _simple_gradient_shader_material: ShaderMaterial
+var _tides_shader_material: ShaderMaterial
 
 var _blur_color_rect: ColorRect
 var _blur_shader_material: ShaderMaterial
@@ -40,15 +45,26 @@ func _ready() -> void:
 	#set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
 	#set_layer(element.get_layer())
 	
-	_element_ui_configurations = ElementManager.get_element_ui_configurations(element.get_element_type())
+	_element_ui_configurations = ElementManager.get_configurations_for_element(element)
 	#_element_ui_configurations.enable_shader_visibility(element.get_shader_type())
 	#_element_ui_configurations.set_reaction_visibility(not element.get_audio_source().is_empty())
 	
 	_color_rect = ColorRect.new()
 	_color_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_shader_material = ShaderMaterial.new()
+	_current_flow_shader_material = ShaderMaterial.new()
+	_domain_warping_shader_material = ShaderMaterial.new()
+	_echoes_shader_material = ShaderMaterial.new()
+	_isolines_shader_material = ShaderMaterial.new()
+	_simple_gradient_shader_material = ShaderMaterial.new()
+	_tides_shader_material = ShaderMaterial.new()
+	_current_flow_shader_material.set_shader(preload("uid://dr5ho3b0t0qp8"))
+	_domain_warping_shader_material.set_shader(preload("uid://b7ja07xbjdjlm"))
+	_echoes_shader_material.set_shader(preload("uid://cym35ti4xlrtv"))
+	_isolines_shader_material.set_shader(preload("uid://cspxuscf7xri7"))
+	_simple_gradient_shader_material.set_shader(preload("uid://ijhyd3qa7ldu"))
+	_tides_shader_material.set_shader(preload("uid://dc5q4smj13aiv"))
 	#_shader_material.set_shader(_get_shader_for_material(element.get_shader_type()))
-	_color_rect.set_material(_shader_material)
+	#_color_rect.set_material(_shader_material)
 	add_child(_color_rect)
 	
 	_blur_color_rect = ColorRect.new()
@@ -108,7 +124,7 @@ func _process(_delta: float) -> void:
 	_shader_time += 0.04 * \
 	element.get_shader_speed() + \
 	_get_reaction_magnitude(element.get_shader_speed_reaction() * 0.05) - 1.0
-	_shader_material.set_shader_parameter("speed", _shader_time)
+	_get_shader_material(element.get_shader_type()).set_shader_parameter("speed", _shader_time)
 	
 	if not is_equal_approx(element.get_shader_rotation_reaction(), 0.0):
 		_color_rect.set_rotation_degrees(
@@ -139,6 +155,7 @@ func _process(_delta: float) -> void:
 			100.0 * \
 			(_get_reaction_magnitude(element.get_shake_frequency_reaction()) - 1.0)
 		)
+	
 	if element.get_shake_frequency() > 0.0 or element.get_shake_frequency_reaction() > 0.0:
 		if element.get_shake_amplitude() > 0.0:
 			_color_rect.set_position(
@@ -162,27 +179,36 @@ func _process(_delta: float) -> void:
 			_color_rect.set_position(_get_fixed_position())
 	else:
 		_color_rect.set_position(_get_fixed_position())
+	
+	_blur_color_rect.set_pivot_offset(_color_rect.get_pivot_offset())
+	_brightness_color_rect.set_pivot_offset(_color_rect.get_pivot_offset())
+	_blur_color_rect.set_position(_color_rect.get_position())
+	_brightness_color_rect.set_position(_color_rect.get_position())
+	_blur_color_rect.set_rotation(_color_rect.get_rotation())
+	_brightness_color_rect.set_rotation(_color_rect.get_rotation())
+	_blur_color_rect.set_scale(_color_rect.get_scale())
+	_brightness_color_rect.set_scale(_color_rect.get_scale())
 
 func get_element() -> Element:
 	return element
 
-func _get_shader_for_material(p_shader: ElementShader.ShaderType) -> Shader:
+func _get_shader_material(p_shader: ElementShader.ShaderType) -> ShaderMaterial:
 	match p_shader:
 		ElementShader.ShaderType.CURRENT_FLOW:
-			return preload("uid://dr5ho3b0t0qp8")
+			return _current_flow_shader_material
 		ElementShader.ShaderType.DOMAIN_WARPING:
-			return preload("uid://b7ja07xbjdjlm")
+			return _domain_warping_shader_material
 		ElementShader.ShaderType.ECHOES:
-			return preload("uid://cym35ti4xlrtv")
+			return _echoes_shader_material
 		ElementShader.ShaderType.ISOLINES:
-			return preload("uid://cspxuscf7xri7")
+			return _isolines_shader_material
 		ElementShader.ShaderType.SIMPLE_GRADIENT:
-			return preload("uid://ijhyd3qa7ldu")
+			return _simple_gradient_shader_material
 		ElementShader.ShaderType.TIDES:
-			return preload("uid://dc5q4smj13aiv")
+			return _tides_shader_material
 		_:
 			printerr("Unknown shader type, returning empty.")
-			return Shader.new()
+			return ShaderMaterial.new()
 
 func _get_fixed_position() -> Vector2:
 	return Vector2(element.get_shader_x_position(), element.get_shader_y_position()) * \
@@ -222,191 +248,181 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			set_visible(element.get_element_visibility())
 			set_process(element.get_element_visibility())
 		ElementShader.SN_SHADER_TYPE:
-			_shader_material.set_shader(_get_shader_for_material(element.get_shader_type()))
+			_color_rect.set_material(_get_shader_material(element.get_shader_type()))
 			_element_ui_configurations.enable_shader_visibility(element.get_shader_type())
 		ElementShader.SN_CURRENT_FLOW_WAVE_COLOR:
-			if element.get_shader_type() == ElementShader.ShaderType.CURRENT_FLOW:
-				_shader_material.set_shader_parameter("wave_color", element.get_current_flow_wave_color())
+			_current_flow_shader_material.set_shader_parameter(
+				"wave_color",
+				element.get_current_flow_wave_color()
+			)
 		ElementShader.SN_CURRENT_FLOW_BACKGROUND_COLOR:
-			if element.get_shader_type() == ElementShader.ShaderType.CURRENT_FLOW:
-				_shader_material.set_shader_parameter(
-					"background_color",
-					element.get_current_flow_background_color()
-				)
+			_current_flow_shader_material.set_shader_parameter(
+				"background_color",
+				element.get_current_flow_background_color()
+			)
 		ElementShader.SN_CURRENT_FLOW_ITERATIONS:
-			if element.get_shader_type() == ElementShader.ShaderType.CURRENT_FLOW:
-				_shader_material.set_shader_parameter("iterations", element.get_current_flow_iterations())
+			_current_flow_shader_material.set_shader_parameter(
+				"iterations",
+				element.get_current_flow_iterations()
+			)
 		ElementShader.SN_CURRENT_FLOW_UV_SCALE:
-			if element.get_shader_type() == ElementShader.ShaderType.CURRENT_FLOW:
-				_shader_material.set_shader_parameter(
-					"uv_scale",
-					element.get_current_flow_uv_scale() * 20.0
-				)
+			_current_flow_shader_material.set_shader_parameter(
+				"uv_scale",
+				element.get_current_flow_uv_scale() * 20.0
+			)
 		ElementShader.SN_CURRENT_FLOW_FILLED:
-			if element.get_shader_type() == ElementShader.ShaderType.CURRENT_FLOW:
-				_shader_material.set_shader_parameter("filled", element.get_current_flow_filled())
+			_current_flow_shader_material.set_shader_parameter("filled", element.get_current_flow_filled())
 		ElementShader.SN_CURRENT_FLOW_WAVE_THICKNESS:
-			if element.get_shader_type() == ElementShader.ShaderType.CURRENT_FLOW:
-				_shader_material.set_shader_parameter(
-					"wave_thickness",
-					remap(element.get_current_flow_wave_thickness(), 0.1, 1.0, 0.01, 0.5)
-				)
+			_current_flow_shader_material.set_shader_parameter(
+				"wave_thickness",
+				remap(element.get_current_flow_wave_thickness(), 0.1, 1.0, 0.01, 0.5)
+			)
 		ElementShader.SN_DOMAIN_WARPING_COLOR:
-			if element.get_shader_type() == ElementShader.ShaderType.DOMAIN_WARPING:
-				_shader_material.set_shader_parameter("noise_color", element.get_domain_warping_color())
+			_domain_warping_shader_material.set_shader_parameter(
+				"noise_color",
+				element.get_domain_warping_color()
+			)
 		ElementShader.SN_DOMAIN_WARPING_COLOR_MIX:
-			if element.get_shader_type() == ElementShader.ShaderType.DOMAIN_WARPING:
-				_shader_material.set_shader_parameter("color_mix", element.get_domain_warping_color_mix())
+			_domain_warping_shader_material.set_shader_parameter(
+				"color_mix",
+				element.get_domain_warping_color_mix()
+			)
 		ElementShader.SN_DOMAIN_WARPING_INVERT_COLORS:
-			if element.get_shader_type() == ElementShader.ShaderType.DOMAIN_WARPING:
-				_shader_material.set_shader_parameter(
-					"invert_colors",
-					element.get_domain_warping_invert_colors()
-				)
+			_domain_warping_shader_material.set_shader_parameter(
+				"invert_colors",
+				element.get_domain_warping_invert_colors()
+			)
 		ElementShader.SN_DOMAIN_WARPING_HUE_SHIFT:
-			if element.get_shader_type() == ElementShader.ShaderType.DOMAIN_WARPING:
-				_shader_material.set_shader_parameter(
-					"hue_shift",
-					remap(element.get_domain_warping_hue_shift(), -1.0, 1.0, -PI, PI)
-				)
+			_domain_warping_shader_material.set_shader_parameter(
+				"hue_shift",
+				remap(element.get_domain_warping_hue_shift(), -1.0, 1.0, -PI, PI)
+			)
 		ElementShader.SN_DOMAIN_WARPING_OCTAVES:
-			if element.get_shader_type() == ElementShader.ShaderType.DOMAIN_WARPING:
-				_shader_material.set_shader_parameter("octaves", element.get_domain_warping_octaves())
+			_domain_warping_shader_material.set_shader_parameter(
+				"octaves",
+				element.get_domain_warping_octaves()
+			)
 		ElementShader.SN_DOMAIN_WARPING_FREQUENCY_FACTOR:
-			if element.get_shader_type() == ElementShader.ShaderType.DOMAIN_WARPING:
-				_shader_material.set_shader_parameter(
-					"frequency_factor",
-					element.get_domain_warping_frequency_factor()
-				)
+			_domain_warping_shader_material.set_shader_parameter(
+				"frequency_factor",
+				element.get_domain_warping_frequency_factor()
+			)
 		ElementShader.SN_DOMAIN_WARPING_AMPLITUDE:
-			if element.get_shader_type() == ElementShader.ShaderType.DOMAIN_WARPING:
-				_shader_material.set_shader_parameter("amplitude", element.get_domain_warping_amplitude())
+			_domain_warping_shader_material.set_shader_parameter(
+				"amplitude",
+				element.get_domain_warping_amplitude()
+			)
 		ElementShader.SN_DOMAIN_WARPING_FREQUENCY_INCREMENT:
-			if element.get_shader_type() == ElementShader.ShaderType.DOMAIN_WARPING:
-				_shader_material.set_shader_parameter(
-					"frequency_increment",
-					element.get_domain_warping_frequency_increment()
-				)
+			_domain_warping_shader_material.set_shader_parameter(
+				"frequency_increment",
+				element.get_domain_warping_frequency_increment()
+			)
 		ElementShader.SN_DOMAIN_WARPING_AMPLITUDE_DECREMENT:
-			if element.get_shader_type() == ElementShader.ShaderType.DOMAIN_WARPING:
-				_shader_material.set_shader_parameter(
-					"amplitude_decrement",
-					element.get_domain_warping_amplitude_decrement()
-				)
+			_domain_warping_shader_material.set_shader_parameter(
+				"amplitude_decrement",
+				element.get_domain_warping_amplitude_decrement()
+			)
 		ElementShader.SN_ECHOES_PULSE_COLOR:
-			if element.get_shader_type() == ElementShader.ShaderType.ECHOES:
-				_shader_material.set_shader_parameter("pulse_color", element.get_echoes_pulse_color())
+			_echoes_shader_material.set_shader_parameter("pulse_color", element.get_echoes_pulse_color())
 		ElementShader.SN_ECHOES_BACKGROUND_COLOR:
-			if element.get_shader_type() == ElementShader.ShaderType.ECHOES:
-				_shader_material.set_shader_parameter(
-					"background_color",
-					element.get_echoes_background_color()
-				)
+			_echoes_shader_material.set_shader_parameter(
+				"background_color",
+				element.get_echoes_background_color()
+			)
 		ElementShader.SN_ECHOES_ITERATIONS:
-			if element.get_shader_type() == ElementShader.ShaderType.ECHOES:
-				_shader_material.set_shader_parameter("iterations", element.get_echoes_iterations())
+			_echoes_shader_material.set_shader_parameter("iterations", element.get_echoes_iterations())
 		ElementShader.SN_ECHOES_UV_SCALE:
-			if element.get_shader_type() == ElementShader.ShaderType.ECHOES:
-				_shader_material.set_shader_parameter("uv_scale", element.get_echoes_uv_scale() * 10.0)
+			_echoes_shader_material.set_shader_parameter("uv_scale", element.get_echoes_uv_scale() * 10.0)
 		ElementShader.SN_ECHOES_FRACTIONAL_UV:
-			if element.get_shader_type() == ElementShader.ShaderType.ECHOES:
-				_shader_material.set_shader_parameter("fractional_uv", element.get_echoes_fractional_uv())
+			_echoes_shader_material.set_shader_parameter("fractional_uv", element.get_echoes_fractional_uv())
 		ElementShader.SN_ECHOES_SPLIT:
-			if element.get_shader_type() == ElementShader.ShaderType.ECHOES:
-				_shader_material.set_shader_parameter("split", element.get_echoes_split())
+			_echoes_shader_material.set_shader_parameter("split", element.get_echoes_split())
 		ElementShader.SN_ECHOES_ITERATOR_FACTOR:
-			if element.get_shader_type() == ElementShader.ShaderType.ECHOES:
-				_shader_material.set_shader_parameter(
-					"iterator_factor",
-					element.get_echoes_iterator_factor()
-				)
+			_echoes_shader_material.set_shader_parameter(
+				"iterator_factor",
+				element.get_echoes_iterator_factor()
+			)
 		ElementShader.SN_ECHOES_PULSE_DURATION:
-			if element.get_shader_type() == ElementShader.ShaderType.ECHOES:
-				_shader_material.set_shader_parameter(
-					"pulse_duration",
-					remap(element.get_echoes_pulse_duration(), 0.1, 1.0, 1.0, 16.0)
-				)
+			_echoes_shader_material.set_shader_parameter(
+				"pulse_duration",
+				remap(element.get_echoes_pulse_duration(), 0.1, 1.0, 1.0, 16.0)
+			)
 		ElementShader.SN_ECHOES_PULSE_OSCILLATION:
-			if element.get_shader_type() == ElementShader.ShaderType.ECHOES:
-				_shader_material.set_shader_parameter(
-					"pulse_oscillation",
-					remap(element.get_echoes_pulse_oscillation(), 0.05, 1.0, 0.01, 2.0)
-				)
+			_echoes_shader_material.set_shader_parameter(
+				"pulse_oscillation",
+				remap(element.get_echoes_pulse_oscillation(), 0.05, 1.0, 0.01, 2.0)
+			)
 		ElementShader.SN_ECHOES_PULSE_THICKNESS:
-			if element.get_shader_type() == ElementShader.ShaderType.ECHOES:
-				_shader_material.set_shader_parameter(
-					"pulse_thickness",
-					element.get_echoes_pulse_thickness() * 0.1
-				)
+			_echoes_shader_material.set_shader_parameter(
+				"pulse_thickness",
+				element.get_echoes_pulse_thickness() * 0.1
+			)
 		ElementShader.SN_ECHOES_PULSE_MODE:
-			if element.get_shader_type() == ElementShader.ShaderType.ECHOES:
-				_shader_material.set_shader_parameter("pulse_mode", element.get_echoes_pulse_mode())
+			_echoes_shader_material.set_shader_parameter("pulse_mode", element.get_echoes_pulse_mode())
 		ElementShader.SN_ISOLINES_LINE_COLOR:
-			if element.get_shader_type() == ElementShader.ShaderType.ISOLINES:
-				_shader_material.set_shader_parameter("line_color", element.get_isolines_line_color())
+			_isolines_shader_material.set_shader_parameter("line_color", element.get_isolines_line_color())
 		ElementShader.SN_ISOLINES_BACKGROUND_COLOR:
-			if element.get_shader_type() == ElementShader.ShaderType.ISOLINES:
-				_shader_material.set_shader_parameter(
-					"background_color",
-					element.get_isolines_background_color()
-				)
+			_isolines_shader_material.set_shader_parameter(
+				"background_color",
+				element.get_isolines_background_color()
+			)
 		ElementShader.SN_ISOLINES_UV_SCALE:
-			if element.get_shader_type() == ElementShader.ShaderType.ISOLINES:
-				_shader_material.set_shader_parameter("uv_scale", element.get_isolines_uv_scale() * 20.0)
+			_isolines_shader_material.set_shader_parameter("uv_scale", element.get_isolines_uv_scale() * 20.0)
 		ElementShader.SN_ISOLINES_FILLED:
-			if element.get_shader_type() == ElementShader.ShaderType.ISOLINES:
-				_shader_material.set_shader_parameter("filled", element.get_isolines_filled())
+			_isolines_shader_material.set_shader_parameter("filled", element.get_isolines_filled())
 		ElementShader.SN_ISOLINES_LINE_THICKNESS:
-			if element.get_shader_type() == ElementShader.ShaderType.ISOLINES:
-				_shader_material.set_shader_parameter(
-					"line_thickness",
-					element.get_isolines_line_thickness() * 20.0
-				)
+			_isolines_shader_material.set_shader_parameter(
+				"line_thickness",
+				element.get_isolines_line_thickness() * 20.0
+			)
 		ElementShader.SN_ISOLINES_THICKNESS_VARIATION:
-			if element.get_shader_type() == ElementShader.ShaderType.ISOLINES:
-				_shader_material.set_shader_parameter(
-					"thickness_variation",
-					# TEST: Either use shader range, or UI range.
-					lerp(0.5, 1.2, 1.0 - pow(2.0, -10.0 * element.get_isolines_thickness_variation()))
-				)
+			_isolines_shader_material.set_shader_parameter(
+				"thickness_variation",
+				# TEST: Either use shader range, or UI range.
+				lerp(0.5, 1.2, 1.0 - pow(2.0, -10.0 * element.get_isolines_thickness_variation()))
+			)
 		ElementShader.SN_ISOLINES_LINE_AMOUNT:
-			if element.get_shader_type() == ElementShader.ShaderType.ISOLINES:
-				_shader_material.set_shader_parameter(
-					"line_amount",
-					remap(element.get_isolines_line_amount(), 0.05, 1.0, 1.0, 50.0)
-				)
+			_isolines_shader_material.set_shader_parameter(
+				"line_amount",
+				remap(element.get_isolines_line_amount(), 0.05, 1.0, 1.0, 50.0)
+			)
 		ElementShader.SN_SIMPLE_GRADIENT_COLOR_1:
-			if element.get_shader_type() == ElementShader.ShaderType.SIMPLE_GRADIENT:
-				_shader_material.set_shader_parameter("color_1", element.get_simple_gradient_color_1())
+			_simple_gradient_shader_material.set_shader_parameter(
+				"color_1",
+				element.get_simple_gradient_color_1()
+			)
 		ElementShader.SN_SIMPLE_GRADIENT_COLOR_2:
-			if element.get_shader_type() == ElementShader.ShaderType.SIMPLE_GRADIENT:
-				_shader_material.set_shader_parameter("color_2", element.get_simple_gradient_color_2())
-		ElementShader.SN_SIMPLE_GRADIENT_DIRECTION:
-			if element.get_shader_type() == ElementShader.ShaderType.SIMPLE_GRADIENT:
-				_shader_material.set_shader_parameter("direction", element.get_simple_gradient_direction())
+			_simple_gradient_shader_material.set_shader_parameter(
+				"color_2",
+				element.get_simple_gradient_color_2()
+			)
+		ElementShader.SN_SIMPLE_GRADIENT_ORIGIN:
+			_simple_gradient_shader_material.set_shader_parameter(
+				"origin",
+				element.get_simple_gradient_origin()
+			)
 		ElementShader.SN_TIDES_COLOR:
-			if element.get_shader_type() == ElementShader.ShaderType.TIDES:
-				_shader_material.set_shader_parameter("wave_color", element.get_tides_color())
+			_tides_shader_material.set_shader_parameter("wave_color", element.get_tides_color())
 		ElementShader.SN_TIDES_TINT:
-			if element.get_shader_type() == ElementShader.ShaderType.TIDES:
-				_shader_material.set_shader_parameter("tint", element.get_tides_tint())
+			_tides_shader_material.set_shader_parameter("tint", element.get_tides_tint())
 		ElementShader.SN_TIDES_COLOR_MIX:
-			if element.get_shader_type() == ElementShader.ShaderType.TIDES:
-				_shader_material.set_shader_parameter("color_mix", element.get_tides_color_mix())
+			_tides_shader_material.set_shader_parameter("color_mix", element.get_tides_color_mix())
 		ElementShader.SN_TIDES_INVERT_COLORS:
-			if element.get_shader_type() == ElementShader.ShaderType.TIDES:
-				_shader_material.set_shader_parameter("invert_colors", element.get_tides_invert_colors())
+			_tides_shader_material.set_shader_parameter("invert_colors", element.get_tides_invert_colors())
 		ElementShader.SN_TIDES_HUE_SHIFT:
-			if element.get_shader_type() == ElementShader.ShaderType.TIDES:
-				_shader_material.set_shader_parameter(
-					"hue_shift",
-					remap(element.get_tides_hue_shift(), -1.0, 1.0, -PI, PI)
-				)
+			_tides_shader_material.set_shader_parameter(
+				"hue_shift",
+				remap(element.get_tides_hue_shift(), -1.0, 1.0, -PI, PI)
+			)
 		ElementShader.SN_TIDES_ITERATIONS:
-			if element.get_shader_type() == ElementShader.ShaderType.TIDES:
-				_shader_material.set_shader_parameter("iterations", element.get_tides_iterations())
+			_tides_shader_material.set_shader_parameter("iterations", element.get_tides_iterations())
 		ElementShader.SN_SHADER_SPEED:
 			pass
+		ElementShader.SN_SHADER_BLEND_MODE:
+			_get_shader_material(element.get_shader_type()).set_shader_parameter(
+				"blend_mode",
+				element.get_shader_blend_mode()
+			)
 		ElementShader.SN_SHADER_X_POSITION, ElementShader.SN_SHADER_Y_POSITION:
 			pass
 		ElementShader.SN_SHADER_ROTATION:
