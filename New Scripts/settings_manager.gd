@@ -27,44 +27,54 @@ signal slider_preference_changed
 ## Emitted when requesting all [ElementShakable] instances
 ## to call [method NoiseUtilities.reset_noise_scroll].
 signal sync_element_shake_requested
+signal debug_visibility_changed
 
-## All possible properties that a property container can be linked to.
-enum ContainerProperty {
-	INPUT_DEVICE,
-	OUTPUT_DEVICE,
-	EXPORT_RESOLUTION,
-	THEME,
-	SLIDER_SWITCH,
-	SYNC_ELEMENT_SHAKE
-}
+### The [StringName] for 720p export resolution.
+#const RESOLUTION_720P: StringName = &"(Settings)_720p"
+### The [StringName] for 1080p export resolution.
+#const RESOLUTION_1080P: StringName = &"(Settings)_1080p"
+### The [StringName] for 1440p export resolution.
+#const RESOLUTION_1440P: StringName = &"(Settings)_1440p"
 
-## The [StringName] for 720p export resolution.
-const RESOLUTION_720P: StringName = &"720p"
-## The [StringName] for 1080p export resolution.
-const RESOLUTION_1080P: StringName = &"1080p"
-## The [StringName] for 1440p export resolution.
-const RESOLUTION_1440P: StringName = &"1440p"
+const SN_INPUT_DEVICE: StringName = &"(Settings)_Input_Device"
+const SN_OUTPUT_DEVICE: StringName = &"(Settings)_Output_Device"
+const SN_EXPORT_RESOLUTION: StringName = &"(Settings)_Export_Resolution"
+const SN_FFMPEG_PATH: StringName = &"(Settings)_FFmpeg_Path"
+const SN_APP_THEME: StringName = &"(Settings)_App_Theme"
+const SN_SWITCH_TO_SLIDERS: StringName = &"(Settings)_Switch_To_Slider"
+const SN_SYNC_ELEMENT_SHAKE: StringName = &"(Settings)_Sync_Element_Shake"
+const SN_DEBUG_PANEL: StringName = &"(Settings)_Debug_Panel"
+const SN_UPDATE_LAST_CHECKED_AT: StringName = &"(Settings)_Update_Last_Checked_At"
 
-const INPUT_DEVICE_PROPERTY_KEY: StringName = &"Input_Device"
-const OUTPUT_DEVICE_PROPERTY_KEY: StringName = &"Output_Device"
-const EXPORT_RESOLUTION_PROPERTY_KEY: StringName = &"Export_Resolution"
-const THEME_PROPERTY_KEY: StringName = &"Theme"
-const SWITCH_TO_SLIDERS_PROPERTY_KEY: StringName = &"Switch_To_Slider"
-const SYNC_ELEMENT_SHAKE_PROPERTY_KEY: StringName = &"Sync_Element_Shake"
+const EXPORT_RESOLUTIONS: PackedStringArray = [
+	"720p",
+	"1080p",
+	"1440p"
+]
 
 # TODO: Maybe make some of these StringNames.
 var _input_device: String
 var _output_device: String
 var _export_resolution: String
-var _theme: String
+var _ffmpeg_path: String
+var _app_theme: String
 var _slider_preference: bool
+var _debug_panel: bool
+var _update_last_checked_at: int
 
 func _init() -> void:
 	_input_device = AudioServer.get_input_device()
 	_output_device = AudioServer.get_output_device()
-	_export_resolution = RESOLUTION_1080P
-	_theme = "" # TODO: Add.
+	_export_resolution = EXPORT_RESOLUTIONS[1]
+	_ffmpeg_path = ""
+	_app_theme = "" # TODO: Add a default value?
 	_slider_preference = false
+	_debug_panel = false
+	_update_last_checked_at = 0
+
+func _ready() -> void:
+	if FileManager.load_settings():
+		CustomLogger.log_error("Could not load settings. Using default values.")
 
 ## Sets the input device to the given [param p_device].
 func set_input_device(p_device: String) -> Error:
@@ -94,11 +104,12 @@ func get_output_device() -> String:
 
 ## Sets the export resolution to the given [param p_resolution].
 func set_export_resolution(p_resolution: String) -> Error:
-	if p_resolution.is_empty() or not p_resolution.ends_with("p"):
+	if p_resolution not in EXPORT_RESOLUTIONS:
 		return FAILED
-	if p_resolution.remove_char(p_resolution.length() - 1).is_valid_int():
-		return FAILED
+	#if p_resolution.remove_char(-1).is_valid_int():
+		#return FAILED
 	
+	#_export_resolution = p_resolution.get_slice(")_", 1).replace("_", " ")
 	_export_resolution = p_resolution
 	
 	return OK
@@ -106,6 +117,17 @@ func set_export_resolution(p_resolution: String) -> Error:
 ## Returns the currently set export resolution.
 func get_export_resolution() -> String:
 	return _export_resolution
+
+func set_ffmpeg_path(p_path: String) -> Error:
+	if p_path.get_file() != "ffmpeg.exe" and not p_path.is_empty():
+		return ERR_FILE_BAD_PATH
+	
+	_ffmpeg_path = p_path
+	
+	return OK
+
+func get_ffmpeg_path() -> String:
+	return _ffmpeg_path
 
 ## Sets the theme of the app to the given [param p_theme].
 func set_app_theme(p_theme: String) -> Error:
@@ -116,7 +138,7 @@ func set_app_theme(p_theme: String) -> Error:
 	return OK
 
 func get_app_theme() -> String:
-	return _theme
+	return _app_theme
 
 ## If [param p_enable] is [code]true[/code], [ElementPropertyContainer] will use [CustomHSlider]s instead
 ## of [SpinBox]es.
@@ -127,6 +149,55 @@ func enable_sliders(p_enable: bool) -> void:
 ## Returns whether sliders are enabled. See [method enable_sliders].
 func are_sliders_enabled() -> bool:
 	return _slider_preference
+
+func set_debug_panel(p_enable: bool) -> void:
+	_debug_panel = p_enable
+	debug_visibility_changed.emit()
+
+func get_debug_panel() -> bool:
+	return _debug_panel
+
+func set_update_last_checked_at(p_time: int) -> void:
+	_update_last_checked_at = p_time
+
+func get_update_last_checked_at() -> int:
+	return _update_last_checked_at
+
+func get_properties() -> Dictionary[StringName, Variant]:
+	var _property_dictionary: Dictionary[StringName, Variant] = {
+		SN_INPUT_DEVICE: _input_device,
+		SN_OUTPUT_DEVICE: _output_device,
+		SN_EXPORT_RESOLUTION: _export_resolution,
+		SN_FFMPEG_PATH: _ffmpeg_path,
+		SN_APP_THEME: _app_theme,
+		SN_UPDATE_LAST_CHECKED_AT: _update_last_checked_at
+	}
+	
+	return _property_dictionary
+
+func get_setters() -> Dictionary[StringName, StringName]:
+	var _setter_dictionary: Dictionary[StringName, StringName] = {
+		SN_INPUT_DEVICE: set_input_device.get_method(),
+		SN_OUTPUT_DEVICE: set_output_device.get_method(),
+		SN_EXPORT_RESOLUTION: set_export_resolution.get_method(),
+		SN_FFMPEG_PATH: set_ffmpeg_path.get_method(),
+		SN_APP_THEME: set_app_theme.get_method(),
+		SN_UPDATE_LAST_CHECKED_AT: set_update_last_checked_at.get_method()
+	}
+	
+	return _setter_dictionary
+
+func get_getters() -> Dictionary[StringName, StringName]:
+	var _getter_dictionary: Dictionary[StringName, StringName] = {
+		SN_INPUT_DEVICE: get_input_device.get_method(),
+		SN_OUTPUT_DEVICE: get_output_device.get_method(),
+		SN_EXPORT_RESOLUTION: get_export_resolution.get_method(),
+		SN_FFMPEG_PATH: get_ffmpeg_path.get_method(),
+		SN_APP_THEME: get_app_theme.get_method(),
+		SN_UPDATE_LAST_CHECKED_AT: get_update_last_checked_at.get_method()
+	}
+	
+	return _getter_dictionary
 
 ## Emits [signal setup_requested].
 func notify_setup_request() -> void:

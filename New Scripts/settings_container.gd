@@ -27,48 +27,65 @@ extends PanelContainer
 @onready var _input_device_container: BasicPropertyContainer = %InputDeviceContainer
 @onready var _output_device_container: BasicPropertyContainer = %OutputDeviceContainer
 @onready var _export_resolution_container: BasicPropertyContainer = %ExportResolutionContainer
+@onready var _ffmpeg_path_container: BasicPropertyContainer = %FFmpegPathContainer
 @onready var _theme_container: BasicPropertyContainer = %ThemeContainer
 @onready var _switch_to_sliders_container: BasicPropertyContainer = %SwitchToSlidersContainer
 @onready var _sync_element_shake_container: BasicPropertyContainer = %SyncElementShakeContainer
+@onready var _debug_panel_container: BasicPropertyContainer = %DebugPanelContainer
 
 func _ready() -> void:
 	_input_device_container.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
-	_input_device_container.set_property_key(SettingsManager.INPUT_DEVICE_PROPERTY_KEY)
+	_input_device_container.set_property_key(SettingsManager.SN_INPUT_DEVICE)
 	for input_device: String in AudioServer.get_input_device_list():
 		_input_device_container.option_button.add_item(input_device)
 	_input_device_container.set_property_value_with_node(SettingsManager.get_input_device())
 	_input_device_container.property_value_changed.connect(_on_property_value_changed)
 	
 	_output_device_container.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
-	_output_device_container.set_property_key(SettingsManager.OUTPUT_DEVICE_PROPERTY_KEY)
+	_output_device_container.set_property_key(SettingsManager.SN_OUTPUT_DEVICE)
 	for output_device: String in AudioServer.get_output_device_list():
 		_output_device_container.option_button.add_item(output_device)
 	_output_device_container.set_property_value_with_node(SettingsManager.get_output_device())
 	_output_device_container.property_value_changed.connect(_on_property_value_changed)
 	
 	_export_resolution_container.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
-	_export_resolution_container.set_property_key(SettingsManager.EXPORT_RESOLUTION_PROPERTY_KEY)
-	_export_resolution_container.option_button.add_item(SettingsManager.RESOLUTION_720P)
-	_export_resolution_container.option_button.add_item(SettingsManager.RESOLUTION_1080P)
-	_export_resolution_container.option_button.add_item(SettingsManager.RESOLUTION_1440P)
+	_export_resolution_container.set_property_key(SettingsManager.SN_EXPORT_RESOLUTION)
+	for resolution: StringName in SettingsManager.EXPORT_RESOLUTIONS:
+		_export_resolution_container.option_button.add_item(resolution)
 	_export_resolution_container.set_property_value_with_node(SettingsManager.get_export_resolution())
 	_export_resolution_container.property_value_changed.connect(_on_property_value_changed)
 	
+	# TODO: Make sure this is loaded and set currently on launch.
+	_ffmpeg_path_container.set_control_node(BasicPropertyContainer.ControlNode.BUTTON)
+	_ffmpeg_path_container.set_property_key(SettingsManager.SN_FFMPEG_PATH)
+	_ffmpeg_path_container.use_file_dialog()
+	_ffmpeg_path_container.button.set_text("Select Path")
+	_ffmpeg_path_container.file_dialog.set_filters(PackedStringArray(["*.exe ; Supported Format"]))
+	_ffmpeg_path_container.set_property_value_with_node(SettingsManager.get_ffmpeg_path())
+	_ffmpeg_path_container.set_reset_value("")
+	_ffmpeg_path_container.property_value_changed.connect(_on_property_value_changed)
+	_ffmpeg_path_container.property_reset_pressed.connect(_on_property_reset_pressed)
+	
 	_theme_container.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
-	_theme_container.set_property_key(SettingsManager.THEME_PROPERTY_KEY)
-	_theme_container.set_property_value(SettingsManager.get_app_theme())
+	_theme_container.set_property_key(SettingsManager.SN_APP_THEME)
+	_theme_container.set_property_value_with_node(SettingsManager.get_app_theme())
 	_theme_container.property_value_changed.connect(_on_property_value_changed)
 	
 	_switch_to_sliders_container.set_control_node(BasicPropertyContainer.ControlNode.CHECK_BUTTON)
-	_switch_to_sliders_container.set_property_key(SettingsManager.SWITCH_TO_SLIDERS_PROPERTY_KEY)
+	_switch_to_sliders_container.set_property_key(SettingsManager.SN_SWITCH_TO_SLIDERS)
 	_switch_to_sliders_container.set_property_value_with_node(SettingsManager.are_sliders_enabled())
 	_switch_to_sliders_container.property_value_changed.connect(_on_property_value_changed)
 	
 	_sync_element_shake_container.set_control_node(BasicPropertyContainer.ControlNode.BUTTON)
-	_sync_element_shake_container.set_property_key(SettingsManager.SYNC_ELEMENT_SHAKE_PROPERTY_KEY)
+	_sync_element_shake_container.set_property_key(SettingsManager.SN_SYNC_ELEMENT_SHAKE)
 	_sync_element_shake_container.use_file_dialog(false)
 	_sync_element_shake_container.button.set_text("Sync")
 	_sync_element_shake_container.property_value_changed.connect(_on_property_value_changed)
+	
+	_debug_panel_container.set_control_node(BasicPropertyContainer.ControlNode.CHECK_BUTTON)
+	_debug_panel_container.set_property_key(SettingsManager.SN_DEBUG_PANEL)
+	_debug_panel_container.set_property_value_with_node(SettingsManager.get_debug_panel())
+	_debug_panel_container.property_value_changed.connect(_on_property_value_changed)
 	
 	#@warning_ignore("unsafe_property_access")
 	#_input_device_container.container_property = SettingsManager.ContainerProperty.INPUT_DEVICE
@@ -88,20 +105,44 @@ func _ready() -> void:
 	#SettingsManager.notify_setup_request()
 
 func _on_property_value_changed(p_property_key: StringName, p_property_value: Variant) -> void:
+	CustomLogger.log_normal(
+		"Changing \"{setting}\" to {value}".format({"setting": p_property_key, "value": p_property_value})
+	)
+	
 	match p_property_key:
-		SettingsManager.INPUT_DEVICE_PROPERTY_KEY:
+		SettingsManager.SN_INPUT_DEVICE:
 			if SettingsManager.set_input_device(str(p_property_value)):
-				printerr("Could not set input device.")
-		SettingsManager.OUTPUT_DEVICE_PROPERTY_KEY:
+				CustomLogger.log_error("Could not set input device.")
+		SettingsManager.SN_OUTPUT_DEVICE:
 			if SettingsManager.set_output_device(str(p_property_value)):
-				printerr("Could not set output device.")
-		SettingsManager.EXPORT_RESOLUTION_PROPERTY_KEY:
-			if SettingsManager.set_export_resolution(str(p_property_value)):
-				printerr("Could not set export resolution.")
-		SettingsManager.THEME_PROPERTY_KEY:
+				CustomLogger.log_error("Could not set output device.")
+		SettingsManager.SN_EXPORT_RESOLUTION:
+			var new_value: String = ""
+			for resolution: String in SettingsManager.EXPORT_RESOLUTIONS:
+				if resolution.containsn(str(p_property_value)):
+					new_value = resolution
+			if SettingsManager.set_export_resolution(new_value):
+				CustomLogger.log_error("Could not set export resolution.")
+		SettingsManager.SN_FFMPEG_PATH:
+			if SettingsManager.set_ffmpeg_path(str(p_property_value)):
+				CustomLogger.log_error("Could not set FFmpeg path.")
+				_ffmpeg_path_container.set_property_value_with_node(_ffmpeg_path_container.get_reset_value())
+			else:
+				_ffmpeg_path_container.button.set_disabled(true)
+		SettingsManager.SN_APP_THEME:
 			if SettingsManager.set_app_theme(str(p_property_value)):
-				printerr("Could not set theme.")
-		SettingsManager.SWITCH_TO_SLIDERS_PROPERTY_KEY:
+				CustomLogger.log_error("Could not set theme.")
+		SettingsManager.SN_SWITCH_TO_SLIDERS:
 			SettingsManager.enable_sliders(p_property_value as bool)
-		SettingsManager.SYNC_ELEMENT_SHAKE_PROPERTY_KEY:
+		SettingsManager.SN_SYNC_ELEMENT_SHAKE:
 			SettingsManager.sync_element_shake_requested.emit()
+		SettingsManager.SN_DEBUG_PANEL:
+			SettingsManager.set_debug_panel(p_property_value)
+
+func _on_property_reset_pressed(p_property_key: StringName) -> void:
+	match p_property_key:
+		SettingsManager.SN_FFMPEG_PATH:
+			if SettingsManager.set_ffmpeg_path(""):
+				CustomLogger.log_critical_error("Could not reset FFmpeg path.")
+			else:
+				_ffmpeg_path_container.button.set_disabled(false)

@@ -28,7 +28,7 @@ func _ready() -> void:
 		_on_element_property_changed(property_key)
 	
 	if element.property_changed.connect(_on_element_property_changed):
-		printerr("Could not connect signal.")
+		CustomLogger.log_critical_error("Could not connect signal in ElementCanvasEmpty.")
 
 func get_element() -> Element:
 	return element

@@ -57,17 +57,17 @@ func set_analyzer_type(p_value: ElementAnalyzer.AnalyzerType) -> void:
 	_analyzer_type = p_value
 
 func set_analyzer_begin_position(p_value: Vector2) -> void:
-	_analyzer_begin_position = p_value * Vector2(WindowUtilities.get_subviewport_size())
+	_analyzer_begin_position = p_value * Vector2(WindowUtilities.get_subviewport().get_size())
 	_update_positive_direction()
 	_update_spacing()
 
 func set_analyzer_end_position(p_value: Vector2) -> void:
-	_analyzer_end_position = p_value * Vector2(WindowUtilities.get_subviewport_size())
+	_analyzer_end_position = p_value * Vector2(WindowUtilities.get_subviewport().get_size())
 	_update_positive_direction()
 	_update_spacing()
 
 func set_analyzer_height(p_value: float) -> void:
-	_analyzer_height = WindowUtilities.get_subviewport_size().y / 2.0 * p_value
+	_analyzer_height = WindowUtilities.get_subviewport().get_size().y / 2.0 * p_value
 
 func set_sample_history_length(p_value: int) -> void:
 	_waveform_sample_history_length = p_value
@@ -101,8 +101,7 @@ func _draw_waveform() -> void:
 	_waveform_data = _audio_data.get_waveform_data()
 	
 	_waveform_points.clear()
-	if _waveform_points.resize(_waveform_data.size()):
-		print("Cannot resize array with waveform points.")
+	_waveform_points.resize(_waveform_data.size())
 	
 	#var begin_pos: Vector2 = \
 	#Vector2(element.get_begin_x_position(), element.get_begin_y_position()) * \

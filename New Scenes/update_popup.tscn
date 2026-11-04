@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://b4hu5cvj3wcdj"]
+
+[ext_resource type="PackedScene" uid="uid://b3mp8o344g6kt" path="res://New Scenes/custom_popup.tscn" id="1_d6mng"]
+[ext_resource type="Script" uid="uid://i3i64m2jo01" path="res://New Scripts/update_popup.gd" id="2_sacgm"]
+
+[node name="UpdatePopup" unique_id=1025290700 instance=ExtResource("1_d6mng")]
+script = ExtResource("2_sacgm")
+
+[node name="PanelContainer" parent="." index="2" unique_id=2106430377]
+offset_left = -150.5
+offset_top = -37.0
+offset_right = 150.5
+offset_bottom = 37.0
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer" parent_id_path=PackedInt32Array(575107532) index="0" unique_id=1278790494]
+layout_mode = 2
+text = "New Oscillody update found!"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" parent_id_path=PackedInt32Array(575107532) index="1" unique_id=881178880]
+layout_mode = 2
+
+[node name="OpenButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer" index="0" unique_id=1881121002]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Open Download Link (itch.io)"
+
+[node name="CloseButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer" index="1" unique_id=564142539]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Close"

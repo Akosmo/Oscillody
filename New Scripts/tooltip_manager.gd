@@ -19,9 +19,6 @@ extends Node
 
 signal tooltip_updated(p_visible: bool, p_text: String)
 
-const _PRESET_PROPERTY_KEY: StringName = &"Preset"
-const _MASTER_PROPERTY_KEY: StringName = &"Master"
-
 func notify_tooltip(p_visible: bool, p_property_container: BasicPropertyContainer) -> void:
 	if p_visible:
 		tooltip_updated.emit(p_visible, _get_tooltip_text(p_property_container))
@@ -43,10 +40,10 @@ func _get_tooltip_text(p_property_container: BasicPropertyContainer) -> String:
 		property_range = "Range: " + property_min + " to " + property_max
 	
 	match p_property_container.get_property_key():
-		_PRESET_PROPERTY_KEY:
+		FileManager.SN_PRESET:
 			ret = "Selects a visualizer preset."
-		_MASTER_PROPERTY_KEY:
-			ret = "Sets an imported audio to be audible."
+		FileManager.SN_MASTER:
+			ret = "Sets an imported audio to be audible. Resetting this property clears all imported files."
 		Element.SN_ELEMENT_NAME:
 			ret = "Sets the name of the Element."
 		Element.SN_ELEMENT_TYPE:
@@ -374,18 +371,23 @@ seed, they will shake the same way (make sure to resync in Settings)."
 			ret = "Sets the source of audio data for the Element. The options consist of a list of the \
 audio files imported in this session. The property can either be used to visualize audio with the analyzer \
 Element, or to make other properties react to the bass frequencies of the selected audio."
-		SettingsManager.INPUT_DEVICE_PROPERTY_KEY:
+		SettingsManager.SN_INPUT_DEVICE:
 			ret = "Sets the input device used to capture audio data in real-time."
-		SettingsManager.OUTPUT_DEVICE_PROPERTY_KEY:
+		SettingsManager.SN_OUTPUT_DEVICE:
 			ret = "Sets the output device used to play back audio."
-		SettingsManager.EXPORT_RESOLUTION_PROPERTY_KEY:
+		SettingsManager.SN_EXPORT_RESOLUTION:
 			ret = "Sets the resolution used for exported videos."
-		SettingsManager.THEME_PROPERTY_KEY:
+		SettingsManager.SN_FFMPEG_PATH:
+			ret = "Sets the path of the FFmpeg executable necessary for rendering. This button is disabled \
+if the selected path is already selected. If necessary, click the reset button."
+		SettingsManager.SN_APP_THEME:
 			ret = "Sets the appearance of Oscillody."
-		SettingsManager.SWITCH_TO_SLIDERS_PROPERTY_KEY:
+		SettingsManager.SN_SWITCH_TO_SLIDERS:
 			ret = "[TO BE DEPRECATED] Sets all spin boxes to be sliders instead."
-		SettingsManager.SYNC_ELEMENT_SHAKE_PROPERTY_KEY:
+		SettingsManager.SN_SYNC_ELEMENT_SHAKE:
 			ret = "Resyncs every Element currently shaking. Elements with the same seed should shake equally."
+		SettingsManager.SN_DEBUG_PANEL:
+			ret = "Displays a panel with real-time information about the application. Used for debugging."
 		_:
 			ret = ""
 	

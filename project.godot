@@ -16,7 +16,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="Oscillody"
 config/description="Audio Visualizer"
-config/version="2.0.0"
+config/version="1.0.0"
 config/tags=PackedStringArray("app")
 run/main_scene="uid://bgh2vemoru38h"
 config/auto_accept_quit=false
@@ -34,15 +34,18 @@ driver/enable_input=true
 
 [autoload]
 
+FileManager="*uid://diseumiwfhg14"
+CustomLogger="*uid://cx8x8sv26n33t"
 SettingsManager="*uid://drrev0hbiwml8"
 WindowUtilities="*uid://bocv6duulp86s"
 AudioManager="*uid://ben01m561drjh"
 ElementManager="*uid://bnho77fgm8yog"
 TooltipManager="*uid://8rvhnap3x4h2"
+PopupManager="*uid://b3530eeo4c2xv"
+DebugUtilities="*uid://cj8qxb8cwevjy"
 
 [debug]
 
-settings/stdout/verbose_stdout=true
 gdscript/warnings/untyped_declaration=2
 gdscript/warnings/inferred_declaration=1
 gdscript/warnings/unsafe_property_access=1
@@ -60,6 +63,10 @@ window/energy_saving/keep_screen_on=false
 
 movie_writer/mix_rate=44100
 movie_writer/disable_vsync=true
+
+[gui]
+
+timers/tooltip_delay_sec=0.25
 
 [input]
 

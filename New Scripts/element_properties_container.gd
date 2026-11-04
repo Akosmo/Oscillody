@@ -74,10 +74,10 @@ func _ready() -> void:
 	for property_key: StringName in element_ui_configs.keys():
 		var property_configs: Dictionary = element_ui_configs.get(property_key)
 		if not property_configs.has(ElementUIConfigurations.CONTROL_NODE):
-			printerr(
+			CustomLogger.log_warning(
 				"{property_key} does not have the Control Node key.".format({"property_key": property_key})
 			)
-			return
+			continue
 		
 		var property_container_node: BasicPropertyContainer = _PROPERTY_CONTAINER.instantiate()
 		add_child(property_container_node)
@@ -196,21 +196,23 @@ func get_element() -> Element:
 			#node.custom_h_slider.set_visible(not node.spin_box.is_visible())
 
 func _on_number_of_layers_changed(_p_element: Element) -> void:
-	var node: BasicPropertyContainer = get_child(2) # The PropertyContainer for LAYER is always on this index.
-	
-	var element_ui_configs: Dictionary[StringName, Dictionary] = _ui_configurations.get_configurations()
-	var property_configs: Dictionary = element_ui_configs.get(node.get_property_key())
-	
-	var _min: float = property_configs.get(ElementUIConfigurations.MINIMUM)
-	var _max: float = property_configs.get(ElementUIConfigurations.MAXIMUM)
-	var _step: float = property_configs.get(ElementUIConfigurations.STEP)
-	var _rounded: bool = property_configs.get(ElementUIConfigurations.ROUNDED)
-	node.spin_box.set_min(_min)
-	node.spin_box.set_max(_max)
-	node.spin_box.set_step(_step)
-	node.spin_box.set_use_rounded_values(_rounded)
-	@warning_ignore("return_value_discarded")
-	node.custom_h_slider.configure_slider(_min, _max, _step, _rounded)
+	if not is_queued_for_deletion():
+		# The PropertyContainer for LAYER is always on this index.
+		var node: BasicPropertyContainer = get_child(2)
+		
+		var element_ui_configs: Dictionary[StringName, Dictionary] = _ui_configurations.get_configurations()
+		var property_configs: Dictionary = element_ui_configs.get(node.get_property_key())
+		
+		var _min: float = property_configs.get(ElementUIConfigurations.MINIMUM)
+		var _max: float = property_configs.get(ElementUIConfigurations.MAXIMUM)
+		var _step: float = property_configs.get(ElementUIConfigurations.STEP)
+		var _rounded: bool = property_configs.get(ElementUIConfigurations.ROUNDED)
+		node.spin_box.set_min(_min)
+		node.spin_box.set_max(_max)
+		node.spin_box.set_step(_step)
+		node.spin_box.set_use_rounded_values(_rounded)
+		@warning_ignore("return_value_discarded")
+		node.custom_h_slider.configure_slider(_min, _max, _step, _rounded)
 
 # TODO: Optimize this? Maybe it doesn't need to rebuild everything, especially in cases where something is
 # changed that calls this twice (e.g. changing Visual Effect Type).
@@ -244,18 +246,19 @@ func _on_stream_list_updated() -> void:
 			#node.option_button.select(node.get_property_value() as int)
 
 func _on_property_value_changed(p_property_key: StringName, p_property_value: Variant) -> void:
-	# If I want to avoid a long `match` statement, and I also can't set properties directly,
-	# this is the only way I've found to modify the property.
-	if element == null:
-		return
-	
-	#for node: BasicPropertyContainer in get_children():
-		#if (
-			#node.get_property_key() == p_property_key and
-			#node.get_control_node() == BasicPropertyContainer.ControlNode.BUTTON
-		#):
-			#node.file_dialog.show()
-			#return
-	
-	@warning_ignore("unsafe_method_access", "unsafe_cast")
-	element.call(element.get_setters().get(p_property_key) as StringName, p_property_value)
+	if not is_queued_for_deletion():
+		# If I want to avoid a long `match` statement, and I also can't set properties directly,
+		# this is the only way I've found to modify the property.
+		if element == null:
+			return
+		
+		#for node: BasicPropertyContainer in get_children():
+			#if (
+				#node.get_property_key() == p_property_key and
+				#node.get_control_node() == BasicPropertyContainer.ControlNode.BUTTON
+			#):
+				#node.file_dialog.show()
+				#return
+		
+		@warning_ignore("unsafe_method_access", "unsafe_cast")
+		element.call(element.get_setters().get(p_property_key) as StringName, p_property_value)

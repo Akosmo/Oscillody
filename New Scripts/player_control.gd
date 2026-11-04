@@ -57,7 +57,7 @@ func _ready() -> void:
 	_user_seeking = false
 	
 	if _connect_signals():
-		printerr("Could not connect signals.")
+		CustomLogger.log_critical_error("Could not connect signals in PlayerControl.")
 
 func _process(_delta: float) -> void:
 	if not _user_seeking and AudioManager.is_master_playing():

@@ -76,15 +76,8 @@ func _ready() -> void:
 	for property_key: StringName in element.get_properties().keys():
 		_on_element_property_changed(property_key)
 	
-	if element.property_changed.connect(_on_element_property_changed):
-		printerr("Could not connect signal.")
-	
-	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		printerr("Could not connect signal.")
-	if SettingsManager.sync_element_shake_requested.connect(_on_sync_element_shake):
-		printerr("Could not connect signal.")
-	if WindowUtilities.subviewport_size_changed.connect(_on_subviewport_size_changed):
-		printerr("Could not connect signal.")
+	if _connect_signals():
+		CustomLogger.log_critical_error("Could not connect signals in ElementCanvasImage.")
 
 func _process(_delta: float) -> void:
 	if not is_equal_approx(element.get_image_rotation_reaction(), 0.0):
@@ -146,7 +139,7 @@ func get_element() -> Element:
 
 func _get_fixed_position() -> Vector2:
 	return Vector2(element.get_image_x_position(), element.get_image_y_position()) * \
-	Vector2(WindowUtilities.get_subviewport_size()) - _texture_rect.get_pivot_offset()
+	Vector2(WindowUtilities.get_subviewport().get_size()) - _texture_rect.get_pivot_offset()
 
 #func _get_fixed_pivot_offset() -> Vector2:
 	#return Vector2(
@@ -175,6 +168,19 @@ func _get_scale_for_amplitude() -> Vector2:
 func _get_reaction_magnitude(p_amount: float) -> float:
 	return 1.0 + _audio_data.get_current_magnitude() * p_amount
 
+func _connect_signals() -> Error:
+	if element.property_changed.connect(_on_element_property_changed):
+		return ERR_INVALID_PARAMETER
+	
+	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
+		return ERR_INVALID_PARAMETER
+	if SettingsManager.sync_element_shake_requested.connect(_on_sync_element_shake):
+		return ERR_INVALID_PARAMETER
+	if WindowUtilities.get_subviewport().size_changed.connect(_on_subviewport_size_changed):
+		return ERR_INVALID_PARAMETER
+	
+	return OK
+
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:
 		ElementImage.SN_ELEMENT_NAME:
@@ -188,11 +194,27 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			set_visible(element.get_element_visibility())
 			set_process(element.get_element_visibility())
 		ElementImage.SN_IMAGE_PATH:
-			if not element.get_image_path().is_empty():
-				_native_image = Image.load_from_file(element.get_image_path())
+			var image_path: String = element.get_image_path()
+			if not image_path.is_empty():
+				if not FileAccess.file_exists(image_path):
+					CustomLogger.log_warning("{Path} does not exist.".format({"Path": image_path}))
+					return
+				_native_image = Image.load_from_file(image_path)
+				if _native_image == null:
+					CustomLogger.log_warning(
+						"Loaded image from path \"{path}\" has no data.".format({"path": image_path})
+					)
+					return
 				_image_texture = ImageTexture.create_from_image(_native_image)
+				if _image_texture.get_image() == null:
+					CustomLogger.log_warning(
+						"Loaded image from path \"{path}\" could not be converted to texture.".format(
+							{"path": image_path}
+						)
+					)
+					return
 				_texture_rect.set_texture(_image_texture)
-				_texture_rect.set_pivot_offset(WindowUtilities.get_subviewport_size() * 0.5)
+				_texture_rect.set_pivot_offset(WindowUtilities.get_subviewport().get_size() * 0.5)
 			else:
 				_texture_rect.set_texture(null)
 			
@@ -206,11 +228,12 @@ func _on_element_property_changed(p_property: StringName) -> void:
 		ElementImage.SN_IMAGE_COLOR:
 			_texture_rect.set_self_modulate(element.get_image_color())
 		ElementImage.SN_IMAGE_BLUR:
+			_color_rect.set_visible(element.get_image_blur() > 0.0)
 			_shader_material.set_shader_parameter("blur_amount", element.get_image_blur() * 5.0)
 		ElementImage.SN_SHAKE_AMPLITUDE:
 			_texture_rect.set_scale(Vector2.ONE * element.get_image_scale() + _get_scale_for_amplitude())
 		ElementImage.SN_SHAKE_AMPLITUDE_COMPENSATION:
-			_texture_rect.set_pivot_offset(WindowUtilities.get_subviewport_size() * 0.5)
+			_texture_rect.set_pivot_offset(WindowUtilities.get_subviewport().get_size() * 0.5)
 			_texture_rect.set_scale(Vector2.ONE * element.get_image_scale() + _get_scale_for_amplitude())
 		ElementImage.SN_SHAKE_FREQUENCY:
 			pass
@@ -238,7 +261,7 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			pass
 
 func _on_stream_list_updated() -> void:
-	if not element.get_audio_source().is_empty():
+	if AudioServer.get_bus_index(element.get_audio_source()) > 0:
 		var spectrum_analyzer_effect_instance: AudioEffectSpectrumAnalyzerInstance
 		spectrum_analyzer_effect_instance = AudioServer.get_bus_effect_instance(
 			AudioServer.get_bus_index(element.get_audio_source()),
@@ -255,6 +278,6 @@ func _on_sync_element_shake() -> void:
 	_noise_utilities.reset_noise_scroll()
 
 func _on_subviewport_size_changed() -> void:
-	_texture_rect.set_pivot_offset(WindowUtilities.get_subviewport_size() * 0.5)
+	_texture_rect.set_pivot_offset(WindowUtilities.get_subviewport().get_size() * 0.5)
 	
 	_texture_rect.set_position(_get_fixed_position())

@@ -105,11 +105,8 @@ func _ready() -> void:
 	for property_key: StringName in element.get_properties().keys():
 		_on_element_property_changed(property_key)
 	
-	if element.property_changed.connect(_on_element_property_changed):
-		printerr("Could not connect signal.")
-	
-	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		printerr("Could not connect signal.")
+	if _connect_signals():
+		CustomLogger.log_critical_error("Could not connect signals in ElementCanvasVisualEffect.")
 
 func _process(_delta: float) -> void:
 	if element.get_visual_effect_type() == ElementVisualEffect.VisualEffectType.GLITCH:
@@ -215,11 +212,20 @@ func _get_visual_effect_material(p_visual_effect: ElementVisualEffect.VisualEffe
 		ElementVisualEffect.VisualEffectType.VIGNETTE:
 			return _vignette_shader_material
 		_:
-			printerr("Unknown visual effect type, returning empty.")
+			CustomLogger.log_warning("Unknown visual effect type, returning empty.")
 			return ShaderMaterial.new()
 
 func _get_reaction_magnitude(p_amount: float) -> float:
 	return 1.0 + _audio_data.get_current_magnitude() * p_amount
+
+func _connect_signals() -> Error:
+	if element.property_changed.connect(_on_element_property_changed):
+		return ERR_INVALID_PARAMETER
+	
+	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
+		return ERR_INVALID_PARAMETER
+	
+	return OK
 
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:
@@ -269,7 +275,6 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			_grain_shader_material.set_shader_parameter("opacity", element.get_grain_opacity())
 		ElementVisualEffect.SN_GRAIN_BLEND_MODE:
 			_grain_shader_material.set_shader_parameter("blend_mode", element.get_grain_blend_mode())
-			print(element.get_grain_blend_mode())
 		ElementVisualEffect.SN_GRAIN_STATIC:
 			_grain_shader_material.set_shader_parameter("static", element.get_grain_static())
 		ElementVisualEffect.SN_GRAIN_BLUR:
@@ -394,7 +399,7 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			pass
 
 func _on_stream_list_updated() -> void:
-	if not element.get_audio_source().is_empty():
+	if AudioServer.get_bus_index(element.get_audio_source()) > 0:
 		var spectrum_analyzer_effect_instance: AudioEffectSpectrumAnalyzerInstance
 		spectrum_analyzer_effect_instance = AudioServer.get_bus_effect_instance(
 			AudioServer.get_bus_index(element.get_audio_source()),

@@ -41,7 +41,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementAnalyzer.SN_AUDIO_SOURCE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
-			OPTIONS: AudioManager.get_streams().keys()
+			OPTIONS: AudioManager.get_stream_names().values()
 		},
 		ElementAnalyzer.SN_ANALYZER_TYPE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,

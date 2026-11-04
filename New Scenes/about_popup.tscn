@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://b0ngn3lc0t3ym"]
+
+[ext_resource type="PackedScene" uid="uid://b3mp8o344g6kt" path="res://New Scenes/custom_popup.tscn" id="1_uqusq"]
+[ext_resource type="Script" uid="uid://ccrcukmlx5vfi" path="res://New Scripts/about_popup.gd" id="2_kwlo8"]
+
+[node name="AboutPopup" unique_id=1025290700 instance=ExtResource("1_uqusq")]
+script = ExtResource("2_kwlo8")
+
+[node name="PanelContainer" parent="." index="2" unique_id=2106430377]
+offset_left = -82.0
+offset_top = -37.0
+offset_right = 82.0
+offset_bottom = 37.0
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer" parent_id_path=PackedInt32Array(575107532) index="0" unique_id=568263534]
+layout_mode = 2
+text = "Oscillody is an app."
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer" parent_id_path=PackedInt32Array(575107532) index="1" unique_id=302793]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Close"

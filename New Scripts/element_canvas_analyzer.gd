@@ -23,6 +23,9 @@ var _element_ui_configurations: ElementAnalyzerUIConfigurations
 
 var _node_2d: Node2D
 
+var _bus_index: int
+var _effect_index: int
+
 func _ready() -> void:
 	#set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
 	#set_layer(element.get_layer())
@@ -38,22 +41,35 @@ func _ready() -> void:
 	@warning_ignore("unsafe_method_access")
 	#_node_2d.set_sample_history_length(element.get_waveform_sample_history_length())
 	
+	_bus_index = -1
+	_effect_index = -1
+	
 	for property_key: StringName in element.get_properties().keys():
 		_on_element_property_changed(property_key)
 	
-	if element.property_changed.connect(_on_element_property_changed):
-		printerr("Could not connect signal.")
-	
-	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		printerr("Could not connect signal.")
-	if WindowUtilities.subviewport_size_changed.connect(_on_subviewport_size_changed):
-		printerr("Could not connect signal.")
+	if _connect_signals():
+		CustomLogger.log_critical_error("Could not connect signals in ElementCanvasAnalyzer.")
 
 func _process(_delta: float) -> void:
 	_node_2d.queue_redraw()
 
+func _exit_tree() -> void:
+	if _bus_index > 0:
+		AudioServer.remove_bus_effect(_bus_index, _effect_index)
+
 func get_element() -> Element:
 	return element
+
+func _connect_signals() -> Error:
+	if element.property_changed.connect(_on_element_property_changed):
+		return ERR_INVALID_PARAMETER
+	
+	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
+		return ERR_INVALID_PARAMETER
+	if WindowUtilities.get_subviewport().size_changed.connect(_on_subviewport_size_changed):
+		return ERR_INVALID_PARAMETER
+	
+	return OK
 
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:
@@ -91,16 +107,16 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			_node_2d.set_waveform_antialiasing(element.get_waveform_antialiasing())
 
 func _on_stream_list_updated() -> void:
-	if not element.get_audio_source().is_empty():
-		@warning_ignore("unsafe_method_access")
-		_node_2d.set_capture_effect(
-			AudioServer.get_bus_effect(
-				AudioServer.get_bus_index(element.get_audio_source()),
-				0
-			)
-		)
+	if _bus_index != AudioServer.get_bus_index(element.get_audio_source()):
+		if _bus_index > 0:
+			AudioServer.remove_bus_effect(_bus_index, _effect_index)
+		_bus_index = AudioServer.get_bus_index(element.get_audio_source())
+		_effect_index = -1
+	if _bus_index > 0:
+		AudioServer.add_bus_effect(_bus_index, AudioEffectCapture.new())
+		_effect_index = AudioServer.get_bus_effect_count(_bus_index) - 1
+		_node_2d.set_capture_effect(AudioServer.get_bus_effect(_bus_index, _effect_index))
 	else:
-		@warning_ignore("unsafe_method_access")
 		_node_2d.set_capture_effect(null)
 
 func _on_subviewport_size_changed() -> void:

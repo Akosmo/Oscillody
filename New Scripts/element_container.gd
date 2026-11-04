@@ -22,7 +22,7 @@ extends PanelContainer
 ## Emitted when the button with the Element's name is pressed.
 signal element_selected(p_element: Element)
 ## Emitter when the delete button is pressed.
-signal element_container_deleted(p_element: Element)
+#signal element_container_deleted(p_element: Element)
 
 var element: Element
 
@@ -30,14 +30,17 @@ var element: Element
 @onready var _element_name_button: Button = %ElementNameButton
 
 func _ready() -> void:
-	element = ElementManager.create_element()
+	#element = ElementManager.create_element()
 	set_name(element.get_element_name() + "_" + str(element.get_element_unique_id()))
 	_element_name_button.set_text(element.get_element_name())
 	
 	if _connect_signals():
-		printerr("Could not connect signals.")
+		CustomLogger.log_critical_error("Could not connect signals in ElementContainer.")
 	
-	_element_name_button.pressed.emit()
+	#_element_name_button.pressed.emit()
+
+func get_element() -> Element:
+	return element
 
 func _connect_signals() -> Error:
 	if _delete_button.pressed.connect(_on_delete_button_pressed):
@@ -55,8 +58,9 @@ func _connect_signals() -> Error:
 
 func _on_delete_button_pressed() -> void:
 	ElementManager.delete_element(element)
-	element_container_deleted.emit(element)
-	queue_free()
+	#element_container_deleted.emit(element)
+	if not is_queued_for_deletion():
+		queue_free()
 
 func _on_element_name_button_pressed() -> void:
 	element_selected.emit(element)

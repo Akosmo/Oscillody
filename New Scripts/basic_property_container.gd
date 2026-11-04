@@ -87,7 +87,7 @@ func set_control_node(p_control_node: ControlNode) -> void:
 	_control_node = p_control_node
 	
 	if control_node_box_container.get_child_count():
-		printerr("A ControlNode is already set.")
+		CustomLogger.log_warning("A ControlNode is already set.")
 		return
 	
 	match _control_node:
@@ -215,13 +215,13 @@ func set_property_value_with_node(p_value: Variant) -> void:
 							option_button.select(idx)
 							break
 				else:
-					printerr("Wrong type for OptionButton.")
+					CustomLogger.log_warning("Wrong type for OptionButton.")
 		ControlNode.TEXT_EDIT:
 			text_edit.set_text(p_value as String)
 
 func set_reset_value(p_value: Variant) -> void:
 	if _property_value == null:
-		printerr("Set a property value first.")
+		CustomLogger.log_warning("Set a property value first.")
 		return
 	
 	_reset_value = p_value
@@ -236,6 +236,9 @@ func set_reset_value(p_value: Variant) -> void:
 			h_box_container.move_child(reset_button, 1)
 	
 	_set_reset_button_visibility()
+
+func get_reset_value() -> Variant:
+	return _reset_value
 
 func use_file_dialog(p_enable: bool = true) -> void:
 	_use_file_dialog = p_enable
@@ -379,11 +382,11 @@ func _on_reset_pressed() -> void:
 						option_button.select(idx)
 						break
 			else:
-				printerr("Wrong type for OptionButton.")
+				CustomLogger.log_warning("Wrong type for OptionButton.")
 		ControlNode.TEXT_EDIT:
 			line_edit.set_text(_reset_value)
 	property_value_changed.emit(_property_key, _property_value)
-	property_reset_pressed.emit(_property_key, _property_value)
+	property_reset_pressed.emit(_property_key)
 
 func _on_button_pressed() -> void:
 	if _use_file_dialog:
@@ -430,7 +433,7 @@ func _on_option_item_selected(p_index: int) -> void:
 		set_property_value(option_button.get_item_text(p_index))
 		property_value_changed.emit(_property_key, option_button.get_item_text(p_index))
 	else:
-		printerr("Wrong type for OptionButton.")
+		CustomLogger.log_warning("Wrong type for OptionButton.")
 
 func _on_text_edit_text_changed() -> void:
 	set_property_value(text_edit.get_text())

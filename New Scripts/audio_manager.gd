@@ -53,6 +53,7 @@ signal master_play_state_changed
 var _streams: Dictionary[StringName, AudioStream]
 ## The name of the Master stream, based on a key found in [member _streams].
 var _master_name: StringName
+var _stream_names: Dictionary[StringName, StringName]
 var _is_master_playing: bool
 var _is_loop_enabled: bool
 var _master_volume: float = 1.0
@@ -123,10 +124,15 @@ func get_master_duration() -> float:
 func get_streams() -> Dictionary[StringName, AudioStream]:
 	return _streams.duplicate_deep(Resource.DeepDuplicateMode.DEEP_DUPLICATE_ALL)
 
+func get_stream_names() -> Dictionary[StringName, StringName]:
+	return _stream_names.duplicate_deep(Resource.DeepDuplicateMode.DEEP_DUPLICATE_ALL)
+
 ## Changes the selected Master, based on its key in [member _streams].
 func set_master_name(p_name: StringName) -> void:
-	if p_name not in _streams.keys() and not p_name.is_empty():
-		printerr("Master not in streams dictionary.")
+	CustomLogger.log_normal("Setting master name to: " + p_name)
+	
+	if p_name not in _stream_names.values() and not p_name.is_empty():
+		CustomLogger.log_critical_error("Master not in streams dictionary.")
 		return
 	
 	_master_name = p_name
@@ -145,6 +151,7 @@ func notify_updated_streams(p_setup: bool) -> void:
 ## Clear [member _streams].
 func clear_streams() -> void:
 	_streams.clear()
+	_stream_names.clear()
 	_time_duration = 0.0
 	
 	#new_audio_imported.emit()
@@ -153,54 +160,57 @@ func clear_streams() -> void:
 func notify_cleared_streams() -> void:
 	master_play_state_changed.emit()
 
-## Converts audio files to the appropriate [AudioStream] type. If the conversion is successful,
-## the stream is added to [member _streams], with its filename as the key. Otherwise, returns
+## Converts audio file to the appropriate [AudioStream] type. If the conversion is successful,
+## the stream is added to [member _streams], with its path as the key. Otherwise, returns
 ## [constant @GlobalScope.FAILED].
-func import_audio_files(p_paths: PackedStringArray) -> Error:
-	if p_paths.is_empty():
+func import_audio_files(p_path: String) -> Error:
+	if p_path.is_empty():
+		CustomLogger.log_error("Audio path is empty.")
 		return FAILED
 	
-	for path: String in p_paths:
-		if path.is_empty():
-			printerr("Audio path is empty.")
-			return FAILED
-			
-		var filename: String = path.get_file()
-		match filename.get_extension():
-			"mp3":
-				var stream: AudioStreamMP3 = AudioStreamMP3.load_from_file(path)
-				if stream == null:
-					printerr("{filename} could not be set as stream.".format({"filename": filename}))
-					return FAILED
-				if not _streams.set(StringName(filename.rstrip("." + filename.get_extension())), stream):
-					printerr("Could not set stream to streams dictionary.")
-			"wav":
-				var stream: AudioStreamWAV = AudioStreamWAV.load_from_file(path)
-				if stream == null:
-					printerr(
-						"{filename} could not be set as stream. \
+	CustomLogger.log_normal("Importing audio file: " + p_path.get_file())
+	
+	match p_path.get_extension():
+		"mp3":
+			var stream: AudioStreamMP3 = AudioStreamMP3.load_from_file(p_path)
+			if stream == null:
+				CustomLogger.log_error("{Path} could not be set as stream.".format({"Path": p_path}))
+				return FAILED
+			if not _streams.set(StringName(p_path), stream):
+				CustomLogger.log_critical_error("Could not set stream to streams dictionary.")
+			if not _stream_names.set(StringName(p_path), StringName(p_path.get_file().get_basename())):
+				CustomLogger.log_critical_error("Could not set stream name to path dictionary.")
+		"wav":
+			var stream: AudioStreamWAV = AudioStreamWAV.load_from_file(p_path)
+			if stream == null:
+				CustomLogger.log_error(
+					"{Path} could not be set as stream. \
 If it's .wav, make sure it has no more than 2 channels, \
-and prefer 16bit depth".format({"filename": filename})
-					)
-					return FAILED
-				if not _streams.set(StringName(filename.rstrip("." + filename.get_extension())), stream):
-					printerr("Could not set stream to streams dictionary.")
-			"ogg":
-				var stream: AudioStreamOggVorbis = AudioStreamOggVorbis.load_from_file(path)
-				if stream == null:
-					printerr(
-						"{filename} could not be set as stream. \
-If it's .ogg, make sure it's a Vorbis \
-audio in the Ogg file container.".format({"filename": filename})
-					)
-					return FAILED
-				if not _streams.set(StringName(filename.rstrip("." + filename.get_extension())), stream):
-					printerr("Could not set stream to streams dictionary.")
-			_:
-				printerr("{filename} does not contain valid audio extension.".format(
-					{"filename": filename})
+and prefer 16bit depth".format({"Path": p_path})
 				)
 				return FAILED
+			if not _streams.set(StringName(p_path), stream):
+				CustomLogger.log_critical_error("Could not set stream to streams dictionary.")
+			if not _stream_names.set(StringName(p_path), StringName(p_path.get_file().get_basename())):
+				CustomLogger.log_critical_error("Could not set stream name to path dictionary.")
+		"ogg":
+			var stream: AudioStreamOggVorbis = AudioStreamOggVorbis.load_from_file(p_path)
+			if stream == null:
+				CustomLogger.log_error(
+					"{Path} could not be set as stream. \
+If it's .ogg, make sure it's a Vorbis \
+audio in the Ogg file container.".format({"Path": p_path})
+				)
+				return FAILED
+			if not _streams.set(StringName(p_path), stream):
+				CustomLogger.log_critical_error("Could not set stream to streams dictionary.")
+			if not _stream_names.set(StringName(p_path), StringName(p_path.get_file().get_basename())):
+				CustomLogger.log_critical_error("Could not set stream name to path dictionary.")
+		_:
+			CustomLogger.log_error("{Path} does not contain valid audio extension.".format(
+				{"Path": p_path})
+			)
+			return FAILED
 	
 	#new_audio_imported.emit()
 	

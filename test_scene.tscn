@@ -1,14 +1,24 @@
 [gd_scene format=3 uid="uid://djwy4gjxggs1b"]
 
 [ext_resource type="Texture2D" uid="uid://csjehne85bikb" path="res://Images/1_bloom_test.png" id="1_ia1lp"]
-[ext_resource type="Shader" uid="uid://nghg812oe6nb" path="res://Scripts/Shaders/bloom.gdshader" id="2_sasra"]
+[ext_resource type="Shader" uid="uid://cspxuscf7xri7" path="res://Scripts/Shaders/isolines.gdshader" id="2_sasra"]
+[ext_resource type="Shader" uid="uid://nddyss8tny8y" path="res://Scripts/Shaders/blur.gdshader" id="3_coq8p"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_a7053"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jb027"]
 shader = ExtResource("2_sasra")
-shader_parameter/opacity = 1.0
-shader_parameter/radius = 1.0000000149012
-shader_parameter/blend_mode = 0
-shader_parameter/blur_mode = 2
+shader_parameter/line_color = Color(0.7343706, 0.42426437, 0.5378299, 1)
+shader_parameter/background_color = Color(0.1590387, 0.12033596, 0.029957686, 1)
+shader_parameter/uv_scale = 5.0
+shader_parameter/filled = true
+shader_parameter/line_thickness = 10.0
+shader_parameter/thickness_variation = 0.5
+shader_parameter/line_amount = 10.0
+shader_parameter/speed = 0.0
+shader_parameter/blend_mode = 1
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_shbqh"]
+shader = ExtResource("3_coq8p")
+shader_parameter/blur_amount = 0.0
 
 [node name="CanvasLayer" type="CanvasLayer" unique_id=2010952292]
 
@@ -22,12 +32,21 @@ texture = ExtResource("1_ia1lp")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ColorRect" type="ColorRect" parent="." unique_id=662196749]
-material = SubResource("ShaderMaterial_a7053")
+[node name="ColorRect2" type="ColorRect" parent="." unique_id=1101735494]
+material = SubResource("ShaderMaterial_jb027")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=233372837]
+[node name="BackBufferCopy" type="BackBufferCopy" parent="." unique_id=450033254]
+copy_mode = 2
+
+[node name="ColorRect3" type="ColorRect" parent="." unique_id=341126786]
+material = SubResource("ShaderMaterial_shbqh")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

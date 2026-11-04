@@ -47,15 +47,8 @@ func _ready() -> void:
 	for property_key: StringName in element.get_properties().keys():
 		await _on_element_property_changed(property_key)
 	
-	if element.property_changed.connect(_on_element_property_changed):
-		printerr("Could not connect signal.")
-	
-	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		printerr("Could not connect signal.")
-	if SettingsManager.sync_element_shake_requested.connect(_on_sync_element_shake):
-		printerr("Could not connect signal.")
-	if WindowUtilities.subviewport_size_changed.connect(_on_subviewport_size_changed):
-		printerr("Could not connect signal.")
+	if _connect_signals():
+		CustomLogger.log_critical_error("Could not connect signals in ElementCanvasText.")
 
 func _process(_delta: float) -> void:
 	if not is_equal_approx(element.get_text_rotation_reaction(), 0.0):
@@ -123,18 +116,18 @@ func get_element() -> Element:
 
 func _get_fixed_position() -> Vector2:
 	return Vector2(element.get_text_x_position(), element.get_text_y_position()) * \
-	Vector2(WindowUtilities.get_subviewport_size()) - _label.get_pivot_offset()
+	Vector2(WindowUtilities.get_subviewport().get_size()) - _label.get_pivot_offset()
 
 # TEST: Check if this works properly during render.
 func _get_fixed_scale() -> Vector2:
 	if (
-		is_equal_approx(WindowUtilities.get_subviewport_size().x, DisplayServer.screen_get_size().x) and
-		is_equal_approx(WindowUtilities.get_subviewport_size().y, DisplayServer.screen_get_size().y)
+		is_equal_approx(WindowUtilities.get_subviewport().get_size().x, DisplayServer.screen_get_size().x) and
+		is_equal_approx(WindowUtilities.get_subviewport().get_size().y, DisplayServer.screen_get_size().y)
 	):
 		return Vector2.ONE
 	
 	var subviewport_ratio: Vector2 = \
-	Vector2(WindowUtilities.get_subviewport_size()) / Vector2(DisplayServer.screen_get_size())
+	Vector2(WindowUtilities.get_subviewport().get_size()) / Vector2(DisplayServer.screen_get_size())
 	
 	var subviewport_min: float = minf(subviewport_ratio.x, subviewport_ratio.y)
 	
@@ -165,6 +158,19 @@ func _get_scale_for_amplitude() -> Vector2:
 
 func _get_reaction_magnitude(p_amount: float) -> float:
 	return 1.0 + _audio_data.get_current_magnitude() * p_amount
+
+func _connect_signals() -> Error:
+	if element.property_changed.connect(_on_element_property_changed):
+		return ERR_INVALID_PARAMETER
+	
+	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
+		return ERR_INVALID_PARAMETER
+	if SettingsManager.sync_element_shake_requested.connect(_on_sync_element_shake):
+		return ERR_INVALID_PARAMETER
+	if WindowUtilities.get_subviewport().size_changed.connect(_on_subviewport_size_changed):
+		return ERR_INVALID_PARAMETER
+	
+	return OK
 
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:
@@ -251,7 +257,7 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			pass
 
 func _on_stream_list_updated() -> void:
-	if not element.get_audio_source().is_empty():
+	if AudioServer.get_bus_index(element.get_audio_source()) > 0:
 		var spectrum_analyzer_effect_instance: AudioEffectSpectrumAnalyzerInstance
 		spectrum_analyzer_effect_instance = AudioServer.get_bus_effect_instance(
 			AudioServer.get_bus_index(element.get_audio_source()),

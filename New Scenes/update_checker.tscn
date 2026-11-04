@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://b6lc61kxj5sqa"]
+
+[ext_resource type="Script" uid="uid://63u0ehfwck3l" path="res://New Scripts/update_checker.gd" id="1_2mx4s"]
+
+[node name="UpdateChecker" type="HTTPRequest" unique_id=1822899597]
+timeout = 10.0
+script = ExtResource("1_2mx4s")

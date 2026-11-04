@@ -426,7 +426,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementVisualEffect.SN_AUDIO_SOURCE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
-			OPTIONS: AudioManager.get_streams().keys()
+			OPTIONS: AudioManager.get_stream_names().values()
 		},
 		ElementVisualEffect.SN_BEGIN_FREQUENCY: {
 			CONTROL_NODE: ControlNode.NUMERICAL,

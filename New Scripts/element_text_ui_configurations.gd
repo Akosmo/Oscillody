@@ -63,7 +63,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementText.SN_TEXT_SIZE: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
-			DEFAULT_VALUE: 32.0,
+			DEFAULT_VALUE: 72.0,
 			MINIMUM: 8.0,
 			MAXIMUM: 256.0,
 			STEP: 4.0,
@@ -180,7 +180,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementText.SN_AUDIO_SOURCE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
-			OPTIONS: AudioManager.get_streams().keys()
+			OPTIONS: AudioManager.get_stream_names().values()
 		},
 		ElementText.SN_BEGIN_FREQUENCY: {
 			CONTROL_NODE: ControlNode.NUMERICAL,

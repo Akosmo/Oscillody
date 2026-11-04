@@ -17,24 +17,25 @@
 
 extends Node
 
-signal subviewport_size_changed
+signal window_size_changed
 
 var _window_size: Vector2i
-var _subviewport_size: Vector2i
+var _subviewport: SubViewport
 
 func _ready() -> void:
 	_window_size = DisplayServer.window_get_size()
+	DisplayServer.window_set_min_size(DisplayServer.window_get_size())
 
 func _process(_delta: float) -> void:
-	_window_size = DisplayServer.window_get_size()
+	if _window_size != DisplayServer.window_get_size():
+		_window_size = DisplayServer.window_get_size()
+		window_size_changed.emit()
 
 func get_window_size() -> Vector2i:
 	return _window_size
 
-func set_subviewport_size(p_size: Vector2i) -> void:
-	if _subviewport_size != p_size:
-		_subviewport_size = p_size
-		subviewport_size_changed.emit()
+func set_subviewport(p_subviewport: SubViewport) -> void:
+	_subviewport = p_subviewport
 
-func get_subviewport_size() -> Vector2i:
-	return _subviewport_size
+func get_subviewport() -> SubViewport:
+	return _subviewport

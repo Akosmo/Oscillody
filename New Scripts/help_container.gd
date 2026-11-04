@@ -17,36 +17,45 @@
 
 extends PanelContainer
 
+const _LINK_GITHUB_ISSUES: String = "https://github.com/Akosmo/Oscillody/issues"
+const _LINK_PATREON: String = "https://www.patreon.com/akosmo"
+
 @onready var _documentation_button: Button = %DocumentationButton
 @onready var _suggest_features_report_bugs_button: Button = %SuggestFeaturesReportBugsButton
 @onready var _support_button: Button = %SupportButton
 @onready var _about_oscillody_button: Button = %AboutOscillodyButton
 
 func _ready() -> void:
-	if _documentation_button.pressed.connect(_on_documentation_pressed):
-		printerr("Could not connect signal.")
-	if _suggest_features_report_bugs_button.pressed.connect(_on_suggest_features_report_bugs_pressed):
-		printerr("Could not connect signal.")
-	if _support_button.pressed.connect(_on_support_pressed):
-		printerr("Could not connect signal.")
-	if _about_oscillody_button.pressed.connect(_on_about_oscillody_pressed):
-		printerr("Could not connect signal.")
+	_suggest_features_report_bugs_button.set_tooltip_text(_LINK_GITHUB_ISSUES)
+	_support_button.set_tooltip_text(_LINK_PATREON)
+	
+	if _connect_signals():
+		CustomLogger.log_critical_error("Could not connect signals in HelpContainer.")
 
-# TODO: See if there are better ways to open things aside from `shell_open()`.
-# TODO: Use the return errors from `shell_open()`.
+func _connect_signals() -> Error:
+	if _documentation_button.pressed.connect(_on_documentation_pressed):
+		return ERR_INVALID_PARAMETER
+	if _suggest_features_report_bugs_button.pressed.connect(_on_suggest_features_report_bugs_pressed):
+		return ERR_INVALID_PARAMETER
+	if _support_button.pressed.connect(_on_support_pressed):
+		return ERR_INVALID_PARAMETER
+	if _about_oscillody_button.pressed.connect(_on_about_oscillody_pressed):
+		return ERR_INVALID_PARAMETER
+	
+	return OK
 
 func _on_documentation_pressed() -> void:
 	pass
 
 func _on_suggest_features_report_bugs_pressed() -> void:
-	if OS.shell_open("https://github.com/Akosmo/Oscillody/issues"):
-		printerr("Could not open resource with URI.")
+	if OS.shell_open(_LINK_GITHUB_ISSUES):
+		CustomLogger.log_error("Could not open link.")
 
 func _on_support_pressed() -> void:
-	if OS.shell_open("https://www.patreon.com/akosmo"):
-		printerr("Could not open resource with URI.")
+	if OS.shell_open(_LINK_PATREON):
+		CustomLogger.log_error("Could not open link.")
 
 # NOTE: If v3 will have the same opening message, this button should be the one that displays it again.
 # Otherwise, think of a link to use here, replace the text, or delete the button.
 func _on_about_oscillody_pressed() -> void:
-	pass
+	PopupManager.request_popup(PopupManager.PopupType.ABOUT)
