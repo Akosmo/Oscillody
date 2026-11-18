@@ -28,7 +28,7 @@ func _ready() -> void:
 	if is_visible():
 		hide()
 	
-	panel_container.set_anchors_preset(Control.PRESET_CENTER)
+	panel_container.set_anchors_preset(Control.LayoutPreset.PRESET_CENTER)
 	panel_container.set_pivot_offset(panel_container.get_size() * 0.5)
 	
 	_line_edit.text_submitted.connect(_on_text_submitted)
@@ -43,11 +43,13 @@ func _set_to_overwrite(p_overwrite: bool = true) -> void:
 	
 	if not p_overwrite:
 		_label.set_text("Choose preset name:")
+		_line_edit.set_editable(true)
 		_save_button.set_text("Save")
 		_cancel_button.set_text("Cancel")
 		return
 	
 	_label.set_text("Preset already exists. Overwrite?")
+	_line_edit.set_editable(false)
 	_save_button.set_text("Yes")
 	_cancel_button.set_text("No")
 
@@ -64,12 +66,14 @@ func _on_save_pressed() -> void:
 	if preset_name.is_empty():
 		preset_name = "_"
 	
-	# TEST: Test this conditional.
+	# Just in case.
 	if not preset_name.is_valid_filename():
 		if preset_name[0] == " ":
 			preset_name[0] = "_"
 		if preset_name.length() > 1 and preset_name[-1] == " ":
 			preset_name[-1] = "_"
+	
+	_line_edit.set_text(preset_name)
 	
 	if not _overwrite_mode and FileManager.preset_exists(preset_name):
 		CustomLogger.log_warning("The preset \"{preset}\" already exists.".format({"preset": preset_name}))

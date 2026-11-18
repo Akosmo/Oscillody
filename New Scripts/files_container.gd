@@ -27,6 +27,7 @@ extends PanelContainer
 @onready var _import_audio_file_dialog: FileDialog = %ImportAudioFileDialog
 
 @onready var _export_video_button: Button = %ExportVideoButton
+@onready var _export_video_file_dialog: FileDialog = %ExportVideoFileDialog
 
 @onready var _master_container: BasicPropertyContainer = %MasterContainer
 
@@ -47,6 +48,7 @@ func _ready() -> void:
 			#_preset_container.set_property_value_with_node(preset_list[0])
 			#FileManager.load_preset(preset_list[0])
 	_preset_container.set_property_value_with_node("")
+	_preset_container.set_reset_value("")
 	_preset_container.option_button.set_allow_reselect(true)
 	
 	#_master_container.set_script(_files_property_container_script)
@@ -55,47 +57,52 @@ func _ready() -> void:
 	_master_container.set_property_value(&"")
 	_master_container.set_reset_value(&"")
 	
-	_export_video_button.set_disabled(OS.has_feature("debug") or AudioManager.get_streams().is_empty())
+	#_export_video_button.set_disabled(OS.has_feature("debug") or AudioManager.get_streams().is_empty())
+	_export_video_button.set_disabled(
+		SettingsManager.get_ffmpeg_path().is_empty() or AudioManager.get_stream_names().is_empty()
+	)
 
 func _connect_signals() -> Error:
 	#if AudioManager.new_audio_imported.connect(_on_new_audio_imported):
 		#return ERR_INVALID_PARAMETER
 	
 	if _preset_container.property_value_changed.connect(_on_property_value_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _save_preset_button.pressed.connect(_on_save_pressed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _open_preset_folder_button.pressed.connect(_on_open_folder_pressed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _import_audio_button.pressed.connect(_on_import_audio_pressed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _import_audio_file_dialog.files_selected.connect(_on_audio_files_selected):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _master_container.property_value_changed.connect(_on_property_value_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _master_container.property_reset_pressed.connect(_on_property_reset_pressed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _export_video_button.pressed.connect(_on_export_video_pressed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
+	if _export_video_file_dialog.file_selected.connect(_on_saving_video_file):
+		return Error.ERR_INVALID_PARAMETER
 	
 	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if FileManager.preset_saved.connect(_on_preset_saved):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
+	if FileManager.canceled_preset_change.connect(_on_canceled_preset_changed):
+		return Error.ERR_INVALID_PARAMETER
 	
-	return OK
+	return Error.OK
 
 func _update_stream_list() -> void:
 	_master_container.option_button.clear()
 	
-	# TODO: Maybe set on audio to stream conversion, and only read master name in this function.
-	# One reason to not do it, is that maybe the user doesn't want to change master all the time.
-	var stream_names: Dictionary[StringName, StringName] = AudioManager.get_stream_names()
+	var stream_names: Array[StringName] = AudioManager.get_stream_names().values()
 	if not stream_names.is_empty():
-		for path: StringName in stream_names.keys():
-			_master_container.option_button.add_item(stream_names.get(path) as String)
+		for stream_name: StringName in stream_names:
+			_master_container.option_button.add_item(String(stream_name))
 		
-		var master_name: StringName = stream_names.get(stream_names.keys()[-1])
+		var master_name: StringName = stream_names[-1]
 		#_master_container.option_button.select(-1)
 		#
 		#var master_name: StringName = stream_dict.keys()[-1]
@@ -112,16 +119,22 @@ func _on_save_pressed() -> void:
 	PopupManager.request_popup(PopupManager.PopupType.PRESET)
 
 func _on_open_folder_pressed() -> void:
-	if OS.shell_open(FileManager.get_directory(FileManager.AppDirectory.PRESETS)):
-		CustomLogger.log_error("Could not open folder.")
+	var directory: String = FileManager.get_directory(FileManager.AppDirectory.PRESETS)
+	if OS.shell_open(directory):
+		CustomLogger.log_error("Could not open folder: " + directory)
 
 func _on_import_audio_pressed() -> void:
 	_import_audio_file_dialog.popup()
 
-# TEST: Selecting files with the same name.
 func _on_audio_files_selected(p_paths: PackedStringArray) -> void:
 	for path: String in p_paths:
-		if AudioManager.import_audio_files(path):
+		if (
+			AudioManager.get_stream_names().keys().has(StringName(path)) or
+			AudioManager.get_stream_names().values().has(StringName(path.get_file().get_basename()))
+		):
+			CustomLogger.log_error("{path} is already imported.".format({"path": path}))
+			continue
+		elif AudioManager.import_audio_files(path):
 			continue
 	
 	_update_stream_list()
@@ -129,24 +142,49 @@ func _on_audio_files_selected(p_paths: PackedStringArray) -> void:
 func _on_property_value_changed(p_property_key: StringName, p_property_value: Variant) -> void:
 	match p_property_key:
 		FileManager.SN_PRESET:
-			FileManager.load_preset(p_property_value)
+			if FileManager.get_unsaved_changes():
+				FileManager.set_desired_preset(p_property_value)
+				PopupManager.request_popup(PopupManager.PopupType.UNSAVED_CHANGES)
+				return
+			if FileManager.load_preset(p_property_value):
+				CustomLogger.log_error("Could not change preset.")
 		FileManager.SN_MASTER:
+			if String(p_property_value).is_empty():
+				CustomLogger.log_warning("Empty property value for master. Streams will be cleared.")
+				return
 			AudioManager.set_master_name(p_property_value as StringName)
 			AudioManager.notify_updated_streams(false)
 
 func _on_property_reset_pressed(p_property_key: StringName) -> void:
 	match p_property_key:
+		FileManager.SN_PRESET:
+			if FileManager.get_unsaved_changes():
+				FileManager.set_desired_preset("")
+				PopupManager.request_popup(PopupManager.PopupType.UNSAVED_CHANGES)
+				return
+			if FileManager.load_preset(""):
+				CustomLogger.log_error("Could not reset preset.")
 		FileManager.SN_MASTER:
+			CustomLogger.log_normal("Clearing streams.")
 			AudioManager.clear_streams()
 			_update_stream_list()
 			AudioManager.notify_cleared_streams()
 
 func _on_export_video_pressed() -> void:
-	pass
+	CustomLogger.log_normal("Selecting export path for video.")
+	
+	if SettingsManager.get_ffmpeg_path().is_empty():
+		CustomLogger.log_error("Cannot export video without a valid FFmpeg path. Check the Settings tab.")
+		return
+	
+	_export_video_file_dialog.popup()
+
+func _on_saving_video_file(p_path: String) -> void:
+	MovieWriterUtilities.initialize_export(p_path)
 
 func _on_stream_list_updated() -> void:
-	if not OS.has_feature("debug"):
-		_export_video_button.set_disabled(AudioManager.get_streams().is_empty())
+	#if not OS.has_feature("debug"):
+	_export_video_button.set_disabled(AudioManager.get_stream_names().is_empty())
 
 func _on_preset_saved(p_preset_name: String) -> void:
 	_preset_container.option_button.clear()
@@ -154,3 +192,6 @@ func _on_preset_saved(p_preset_name: String) -> void:
 	for preset: String in preset_list:
 		_preset_container.option_button.add_item(preset)
 	_preset_container.set_property_value_with_node(p_preset_name)
+
+func _on_canceled_preset_changed() -> void:
+	_preset_container.set_property_value_with_node(FileManager.get_selected_preset())

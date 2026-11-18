@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-# TODO: Update as needed.
-
 @abstract
 class_name ElementCanvas
 extends CanvasLayer

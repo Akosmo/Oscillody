@@ -34,28 +34,26 @@ func _ready() -> void:
 
 func _connect_signals() -> Error:
 	if _documentation_button.pressed.connect(_on_documentation_pressed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _suggest_features_report_bugs_button.pressed.connect(_on_suggest_features_report_bugs_pressed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _support_button.pressed.connect(_on_support_pressed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _about_oscillody_button.pressed.connect(_on_about_oscillody_pressed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
-	return OK
+	return Error.OK
 
 func _on_documentation_pressed() -> void:
 	pass
 
 func _on_suggest_features_report_bugs_pressed() -> void:
 	if OS.shell_open(_LINK_GITHUB_ISSUES):
-		CustomLogger.log_error("Could not open link.")
+		CustomLogger.log_error("Could not open link: " + _LINK_GITHUB_ISSUES)
 
 func _on_support_pressed() -> void:
 	if OS.shell_open(_LINK_PATREON):
-		CustomLogger.log_error("Could not open link.")
+		CustomLogger.log_error("Could not open link: " + _LINK_PATREON)
 
-# NOTE: If v3 will have the same opening message, this button should be the one that displays it again.
-# Otherwise, think of a link to use here, replace the text, or delete the button.
 func _on_about_oscillody_pressed() -> void:
 	PopupManager.request_popup(PopupManager.PopupType.ABOUT)

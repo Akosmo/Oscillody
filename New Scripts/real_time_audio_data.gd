@@ -175,7 +175,7 @@ func get_current_magnitude() -> float:
 	_magnitude_stereo = _spectrum_analyzer_effect_instance.get_magnitude_for_frequency_range(
 		float(_begin_frequency),
 		float(_end_frequency),
-		AudioEffectSpectrumAnalyzerInstance.MAGNITUDE_MAX
+		AudioEffectSpectrumAnalyzerInstance.MagnitudeMode.MAGNITUDE_MAX
 	)
 	_current_magnitude = clampf(
 		(float(_minimum_decibels * -1.0) + \
@@ -186,7 +186,6 @@ func get_current_magnitude() -> float:
 	)
 	
 	match _smoothing_type:
-		# TODO: Figure out if it makes sense to keep this type.
 		ElementReactive.ReactiveSmoothingType.BOTH:
 			if is_equal_approx(_smoothing_amount, 1.0):
 				_smoothing_amount = 0.95

@@ -50,7 +50,7 @@ func _ready() -> void:
 	if _connect_signals():
 		CustomLogger.log_critical_error("Could not connect signals in ElementCanvasAnalyzer.")
 
-func _process(_delta: float) -> void:
+func _process(_p_delta: float) -> void:
 	_node_2d.queue_redraw()
 
 func _exit_tree() -> void:
@@ -62,14 +62,14 @@ func get_element() -> Element:
 
 func _connect_signals() -> Error:
 	if element.property_changed.connect(_on_element_property_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
 	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if WindowUtilities.get_subviewport().size_changed.connect(_on_subviewport_size_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
-	return OK
+	return Error.OK
 
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:

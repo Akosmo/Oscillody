@@ -22,9 +22,9 @@ signal popup_requested(p_popup_type: PopupType)
 enum PopupType {
 	ABOUT,
 	CLOSE_REQUEST,
-	EXPORT,
-	LOAD,
 	PRESET,
+	PROGRESS,
+	UNSAVED_CHANGES,
 	UPDATE
 }
 

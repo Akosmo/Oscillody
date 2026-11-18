@@ -71,7 +71,7 @@ func enable_visual_effect_visibility(p_visual_effect: ElementVisualEffect.Visual
 		ElementVisualEffect.VisualEffectType.VIGNETTE:
 			_vignette_visibility = true
 	
-	ElementManager.notify_property_node_visibility_changed()
+	ElementManager.notify_property_node_visibility_changed(_element)
 
 func set_reaction_visibility(p_visual_effect: ElementVisualEffect.VisualEffectType, p_value: bool) -> void:
 	_reaction_visibility = false
@@ -87,7 +87,7 @@ func set_reaction_visibility(p_visual_effect: ElementVisualEffect.VisualEffectTy
 	_vignette_reaction_visibility = false
 	
 	if not p_value:
-		ElementManager.notify_property_node_visibility_changed()
+		ElementManager.notify_property_node_visibility_changed(_element)
 		return
 	
 	_reaction_visibility = true
@@ -112,7 +112,13 @@ func set_reaction_visibility(p_visual_effect: ElementVisualEffect.VisualEffectTy
 		ElementVisualEffect.VisualEffectType.VIGNETTE:
 			_vignette_reaction_visibility = true
 	
-	ElementManager.notify_property_node_visibility_changed()
+	ElementManager.notify_property_node_visibility_changed(_element)
+
+func set_element(p_element: Element) -> void:
+	_element = p_element
+
+func get_element() -> Element:
+	return _element
 
 func get_configurations() -> Dictionary[StringName, Dictionary]:
 	var ret: Dictionary[StringName, Dictionary] = {
@@ -337,7 +343,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementVisualEffect.SN_TAPE_DISTORTION_WAVE_THICKNESS: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
-			DEFAULT_VALUE: 0.2,
+			DEFAULT_VALUE: 0.8,
 			VISIBLE: _tape_distortion_visibility,
 			MINIMUM: 0.0,
 			MAXIMUM: 1.0,
@@ -426,6 +432,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementVisualEffect.SN_AUDIO_SOURCE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
+			DEFAULT_VALUE: &"",
 			OPTIONS: AudioManager.get_stream_names().values()
 		},
 		ElementVisualEffect.SN_BEGIN_FREQUENCY: {
@@ -457,7 +464,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementVisualEffect.SN_SMOOTHING_TYPE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
-			DEFAULT_VALUE: ElementVisualEffect.ReactiveSmoothingType.DECAY,
+			DEFAULT_VALUE: ElementVisualEffect.ReactiveSmoothingType.INTERPOLATION,
 			VISIBLE: _reaction_visibility,
 			OPTIONS: ElementVisualEffect.SMOOTHING_TYPES
 		},
@@ -555,6 +562,42 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 0.0,
 			VISIBLE: _spin_zoom_blur_reaction_visibility,
+			MINIMUM: 0.0,
+			MAXIMUM: 1.0,
+			STEP: 0.1,
+			ROUNDED: false
+		},
+		ElementVisualEffect.SN_TAPE_DISTORTION_WAVE_OFFSET_AMOUNT_REACTION: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 0.0,
+			VISIBLE: _tape_distortion_reaction_visibility,
+			MINIMUM: 0.0,
+			MAXIMUM: 1.0,
+			STEP: 0.1,
+			ROUNDED: false
+		},
+		ElementVisualEffect.SN_TAPE_DISTORTION_WAVE_SPEED_REACTION: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 0.0,
+			VISIBLE: _tape_distortion_reaction_visibility,
+			MINIMUM: 0.0,
+			MAXIMUM: 1.0,
+			STEP: 0.1,
+			ROUNDED: false
+		},
+		ElementVisualEffect.SN_TAPE_DISTORTION_BLOCK_OFFSET_AMOUNT_REACTION: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 0.0,
+			VISIBLE: _tape_distortion_reaction_visibility,
+			MINIMUM: 0.0,
+			MAXIMUM: 1.0,
+			STEP: 0.1,
+			ROUNDED: false
+		},
+		ElementVisualEffect.SN_TAPE_DISTORTION_BLOCK_SPEED_REACTION: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 0.0,
+			VISIBLE: _tape_distortion_reaction_visibility,
 			MINIMUM: 0.0,
 			MAXIMUM: 1.0,
 			STEP: 0.1,

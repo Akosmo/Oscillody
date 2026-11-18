@@ -18,7 +18,6 @@
 class_name ElementVisualEffect
 extends ElementReactive
 
-# NOTE: Gradient Overlay not needed if Elements have blending mode options.
 enum VisualEffectType {
 	BLOOM,
 	CHROMATIC_ABERRATION,
@@ -151,6 +150,12 @@ const SN_LENS_DISTORTION_AMOUNT_REACTION: StringName = &"(Lens_Distortion)_Amoun
 const SN_LENS_DISTORTION_ZOOM_FACTOR_REACTION: StringName = &"(Lens_Distortion)_Zoom_Factor_Reaction"
 const SN_SCANLINES_SPEED_REACTION: StringName = &"(Scanlines)_Speed_Reaction"
 const SN_SPIN_ZOOM_BLUR_AMOUNT_REACTION: StringName = &"(Spin_Zoom_Blur)_Amount_Reaction"
+const SN_TAPE_DISTORTION_WAVE_OFFSET_AMOUNT_REACTION: StringName = \
+&"(Tape_Distortion)_Wave_Offset_Amount_Reaction"
+const SN_TAPE_DISTORTION_WAVE_SPEED_REACTION: StringName = &"(Tape_Distortion)_Wave_Speed_Reaction"
+const SN_TAPE_DISTORTION_BLOCK_OFFSET_AMOUNT_REACTION: StringName = \
+&"(Tape_Distortion)_Block_Offset_Amount_Reaction"
+const SN_TAPE_DISTORTION_BLOCK_SPEED_REACTION: StringName = &"(Tape_Distortion)_Block_Speed_Reaction"
 const SN_VIGNETTE_SIZE_REACTION: StringName = &"(Vignette)_Size_Reaction"
 
 var _visual_effect_type: VisualEffectType = VisualEffectType.BLOOM
@@ -178,17 +183,16 @@ var _lens_distortion_border_color: Color = Color.BLACK
 var _lens_distortion_chromatic_aberration_amount: float = 0.0
 
 var _scanlines_opacity: float = 0.0
-var _scanlines_interlaced_scan: bool = false # TODO: Make this a float?
+var _scanlines_interlaced_scan: bool = false
 var _scanlines_scale: float = 0.2
 var _scanlines_speed: float = 0.2
 
 var _spin_zoom_blur_amount: float = 0.0
 var _spin_zoom_blur_mode: SpinZoomBlurMode = SpinZoomBlurMode.SPIN
 
-# TODO: Add reaction to Tape Distortion properties, once fixed.
 var _tape_distortion_wave_offset_amount: float = 0.0
 var _tape_distortion_wave_amount: float = 0.2
-var _tape_distortion_wave_thickness: float = 0.2
+var _tape_distortion_wave_thickness: float = 0.8
 var _tape_distortion_wave_speed: float = 0.2
 var _tape_distortion_block_offset_amount: float = 0.0
 var _tape_distortion_block_amount: float = 0.4
@@ -211,6 +215,10 @@ var _lens_distortion_amount_reaction: float = 0.0
 var _lens_distortion_zoom_factor_reaction: float = 0.0
 var _scanlines_speed_reaction: float = 0.0
 var _spin_zoom_blur_amount_reaction: float = 0.0
+var _tape_distortion_wave_offset_amount_reaction: float = 0.0
+var _tape_distortion_wave_speed_reaction: float = 0.0
+var _tape_distortion_block_offset_amount_reaction: float = 0.0
+var _tape_distortion_block_speed_reaction: float = 0.0
 var _vignette_size_reaction: float = 0.0
 
 func set_visual_effect_type(p_value: VisualEffectType) -> void:
@@ -542,6 +550,34 @@ func set_spin_zoom_blur_amount_reaction(p_value: float) -> void:
 func get_spin_zoom_blur_amount_reaction() -> float:
 	return _spin_zoom_blur_amount_reaction
 
+func set_tape_distortion_wave_offset_amount_reaction(p_value: float) -> void:
+	_tape_distortion_wave_offset_amount_reaction = p_value
+	property_changed.emit(SN_TAPE_DISTORTION_WAVE_OFFSET_AMOUNT_REACTION)
+
+func get_tape_distortion_wave_offset_amount_reaction() -> float:
+	return _tape_distortion_wave_offset_amount_reaction
+
+func set_tape_distortion_wave_speed_reaction(p_value: float) -> void:
+	_tape_distortion_wave_speed_reaction = p_value
+	property_changed.emit(SN_TAPE_DISTORTION_WAVE_SPEED_REACTION)
+
+func get_tape_distortion_wave_speed_reaction() -> float:
+	return _tape_distortion_wave_speed_reaction
+
+func set_tape_distortion_block_offset_amount_reaction(p_value: float) -> void:
+	_tape_distortion_block_offset_amount_reaction = p_value
+	property_changed.emit(SN_TAPE_DISTORTION_BLOCK_OFFSET_AMOUNT_REACTION)
+
+func get_tape_distortion_block_offset_amount_reaction() -> float:
+	return _tape_distortion_block_offset_amount_reaction
+
+func set_tape_distortion_block_speed_reaction(p_value: float) -> void:
+	_tape_distortion_block_speed_reaction = p_value
+	property_changed.emit(SN_TAPE_DISTORTION_BLOCK_SPEED_REACTION)
+
+func get_tape_distortion_block_speed_reaction() -> float:
+	return _tape_distortion_block_speed_reaction
+
 func set_vignette_size_reaction(p_value: float) -> void:
 	_vignette_size_reaction = p_value
 	property_changed.emit(SN_VIGNETTE_SIZE_REACTION)
@@ -608,6 +644,10 @@ func get_properties() -> Dictionary[StringName, Variant]:
 		SN_LENS_DISTORTION_ZOOM_FACTOR_REACTION: _lens_distortion_zoom_factor_reaction,
 		SN_SCANLINES_SPEED_REACTION: _scanlines_speed_reaction,
 		SN_SPIN_ZOOM_BLUR_AMOUNT_REACTION: _spin_zoom_blur_amount_reaction,
+		SN_TAPE_DISTORTION_WAVE_OFFSET_AMOUNT_REACTION: _tape_distortion_wave_offset_amount_reaction,
+		SN_TAPE_DISTORTION_WAVE_SPEED_REACTION: _tape_distortion_wave_speed_reaction,
+		SN_TAPE_DISTORTION_BLOCK_OFFSET_AMOUNT_REACTION: _tape_distortion_block_offset_amount_reaction,
+		SN_TAPE_DISTORTION_BLOCK_SPEED_REACTION: _tape_distortion_block_speed_reaction,
 		SN_VIGNETTE_SIZE_REACTION: _vignette_size_reaction
 	}
 	
@@ -673,6 +713,12 @@ func get_setters() -> Dictionary[StringName, StringName]:
 		SN_LENS_DISTORTION_ZOOM_FACTOR_REACTION: set_lens_distortion_zoom_factor_reaction.get_method(),
 		SN_SCANLINES_SPEED_REACTION: set_scanlines_speed_reaction.get_method(),
 		SN_SPIN_ZOOM_BLUR_AMOUNT_REACTION: set_spin_zoom_blur_amount_reaction.get_method(),
+		SN_TAPE_DISTORTION_WAVE_OFFSET_AMOUNT_REACTION: \
+		set_tape_distortion_wave_offset_amount_reaction.get_method(),
+		SN_TAPE_DISTORTION_WAVE_SPEED_REACTION: set_tape_distortion_wave_speed_reaction.get_method(),
+		SN_TAPE_DISTORTION_BLOCK_OFFSET_AMOUNT_REACTION: \
+		set_tape_distortion_block_offset_amount_reaction.get_method(),
+		SN_TAPE_DISTORTION_BLOCK_SPEED_REACTION: set_tape_distortion_block_speed_reaction.get_method(),
 		SN_VIGNETTE_SIZE_REACTION: set_vignette_size_reaction.get_method()
 	}
 	

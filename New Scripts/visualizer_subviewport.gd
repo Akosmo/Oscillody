@@ -15,17 +15,11 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-# NOTE: If this class has too many responsibilities, some of its functions should be moved elsewhere,
-# without compromising readability, or without ending up with spaghetti code. Remember that bus needs to
-# be accessed by Analyzer elements.
-
 extends SubViewportContainer
 
-# TEST: Importing audio files with the same name and extension.
 var _players: Dictionary[StringName, AudioStreamPlayer]
 # This is not a special, separated instance. The player assigned to it is chosen from `_players`,
 # and allows it to be audible.
-# TODO: That needs to be rephrased. See external notes.
 var _master_player: AudioStreamPlayer
 
 var element_empty_scene: PackedScene = PackedScene.new()
@@ -40,17 +34,23 @@ var element_visual_effect_scene: PackedScene = PackedScene.new()
 @onready var _texture_rect: TextureRect = %TextureRect
 
 func _ready() -> void:
+	if OS.has_feature("movie"):
+		CustomLogger.log_normal("Oscillody fully launched in Movie Writer mode.")
+	
 	if _pack_canvas_nodes():
 		CustomLogger.log_critical_error("Could not pack canvas nodes.")
 	
 	WindowUtilities.set_subviewport(_sub_viewport)
 	
-	# TODO: Consider using WorldEnvironment instead of ColorRect for background.
-	
 	if _connect_signals():
 		CustomLogger.log_critical_error("Could not connect signals in VisualizerSubviewport.")
+	
+	if OS.has_feature("movie"):
+		CustomLogger.log_normal("Initializing nodes.")
+		if await MovieWriterUtilities.initialize_nodes():
+			get_tree().quit(1)
 
-func _process(_delta: float) -> void:
+func _process(_p_delta: float) -> void:
 	if _master_player != null and _master_player.get_stream() != null:
 		if AudioManager.is_master_playing():
 			AudioManager.set_master_position(_master_player.get_playback_position())
@@ -65,47 +65,62 @@ func _process(_delta: float) -> void:
 	#WindowUtilities.set_subviewport_size(_sub_viewport.get_size())
 
 func _pack_canvas_nodes() -> Error:
-	if element_empty_scene.pack(ElementCanvasEmpty.new()):
-		return FAILED
-	if element_analyzer_scene.pack(ElementCanvasAnalyzer.new()):
-		return FAILED
-	if element_image_scene.pack(ElementCanvasImage.new()):
-		return FAILED
-	if element_shader_scene.pack(ElementCanvasShader.new()):
-		return FAILED
-	if element_text_scene.pack(ElementCanvasText.new()):
-		return FAILED
-	if element_visual_effect_scene.pack(ElementCanvasVisualEffect.new()):
-		return FAILED
+	var element_canvas_empty: ElementCanvasEmpty = ElementCanvasEmpty.new()
+	var element_canvas_analyzer: ElementCanvasAnalyzer = ElementCanvasAnalyzer.new()
+	var element_canvas_image: ElementCanvasImage = ElementCanvasImage.new()
+	var element_canvas_shader: ElementCanvasShader = ElementCanvasShader.new()
+	var element_canvas_text: ElementCanvasText = ElementCanvasText.new()
+	var element_canvas_visual_effect: ElementCanvasVisualEffect = ElementCanvasVisualEffect.new()
 	
-	return OK
+	if element_empty_scene.pack(element_canvas_empty):
+		return Error.FAILED
+	if element_analyzer_scene.pack(element_canvas_analyzer):
+		return Error.FAILED
+	if element_image_scene.pack(element_canvas_image):
+		return Error.FAILED
+	if element_shader_scene.pack(element_canvas_shader):
+		return Error.FAILED
+	if element_text_scene.pack(element_canvas_text):
+		return Error.FAILED
+	if element_visual_effect_scene.pack(element_canvas_visual_effect):
+		return Error.FAILED
+	
+	# Avoiding leaks.
+	element_canvas_empty.free()
+	element_canvas_analyzer.free()
+	element_canvas_image.free()
+	element_canvas_shader.free()
+	element_canvas_text.free()
+	element_canvas_visual_effect.free()
+	
+	return Error.OK
 
 func _connect_signals() -> Error:
 	if AudioManager.stream_list_updated.connect(_update_audio):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if AudioManager.master_changed.connect(_on_master_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
 	if AudioManager.play_pause_requested.connect(_on_play_pause_requested):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if AudioManager.stop_requested.connect(_on_stop_requested):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if AudioManager.volume_change_requested.connect(_on_volume_change_requested):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if AudioManager.seek_requested.connect(_on_seek_requested):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
 	if ElementManager.element_created.connect(_on_element_created):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if ElementManager.element_deleted.connect(_on_element_deleted):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if ElementManager.element_type_changed.connect(_on_element_type_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
 	if DebugUtilities.freeze_visualizer_changed.connect(_on_freeze_visualizer):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
-	return OK
+	return Error.OK
 
 func _play_streams(p_at_pos: float = 0.0) -> void:
 	for player: AudioStreamPlayer in _players.values():
@@ -143,15 +158,12 @@ func _update_buses() -> void:
 		#var capture_effect: AudioEffectCapture = AudioEffectCapture.new()
 		#capture_effect.set_buffer_length(0.03)
 		#AudioServer.add_bus_effect(bus_idx, capture_effect)
-		# TODO: This should be fine to keep, since it's not a ring buffer. But check the source code just
-		# to be sure.
 		AudioServer.add_bus_effect(bus_idx, AudioEffectSpectrumAnalyzer.new())
 		bus_idx += 1
 
 func _update_players() -> void:
-	for player: StringName in _players.keys():
-		@warning_ignore("unsafe_method_access")
-		_players.get(player).queue_free()
+	for player: AudioStreamPlayer in _players.values():
+		player.queue_free()
 	
 	_players.clear()
 	
@@ -201,7 +213,7 @@ func _on_master_changed() -> void:
 	if _master_player != null:
 		if not _master_player.finished.is_connected(_on_master_finished):
 			if _master_player.finished.connect(_on_master_finished):
-				CustomLogger.log_critical_error("Could not connect finished signal from the Master Player.")
+				CustomLogger.log_critical_error("Could not connect \"finished\" signal from the Master Player.")
 		
 		if _master_player.get_stream() != null:
 			AudioManager.set_master_duration(_master_player.get_stream().get_length())
@@ -258,6 +270,11 @@ func _on_seek_requested(p_time: float) -> void:
 			_seek_streams(p_time - 0.01)
 
 func _on_master_finished() -> void:
+	if OS.has_feature("movie"):
+		CustomLogger.log_normal("Video exporting has finished.")
+		#print("DEBUG: Video exporting has finished.")
+		get_tree().quit()
+	
 	if AudioManager.is_loop_enabled():
 		#_master_player.play()
 		_play_streams()
@@ -318,3 +335,9 @@ func _on_freeze_visualizer(p_frozen: bool) -> void:
 	
 	_frozen_visualizer_canvas_layer.set_visible(p_frozen)
 	_texture_rect.set_visible(p_frozen)
+
+func _notification(what: int) -> void:
+	if OS.has_feature("movie") and what == NOTIFICATION_WM_CLOSE_REQUEST:
+		CustomLogger.log_normal("Video exporting canceled manually.")
+		AudioManager.request_stop()
+		get_tree().quit(2)

@@ -77,6 +77,11 @@ old audio data stays on the screen, giving the impression of a longer waveform."
 			ret = "Sets the anti-aliasing of the waveform. If enabled, the waveform appears smooth."
 		ElementImage.SN_IMAGE_PATH:
 			ret = "Sets the file path of the image."
+		ElementImage.SN_IMAGE_STRETCH_MODE:
+			ret = "Sets the stretch mode of the image. \"Cover\" covers everything, \
+by stretching the image so that its shortest side fits the boundaries. \"Center\" just fits the image \
+without clipping any part outside. \"Detect\" chooses \"Cover\" if the image's ratio is the same \
+as the visualizer. Otherwise, \"Center\" will be chosen. All modes keep ratio and center the image."
 		ElementImage.SN_IMAGE_X_POSITION:
 			ret = "Sets the position of the image in the horizontal axis."
 		ElementImage.SN_IMAGE_Y_POSITION:
@@ -94,13 +99,13 @@ old audio data stays on the screen, giving the impression of a longer waveform."
 		ElementImage.SN_IMAGE_SCALE_REACTION:
 			ret = "Sets the amount of audio reaction for the scale of the image."
 		ElementReactive.SN_BEGIN_FREQUENCY:
-			ret = "Sets the beginning frequency for audio reaction, in Hz. From this frequency, the loudest \
+			ret = "Sets the beginning frequency for audio reaction, in hertz. From this frequency, the loudest \
 audio magnitude is used for audio reaction."
 		ElementReactive.SN_END_FREQUENCY:
-			ret = "Sets the ending frequency for audio reaction, in Hz. Up to this frequency, the loudest \
+			ret = "Sets the ending frequency for audio reaction, in hertz. Up to this frequency, the loudest \
 audio magnitude is used for audio reaction."
 		ElementReactive.SN_MINIMUM_DECIBELS:
-			ret = "Sets the beginning frequency for audio reaction, in Hz. Only audio magnitude above this \
+			ret = "Sets the minimum amplitude for audio reaction, in decibels. Only audio magnitude above this \
 value is used for audio reaction."
 		ElementReactive.SN_SMOOTHING_TYPE:
 			ret = "Sets the type of smoothing used for audio reaction. With Decay, values change instantly if \
@@ -198,9 +203,12 @@ results in the selected color."
 		ElementShader.SN_TIDES_ITERATIONS:
 			ret = "Sets the number of internal iterations of this shader."
 		ElementShader.SN_SHADER_SPEED:
-			ret = "The speed of the shader."
+			ret = "Sets the speed of the shader."
+		ElementShader.SN_SHADER_TIME_OFFSET:
+			ret = "Sets the time offset, used for shader movement. If two or more shaders have the same \
+time offset and speed, they should overlap (make sure to resync in Settings)."
 		ElementShader.SN_SHADER_BLEND_MODE:
-			ret = "The blend mode for this shader. It will blend with every layer that's behind it."
+			ret = "Sets the blend mode for this shader. It will blend with every layer that's behind it."
 		ElementShader.SN_SHADER_X_POSITION:
 			ret = "Sets the position of the shader in the horizontal axis."
 		ElementShader.SN_SHADER_Y_POSITION:
@@ -235,6 +243,11 @@ seed, they will shake the same way (make sure to resync in Settings)."
 			ret = "Sets the amount of audio reaction for the shake frequency of the Element."
 		ElementText.SN_TEXT:
 			ret = "Sets the text."
+		ElementText.SN_TEXT_DYNAMIC:
+			ret = "Allows special parsing of the text. {" + "time_position} and {" + "time_duration} \
+(both with curly brackets) are replaced with their respective values, and <FLOAT_TIME_IN_SECONDS><TEXT> \
+(both with angle brackets) create timed text. Example: <2.0><Hello>. Use multiple lines to create \
+a text sequence, such as song lyrics."
 		ElementText.SN_TEXT_FONT:
 			ret = "Sets the text font."
 		ElementText.SN_TEXT_BOLD:
@@ -365,6 +378,14 @@ seed, they will shake the same way (make sure to resync in Settings)."
 			ret = "Sets the amount of audio reaction for the speed of this visual effect."
 		ElementVisualEffect.SN_SPIN_ZOOM_BLUR_AMOUNT_REACTION:
 			ret = "Sets the amount of audio reaction for the amount of this visual effect."
+		ElementVisualEffect.SN_TAPE_DISTORTION_WAVE_OFFSET_AMOUNT_REACTION:
+			ret = "Sets the amount of audio reaction for the wave offset amount of this visual effect"
+		ElementVisualEffect.SN_TAPE_DISTORTION_WAVE_SPEED_REACTION:
+			ret = "Sets the amount of audio reaction for the wave speed of this visual effect"
+		ElementVisualEffect.SN_TAPE_DISTORTION_BLOCK_OFFSET_AMOUNT_REACTION:
+			ret = "Sets the amount of audio reaction for the block offset amount of this visual effect"
+		ElementVisualEffect.SN_TAPE_DISTORTION_BLOCK_SPEED_REACTION:
+			ret = "Sets the amount of audio reaction for the block speed of this visual effect"
 		ElementVisualEffect.SN_VIGNETTE_SIZE_REACTION:
 			ret = "Sets the amount of audio reaction for the size of this visual effect."
 		ElementWithAudio.SN_AUDIO_SOURCE:
@@ -378,14 +399,20 @@ Element, or to make other properties react to the bass frequencies of the select
 		SettingsManager.SN_EXPORT_RESOLUTION:
 			ret = "Sets the resolution used for exported videos."
 		SettingsManager.SN_FFMPEG_PATH:
-			ret = "Sets the path of the FFmpeg executable necessary for rendering. This button is disabled \
+			ret = "Sets the path of the FFmpeg executable necessary for video export. This button is disabled \
 if the selected path is already selected. If necessary, click the reset button."
+		SettingsManager.SN_DELETE_TEMPORARY_FILES:
+			ret = "Makes Oscillody delete every temporary file generated during video export. Disabling this \
+allows you to merge both files however you want."
 		SettingsManager.SN_APP_THEME:
 			ret = "Sets the appearance of Oscillody."
 		SettingsManager.SN_SWITCH_TO_SLIDERS:
 			ret = "[TO BE DEPRECATED] Sets all spin boxes to be sliders instead."
 		SettingsManager.SN_SYNC_ELEMENT_SHAKE:
 			ret = "Resyncs every Element currently shaking. Elements with the same seed should shake equally."
+		SettingsManager.SN_SYNC_SHADER_TIME:
+			ret = "Resets the time used for shader movement. Shaders with the same speed and time offset should \
+overlap."
 		SettingsManager.SN_DEBUG_PANEL:
 			ret = "Displays a panel with real-time information about the application. Used for debugging."
 		_:

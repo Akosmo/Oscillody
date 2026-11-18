@@ -138,7 +138,7 @@ func set_control_node(p_control_node: ControlNode) -> void:
 		ControlNode.TEXT_EDIT:
 			#text_edit.show()
 			text_edit = TextEdit.new()
-			text_edit.set_custom_minimum_size(Vector2(128.0, 64.0))
+			text_edit.set_custom_minimum_size(Vector2(200.0, 100.0))
 			control_node_box_container.add_child(text_edit)
 			text_edit.text_changed.connect(_on_text_edit_text_changed)
 	
@@ -190,7 +190,6 @@ func set_property_value_with_node(p_value: Variant) -> void:
 			@warning_ignore("unsafe_cast")
 			check_button.set_pressed_no_signal(p_value as bool)
 		ControlNode.COLOR_PICKER_BUTTON:
-			# TEST: Make sure this doesn't emit a signal.
 			color_picker_button.set_pick_color(p_value as Color)
 		ControlNode.LINE_EDIT:
 			line_edit.set_text(p_value as String)
@@ -198,7 +197,6 @@ func set_property_value_with_node(p_value: Variant) -> void:
 			spin_box.set_value_no_signal(p_value as float)
 			custom_h_slider.set_value_no_signal(p_value as float)
 		ControlNode.OPTION_BUTTON:
-			# TEST: Make sure this doesn't emit a signal.
 			option_button.select(-1)
 			if option_button.get_item_count() > 0:
 				if typeof(p_value) == TYPE_INT:
@@ -229,7 +227,7 @@ func set_reset_value(p_value: Variant) -> void:
 	if reset_button == null:
 		reset_button = Button.new()
 		reset_button.set_text("R")
-		reset_button.set_h_size_flags(Control.SIZE_SHRINK_END)
+		reset_button.set_h_size_flags(Control.SizeFlags.SIZE_SHRINK_END)
 		h_box_container.add_child(reset_button)
 		reset_button.pressed.connect(_on_reset_pressed)
 		if reset_button.get_index() != 1:
@@ -248,8 +246,8 @@ func use_file_dialog(p_enable: bool = true) -> void:
 	
 	if p_enable:
 		file_dialog = FileDialog.new()
-		file_dialog.set_file_mode(FileDialog.FILE_MODE_OPEN_FILE)
-		file_dialog.set_access(FileDialog.ACCESS_FILESYSTEM)
+		file_dialog.set_file_mode(FileDialog.FileMode.FILE_MODE_OPEN_FILE)
+		file_dialog.set_access(FileDialog.Access.ACCESS_FILESYSTEM)
 		file_dialog.set_use_native_dialog(true)
 		file_dialog.set_hide_on_ok(true)
 		#file_dialog.set_title("Open a File")
@@ -372,15 +370,23 @@ func _on_reset_pressed() -> void:
 				@warning_ignore("unsafe_cast")
 				option_button.select(_reset_value as int)
 			elif typeof(_reset_value) == TYPE_STRING_NAME:
+				var found_item: bool = false
 				for idx: int in option_button.get_item_count():
 					if option_button.get_item_text(idx) == String(_reset_value):
 						option_button.select(idx)
+						found_item = true
 						break
+				if not found_item:
+					option_button.select(-1)
 			elif typeof(_reset_value) == TYPE_STRING:
+				var found_item: bool = false
 				for idx: int in option_button.get_item_count():
 					if option_button.get_item_text(idx) == _reset_value:
 						option_button.select(idx)
+						found_item = true
 						break
+				if not found_item:
+					option_button.select(-1)
 			else:
 				CustomLogger.log_warning("Wrong type for OptionButton.")
 		ControlNode.TEXT_EDIT:

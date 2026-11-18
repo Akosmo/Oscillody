@@ -50,6 +50,12 @@ uniform lowp int blend_mode : hint_enum(
 	"Simple Subtract",
 	"Simple Difference"
 ) = 0;
+uniform lowp int mirror : hint_enum(
+	"Normal",
+	"Horizontal",
+	"Vertical",
+	"Both"
+) = 0;
 
 vec2 waves(highp vec2 p_uv) {
 	// Manipulating UV with random numbers to create cool patterns.
@@ -84,6 +90,15 @@ void fragment() {
 	highp vec2 uv = UV;
 	uv.y = 1.0 - uv.y; // Invert `Y` coord.
 	uv.x *= 16.0 / 9.0; // Adjust ratio.
+	
+	if (mirror == 1) {
+		uv.x = 16.0 / 9.0 - uv.x;
+	} else if (mirror == 2) {
+		uv.y = 1.0 - uv.y;
+	} else if (mirror == 3) {
+		uv.x = 16.0 / 9.0 - uv.x;
+		uv.y = 1.0 - uv.y;
+	}
 
 	highp vec4 output_color = vec4(waves(uv).x * wave_color);
 

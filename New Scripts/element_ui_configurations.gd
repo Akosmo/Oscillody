@@ -61,5 +61,14 @@ const ROUNDED: StringName = &"ui_rounded"
 ## The dictionary key for the available options for [constant ControlNode.OPTION_BUTTON] node.
 const OPTIONS: StringName = &"ui_options"
 
+## The Element linked to this configuration object.
+var _element: Element
+
+## Links an Element to this configuration object.
+@abstract func set_element(p_element: Element) -> void
+
+## Returns the Element linked to this configuration object.
+@abstract func get_element() -> Element
+
 ## Returns an updated list of all the property configurations.
 @abstract func get_configurations() -> Dictionary[StringName, Dictionary]

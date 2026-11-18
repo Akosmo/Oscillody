@@ -22,7 +22,13 @@ var _reaction_visibility: bool = false
 
 func set_reaction_visibility(p_value: bool) -> void:
 	_reaction_visibility = p_value
-	ElementManager.notify_property_node_visibility_changed()
+	ElementManager.notify_property_node_visibility_changed(_element)
+
+func set_element(p_element: Element) -> void:
+	_element = p_element
+
+func get_element() -> Element:
+	return _element
 
 func get_configurations() -> Dictionary[StringName, Dictionary]:
 	var ret: Dictionary[StringName, Dictionary] = {
@@ -48,6 +54,11 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		ElementImage.SN_IMAGE_PATH: {
 			CONTROL_NODE: ControlNode.BUTTON,
 			DEFAULT_VALUE: ""
+		},
+		ElementImage.SN_IMAGE_STRETCH_MODE: {
+			CONTROL_NODE: ControlNode.OPTION_BUTTON,
+			DEFAULT_VALUE: ElementImage.CustomStretchMode.DETECT,
+			OPTIONS: ElementImage.CUSTOM_STRETCH_MODES
 		},
 		ElementImage.SN_IMAGE_X_POSITION: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
@@ -123,6 +134,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementImage.SN_AUDIO_SOURCE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
+			DEFAULT_VALUE: &"",
 			OPTIONS: AudioManager.get_stream_names().values()
 		},
 		ElementImage.SN_BEGIN_FREQUENCY: {
@@ -154,7 +166,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementImage.SN_SMOOTHING_TYPE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
-			DEFAULT_VALUE: ElementImage.ReactiveSmoothingType.DECAY,
+			DEFAULT_VALUE: ElementImage.ReactiveSmoothingType.INTERPOLATION,
 			VISIBLE: _reaction_visibility,
 			OPTIONS: ElementImage.SMOOTHING_TYPES
 		},

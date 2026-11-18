@@ -38,65 +38,66 @@ func _ready() -> void:
 	
 	_freeze_button.toggled.connect(_on_freeze_button_toggled)
 
-func _process(_delta: float) -> void:
+func _process(_p_delta: float) -> void:
 	#if Engine.get_process_frames() % 60 != 0:
 		#return
 	
 	if not is_visible() or _tab_container.get_current_tab() == 5:
 		return
 	
-	# TODO: Fix any awkward spacing in the resulting text.
 	match _tab_container.get_current_tab():
 		0:
 			_format_dictionary = {
 				"FPS": int(Engine.get_frames_per_second()),
+				"Refresh_Rate": int(DisplayServer.screen_get_refresh_rate()),
 				"Sample_Rate": int(AudioServer.get_mix_rate()),
-				"Export_Sample_Rate": ProjectSettings.get_setting("editor/movie_writer/mix_rate"),
+				#"Export_Sample_Rate": ProjectSettings.get_setting("editor/movie_writer/mix_rate"),
 				"Input_Sample_Rate": int(AudioServer.get_input_mix_rate()),
+				#"Audio_Input": ProjectSettings.get_setting("audio/driver/enable_input"),
 				"Number_Of_Channels": AudioServer.get_bus_channels(0) * 2,
 				"Audio_Driver": AudioServer.get_driver_name(),
 				"Output_Latency": roundi(AudioServer.get_output_latency() * 1000.0),
 				"Monitor_Resolution": DisplayServer.screen_get_size(),
+				"Rendering_Driver": RenderingServer.get_current_rendering_driver_name(),
 				"Rendering_Method": RenderingServer.get_current_rendering_method(),
 				"Window_Size": WindowUtilities.get_window_size(),
 				"Visualizer_Size": WindowUtilities.get_subviewport().get_size(),
 				"Time_Since_Launch": str(Time.get_ticks_msec() / 1000.0).pad_decimals(2),
 				"Unix_Time": str(Time.get_unix_time_from_system()).pad_decimals(2),
-				"Update_Last_Checked_At": SettingsManager.get_update_last_checked_at(),
+				#"Update_Last_Checked_At": SettingsManager.get_update_last_checked_at(),
 				"Memory_Usage": String.humanize_size(
-					RenderingServer.get_rendering_device().get_memory_usage(RenderingDevice.MEMORY_TOTAL)
+					RenderingServer.get_rendering_device().get_memory_usage(
+						RenderingDevice.MemoryType.MEMORY_TOTAL
+					)
 				),
-				"Version": ProjectSettings.get_setting("application/config/version"),
-				"Engine_Version": Engine.get_version_info().get("string"),
-				"Audio_Input": ProjectSettings.get_setting("audio/driver/enable_input"),
+				#"Version": ProjectSettings.get_setting("application/config/version"),
+				#"Engine_Version": Engine.get_version_info().get("string")
 			}
+			# Label won't include indents.
 			_general_label.set_text(
 				"FPS: {FPS}
+				Refresh Rate: {Refresh_Rate}
 				Sample Rate: {Sample_Rate} Hz
-				Export Sample Rate: {Export_Sample_Rate} Hz
 				Input Sample Rate: {Input_Sample_Rate} Hz
 				Number of Channels: {Number_Of_Channels}
 				Audio Driver: {Audio_Driver}
 				Output Latency: {Output_Latency} ms
 				Monitor Resolution: {Monitor_Resolution}
+				Rendering Driver: {Rendering_Driver}
 				Rendering Method: {Rendering_Method}
 				Window Size: {Window_Size}
 				Visualizer Size: {Visualizer_Size}
 				Time Since Launch: {Time_Since_Launch} secs
 				Unix Time: {Unix_Time} secs
-				Update Last Checked At: {Update_Last_Checked_At}
-				Memory Usage: {Memory_Usage}
-				Version: {Version}
-				Engine Version: {Engine_Version}
-				Audio Input: {Audio_Input}".format(_format_dictionary)
+				Memory Usage: {Memory_Usage}".format(_format_dictionary)
 			)
 		1:
-			var imported_audio_files: String = ""
+			var imported_audio_files: String = "[\n"
 			var stream_names: Array[StringName] = AudioManager.get_stream_names().keys()
 			for stream_name: StringName in stream_names:
 				var line_str: String = "    {file},\n".format({"file": stream_name.get_file()})
 				imported_audio_files += line_str
-			#imported_audio_files += "]"
+			imported_audio_files += "]"
 			var full_bus_info_str: String = ""
 			for bus_idx: int in AudioServer.get_bus_count():
 				var line_str: String = \
@@ -203,4 +204,4 @@ func _on_freeze_button_toggled(p_toggled_on: bool) -> void:
 	else:
 		_freeze_button.set_text("Unfreeze Visualizer")
 	
-	DebugUtilities.freeze_visualizer_changed.emit(p_toggled_on)
+	DebugUtilities.freeze_visualizer(p_toggled_on)

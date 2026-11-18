@@ -17,45 +17,111 @@
 
 extends CanvasLayer
 
-var is_ui_visible: bool
+var _is_ui_visible: bool
+var _mouse_moving: bool
+
+@onready var _mouse_timer: Timer = $MouseTimer
 
 @onready var _main_container: PanelContainer = %MainContainer
 @onready var _debug_container: PanelContainer = %DebugContainer
+#@onready var _visualizer: SubViewportContainer = %Visualizer
 @onready var _player_control_container: PanelContainer = %PlayerControlContainer
 
 @onready var _about_popup: CustomPopup = $AboutPopup
 @onready var _preset_popup: CustomPopup = $PresetPopup
+@onready var _progress_popup: CustomPopup = $ProgressPopup
+@onready var _unsaved_changes_popup: CustomPopup = $UnsavedChangesPopup
 @onready var _update_popup: CustomPopup = $UpdatePopup
 @onready var _close_request_popup: CustomPopup = $CloseRequestPopup
 
 func _ready() -> void:
-	is_ui_visible = true
+	_is_ui_visible = true
 	
+	#_visualizer.gui_input.connect(_on_gui_input)
+	_mouse_timer.timeout.connect(_on_mouse_timer_timeout)
 	PopupManager.popup_requested.connect(_on_popup_requested)
 	
 	CustomLogger.log_normal("Oscillody fully launched.")
+	
+	#var current_version_array: PackedStringArray = ["3", "0", "0"]
+	#var latest_version_array: PackedStringArray = ["4", "0", "0"]
+	#
+	#if current_version_array[0].to_int() == latest_version_array[0].to_int():
+	#	if current_version_array[1].to_int() == latest_version_array[1].to_int():
+	#		if current_version_array[2].to_int() >= latest_version_array[2].to_int():
+	#			print("DEBUG: There are no new updates (checked major, minor, and patch numbers).")
+	#		else:
+	#			print("DEBUG: New patch version available.")
+	#	elif current_version_array[1].to_int() > latest_version_array[1].to_int():
+	#		print("DEBUG: There are no new updates (checked major and minor numbers).")
+	#	else:
+	#		print("DEBUG: New minor version available.")
+	#elif current_version_array[0].to_int() > latest_version_array[0].to_int():
+	#	print("DEBUG: There are no new updates (checked major number).")
+	#else:
+	#	print("DEBUG: New major version available.")
+	
+#	DisplayServer.send_toast_notification("Hi", "Hello", null, _debug)
+#
+#func _debug(p_id: int, p_status: DisplayServer.NotificationStatus) -> void:
+#	print(str(p_id), str(p_status))
+
+func _process(_p_delta: float) -> void:
+	if _is_ui_visible or _close_request_popup.is_visible():
+		if not _mouse_timer.is_stopped():
+			_mouse_timer.stop()
+		if DisplayServer.mouse_get_mode() == DisplayServer.MouseMode.MOUSE_MODE_HIDDEN:
+			DisplayServer.mouse_set_mode(DisplayServer.MouseMode.MOUSE_MODE_VISIBLE)
+		return
+	
+	_mouse_moving = Input.get_last_mouse_velocity().length() != 0.0
+	
+	if not _mouse_moving and _mouse_timer.is_stopped():
+		_mouse_timer.start()
+	elif _mouse_moving:
+		if not _mouse_timer.is_stopped():
+			_mouse_timer.stop()
+		if DisplayServer.mouse_get_mode() == DisplayServer.MouseMode.MOUSE_MODE_HIDDEN:
+			DisplayServer.mouse_set_mode(DisplayServer.MouseMode.MOUSE_MODE_VISIBLE)
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	var is_fullscreen: bool = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
+	var is_fullscreen: bool = DisplayServer.window_get_mode() == DisplayServer.WindowMode.WINDOW_MODE_FULLSCREEN
 	
 	if event.is_action_pressed("fullscreen") and not is_fullscreen:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+		DisplayServer.window_set_mode(DisplayServer.WindowMode.WINDOW_MODE_FULLSCREEN)
 		is_fullscreen = true
 	elif event.is_action_pressed("fullscreen") and is_fullscreen:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
-		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_BORDERLESS, false)
+		DisplayServer.window_set_mode(DisplayServer.WindowMode.WINDOW_MODE_WINDOWED)
+		DisplayServer.window_set_flag(DisplayServer.WindowFlags.WINDOW_FLAG_BORDERLESS, false)
 		is_fullscreen = false
 	
 	if event.is_action_pressed("toggle_ui"):
-		_main_container.set_visible(not is_ui_visible)
+		_main_container.set_visible(not _is_ui_visible)
 		if SettingsManager.get_debug_panel():
-			_debug_container.set_visible(not is_ui_visible)
-		_player_control_container.set_visible(not is_ui_visible)
-		is_ui_visible = not is_ui_visible
+			_debug_container.set_visible(not _is_ui_visible)
+		_player_control_container.set_visible(not _is_ui_visible)
+		_is_ui_visible = not _is_ui_visible
+
+#func _on_gui_input(p_event: InputEvent) -> void:
+#	print(p_event)
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		_on_popup_requested(PopupManager.PopupType.CLOSE_REQUEST)
+		if FileManager.get_unsaved_changes():
+			_on_popup_requested(PopupManager.PopupType.CLOSE_REQUEST)
+			return
+		
+		if FileManager.save_settings():
+			CustomLogger.log_warning(
+				"Could not save settings. Next app launch will load either default settings, or settings \
+saved previously"
+			)
+		CustomLogger.log_normal("Closing Oscillody.")
+		get_tree().quit()
+
+func _on_mouse_timer_timeout() -> void:
+	if DisplayServer.mouse_get_mode() == DisplayServer.MouseMode.MOUSE_MODE_VISIBLE:
+		DisplayServer.mouse_set_mode(DisplayServer.MouseMode.MOUSE_MODE_HIDDEN)
 
 func _on_popup_requested(p_popup_type: PopupManager.PopupType) -> void:
 	match p_popup_type:
@@ -65,5 +131,9 @@ func _on_popup_requested(p_popup_type: PopupManager.PopupType) -> void:
 			_close_request_popup.popup_show()
 		PopupManager.PopupType.PRESET:
 			_preset_popup.popup_show()
+		PopupManager.PopupType.PROGRESS:
+			_progress_popup.popup_show()
+		PopupManager.PopupType.UNSAVED_CHANGES:
+			_unsaved_changes_popup.popup_show()
 		PopupManager.PopupType.UPDATE:
 			_update_popup.popup_show()

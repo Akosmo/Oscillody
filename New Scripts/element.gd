@@ -90,6 +90,8 @@ var _element_layer: int
 @warning_ignore("unused_private_class_variable")
 var _element_visibility: bool
 
+## Lock marker to disallow changing Unique ID if it's already set.
+## It's used internally in [method set_element_unique_id].
 var _unique_id_locked: bool = false
 
 ## Sets the unique identifier of the Element. Can only be set during initialization.

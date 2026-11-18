@@ -31,10 +31,11 @@ signal element_type_changed(p_old_element: Element, p_new_element: Element)
 ## Emitted when [member Element._layer] is updated in all Elements.
 signal element_layers_updated
 ## Emitted when one or multiple property nodes change visibility. See [ElementPropertyContainer].
-signal property_node_visibility_changed
+signal property_node_visibility_changed(p_element: Element)
 
 var _elements: Array[Element] # This array is sorted by layer order.
-var _element_ui_configurations: Dictionary[Element, ElementUIConfigurations]
+#var _element_ui_configurations: Dictionary[Element, ElementUIConfigurations]
+var _element_ui_configurations_array: Array[ElementUIConfigurations]
 
 var _element_unique_id: int
 
@@ -49,7 +50,7 @@ func _init() -> void:
 	_element_unique_id = -1
 	
 	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		CustomLogger.log_critical_error("Could not connect signal in ElementManager.")
+		push_error("Could not connect signal in ElementManager.")
 	
 	_element_empty_ui_configurations = preload("uid://c5noed3x5ibew")
 	_element_analyzer_ui_configurations = preload("uid://blysgijw0k6ah")
@@ -60,7 +61,7 @@ func _init() -> void:
 
 func get_elements(p_duplicate: bool) -> Array[Element]:
 	if p_duplicate:
-		return _elements.duplicate_deep(Resource.DEEP_DUPLICATE_ALL)
+		return _elements.duplicate_deep(Resource.DeepDuplicateMode.DEEP_DUPLICATE_ALL)
 	
 	return _elements
 
@@ -82,18 +83,27 @@ func create_element() -> Element:
 	element.set_element_visibility(true)
 	
 	_elements.append(element)
-	if not _element_ui_configurations.set(element, _get_configurations_basic(Element.ElementType.EMPTY)):
-		CustomLogger.log_critical_error("Could not add config to dictionary.")
+	var configs: ElementUIConfigurations = _get_configurations_basic(Element.ElementType.EMPTY)
+	configs.set_element(element)
+	_element_ui_configurations_array.append(configs)
+	#if not _element_ui_configurations.set(element, configs):
+	#	CustomLogger.log_critical_error("Could not add config to dictionary.")
+	#	delete_element(element)
+	#	return null
 	
 	CustomLogger.log_normal("Created Element with ID: " + str(element.get_element_unique_id()))
 	
 	element_created.emit(element)
 	
+	if not FileManager.get_unsaved_changes():
+		FileManager.set_unsaved_changed(true)
+	
 	return element
 
 func load_element(p_properties: Dictionary[StringName, Variant]) -> void:
 	var old_element_array_size: int = _elements.size()
-	var old_element_ui_configs_size: int = _element_ui_configurations.size()
+	#var old_element_ui_configs_size: int = _element_ui_configurations.size()
+	var old_element_ui_configs_size: int = _element_ui_configurations_array.size()
 	
 	var element: Element
 	match p_properties.get(Element.SN_ELEMENT_TYPE):
@@ -122,8 +132,8 @@ func load_element(p_properties: Dictionary[StringName, Variant]) -> void:
 		# If file has missing information.
 		if not p_properties.has(property_key):
 			CustomLogger.log_warning(
-				"{Property} is not available in the property dictionary. Keeping its default value.".format(
-					{"Property": property_key}
+				"{property} is not available in the property dictionary. Keeping its default value.".format(
+					{"property": property_key}
 				)
 			)
 	
@@ -135,7 +145,7 @@ func load_element(p_properties: Dictionary[StringName, Variant]) -> void:
 		# If Element has missing information.
 		if not element_setters.has(property_key):
 			CustomLogger.log_warning(
-				"{Property} does not exist in the Element. Skipping.".format({"Property": property_key})
+				"{property} does not exist in the Element. Skipping.".format({"property": property_key})
 			)
 			continue
 		
@@ -144,14 +154,28 @@ func load_element(p_properties: Dictionary[StringName, Variant]) -> void:
 		element.call(element_setters.get(property_key) as StringName, p_properties.get(property_key))
 	
 	_elements.append(element)
-	if not _element_ui_configurations.set(element, _get_configurations_basic(element.get_element_type())):
-		CustomLogger.log_warning("Could not add config to dictionary.")
+	var configs: ElementUIConfigurations = _get_configurations_basic(element.get_element_type())
+	configs.set_element(element)
+	#if not _element_ui_configurations.set(element, configs):
+	#	CustomLogger.log_warning("Could not add config to dictionary.")
+	_element_ui_configurations_array.append(configs)
 	
 	if (
 		not _elements.size() == old_element_array_size + 1 or
-		not _element_ui_configurations.size() == old_element_ui_configs_size + 1
+		#not _element_ui_configurations.size() == old_element_ui_configs_size + 1
+		not _element_ui_configurations_array.size() == old_element_ui_configs_size + 1
 	):
-		CustomLogger.log_warning("Incorrect sizes for Element lists.")
+		CustomLogger.log_warning(
+			"Incorrect sizes for Element lists. Sizes: {1}, {2}, {3}, {4}".format(
+				{
+					"1": str(_elements.size()),
+					"2": str(old_element_array_size + 1),
+					#"3": str(_element_ui_configurations.size()),
+					"3": str(_element_ui_configurations_array.size()),
+					"4": str(old_element_ui_configs_size + 1)
+				}
+			)
+		)
 	
 	CustomLogger.log_normal("Loaded Element with ID: " + str(element.get_element_unique_id()))
 	
@@ -163,25 +187,31 @@ func load_element(p_properties: Dictionary[StringName, Variant]) -> void:
 func delete_element(p_element: Element) -> void:
 	CustomLogger.log_normal("Deleting Element with ID: " + str(p_element.get_element_unique_id()))
 	
-	if not _element_ui_configurations.erase(p_element):
-		CustomLogger.log_warning("Could not find Element in config dictionary.")
+	#if not _element_ui_configurations.erase(p_element):
+	#	CustomLogger.log_warning("Could not find Element in config dictionary.")
+	_element_ui_configurations_array.erase(get_configurations_for_element(p_element))
 	_elements.erase(p_element)
 	
 	_update_layers()
 	
 	element_deleted.emit(p_element)
+	
+	if not FileManager.get_unsaved_changes():
+		FileManager.set_unsaved_changed(true)
 
 func clear_elements() -> void:
 	CustomLogger.log_normal("Clearing Elements.")
 	
-	_element_ui_configurations.clear()
+	#_element_ui_configurations.clear()
+	_element_ui_configurations_array.clear()
 	
 	for element: Element in _elements:
 		element_deleted.emit(element)
 	
 	_elements.clear()
 	
-	if not _elements.is_empty() or not _element_ui_configurations.is_empty():
+	#if not _elements.is_empty() or not _element_ui_configurations.is_empty():
+	if not _elements.is_empty() or not _element_ui_configurations_array.is_empty():
 		CustomLogger.log_critical_error("Could not clear Element lists properly.")
 	
 	#elements_cleared.emit()
@@ -206,6 +236,9 @@ func change_element_type(p_element: Element) -> void:
 			new_element = ElementText.new() as ElementText
 		Element.ElementType.VISUAL_EFFECT:
 			new_element = ElementVisualEffect.new() as ElementVisualEffect
+		_:
+			CustomLogger.log_warning("Unrecognized Element type. Using Empty type instead.")
+			new_element = ElementEmpty.new() as ElementEmpty
 	
 	new_element.set_element_unique_id(p_element.get_element_unique_id())
 	new_element.set_element_name(p_element.get_element_name())
@@ -213,16 +246,20 @@ func change_element_type(p_element: Element) -> void:
 	new_element.set_element_layer(p_element.get_element_layer(), false)
 	new_element.set_element_visibility(p_element.get_element_visibility())
 	
-	if not _element_ui_configurations.erase(p_element):
-		CustomLogger.log_critical_error("Could not find Element in config dictionary.")
+	#if not _element_ui_configurations.erase(p_element):
+	#	CustomLogger.log_critical_error("Could not find Element in config dictionary.")
+	_element_ui_configurations_array.erase(get_configurations_for_element(p_element))
 	_elements.erase(p_element)
 	
 	@warning_ignore("return_value_discarded")
 	_elements.insert(new_element.get_element_layer(), new_element)
-	if not _element_ui_configurations.set(
-		new_element, _get_configurations_basic(new_element.get_element_type())
-	):
-		CustomLogger.log_critical_error("Could not add config to dictionary.")
+	var configs: ElementUIConfigurations = _get_configurations_basic(new_element.get_element_type())
+	configs.set_element(new_element)
+	#if not _element_ui_configurations.set(
+	#	new_element, configs
+	#):
+	#	CustomLogger.log_critical_error("Could not add config to dictionary.")
+	_element_ui_configurations_array.append(configs)
 	
 	element_type_changed.emit(p_element, new_element)
 
@@ -238,34 +275,43 @@ func reindex_layer(p_element: Element, p_to_index: int) -> void:
 func reset_unique_id() -> Error:
 	if _elements.size():
 		CustomLogger.log_critical_error("Could not reset unique IDs, since Elements still exist.")
-		return FAILED
+		return Error.FAILED
 	
 	_element_unique_id = -1
-	return OK
+	return Error.OK
 
 func get_configurations_for_element(p_element: Element) -> ElementUIConfigurations:
-	return _element_ui_configurations.get(p_element)
+	#return _element_ui_configurations.get(p_element)
+	for config: ElementUIConfigurations in _element_ui_configurations_array:
+		if config.get_element() == p_element:
+			return config
+	
+	return null
+
+func notify_property_node_visibility_changed(p_element: Element) -> void:
+	property_node_visibility_changed.emit(p_element)
 
 func _get_configurations_basic(p_type: Element.ElementType) -> ElementUIConfigurations:
 	match p_type:
 		Element.ElementType.EMPTY:
-			return _element_empty_ui_configurations.duplicate_deep(Resource.DEEP_DUPLICATE_ALL)
+			return _element_empty_ui_configurations.duplicate_deep(Resource.DeepDuplicateMode.DEEP_DUPLICATE_ALL)
 		Element.ElementType.ANALYZER:
-			return _element_analyzer_ui_configurations.duplicate_deep(Resource.DEEP_DUPLICATE_ALL)
+			return _element_analyzer_ui_configurations.duplicate_deep(
+				Resource.DeepDuplicateMode.DEEP_DUPLICATE_ALL
+			)
 		Element.ElementType.IMAGE:
-			return _element_image_ui_configurations.duplicate_deep(Resource.DEEP_DUPLICATE_ALL)
+			return _element_image_ui_configurations.duplicate_deep(Resource.DeepDuplicateMode.DEEP_DUPLICATE_ALL)
 		Element.ElementType.SHADER:
-			return _element_shader_ui_configurations.duplicate_deep(Resource.DEEP_DUPLICATE_ALL)
+			return _element_shader_ui_configurations.duplicate_deep(Resource.DeepDuplicateMode.DEEP_DUPLICATE_ALL)
 		Element.ElementType.TEXT:
-			return _element_text_ui_configurations.duplicate_deep(Resource.DEEP_DUPLICATE_ALL)
+			return _element_text_ui_configurations.duplicate_deep(Resource.DeepDuplicateMode.DEEP_DUPLICATE_ALL)
 		Element.ElementType.VISUAL_EFFECT:
-			return _element_visual_effect_ui_configurations.duplicate_deep(Resource.DEEP_DUPLICATE_ALL)
+			return _element_visual_effect_ui_configurations.duplicate_deep(
+				Resource.DeepDuplicateMode.DEEP_DUPLICATE_ALL
+			)
 	
 	CustomLogger.log_critical_error("Unknown Element type for UI configurations.")
 	return _element_empty_ui_configurations
-
-func notify_property_node_visibility_changed() -> void:
-	property_node_visibility_changed.emit()
 
 func _get_next_available_uid() -> int:
 	_element_unique_id += 1

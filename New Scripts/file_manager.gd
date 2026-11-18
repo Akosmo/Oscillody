@@ -18,11 +18,12 @@
 extends Node
 
 signal preset_saved(p_preset_name: String)
+signal canceled_preset_change
 
 enum AppDirectory {
-	LOG,
+	LOGS,
 	PRESETS,
-	RENDER_INFO,
+	EXPORT_INFO,
 	SETTINGS,
 	TEMP
 }
@@ -30,45 +31,55 @@ enum AppDirectory {
 const SN_PRESET: StringName = &"(File)_Preset"
 const SN_MASTER: StringName = &"(File)_Master"
 
-const LOG_FILENAME: String = "log.log"
+const MAIN_LOG_FILENAME: String = "main_log.log"
+const FFMPEG_LOG_FILENAME: String = "ffmpeg_log.log"
 const SETTINGS_FILENAME: String = "settings.json"
+
+const EXPORT_PRESET_NAME: String = "export_preset"
+const AUDIO_FOR_EXPORT: String = "audio_for_export"
 
 var _base_directory: String
 var _debug_base_directory: String
 
-var _log_directory: String
+var _logs_directory: String
 var _presets_directory: String
-var _render_info_directory: String
+var _export_info_directory: String
 var _settings_directory: String
 var _temp_directory: String
 
 var _selected_preset: String
+var _unsaved_changes: bool
+var _desired_preset: String
 
 func _init() -> void:
 	_base_directory = OS.get_executable_path().get_base_dir()
 	_debug_base_directory = OS.get_user_data_dir()
 	
 	if OS.has_feature("editor"):
-		_log_directory = _debug_base_directory.path_join("Log (Oscillody Debug)")
+		_logs_directory = _debug_base_directory.path_join("Logs (Oscillody Debug)")
 		_presets_directory = _debug_base_directory.path_join("Presets (Oscillody Debug)")
+		_export_info_directory = _debug_base_directory.path_join("Export Info (Oscillody Debug)")
 		_settings_directory = _debug_base_directory.path_join("Settings (Oscillody Debug)")
+		_temp_directory = _debug_base_directory.path_join("Temp (Oscillody Debug)")
 	else:
-		_log_directory = _base_directory.path_join("Log")
+		_logs_directory = _base_directory.path_join("Logs")
 		_presets_directory = _base_directory.path_join("Presets")
-		_render_info_directory = _base_directory.path_join("Render Info")
+		_export_info_directory = _base_directory.path_join("Export Info")
 		_settings_directory = _base_directory.path_join("Settings")
 		_temp_directory = _base_directory.path_join("Temp")
 	
 	_selected_preset = ""
+	_unsaved_changes = false
+	_desired_preset = ""
 
 func get_directory(p_directory: AppDirectory) -> String:
 	match p_directory:
-		AppDirectory.LOG:
-			return _log_directory
+		AppDirectory.LOGS:
+			return _logs_directory
 		AppDirectory.PRESETS:
 			return _presets_directory
-		AppDirectory.RENDER_INFO:
-			return _render_info_directory
+		AppDirectory.EXPORT_INFO:
+			return _export_info_directory
 		AppDirectory.SETTINGS:
 			return _settings_directory
 		AppDirectory.TEMP:
@@ -83,29 +94,32 @@ func get_selected_preset() -> String:
 func preset_exists(p_preset_name: String) -> bool:
 	return FileAccess.file_exists(_presets_directory.path_join(p_preset_name + ".json"))
 
-# TEST: Save empty preset.
-func save_preset(p_preset_name: String, p_render_preset: bool = false) -> Error:
+func save_preset(p_preset_name: String, p_export_preset: bool = false) -> Error:
 	CustomLogger.log_normal(
-		"Saving preset: {preset} (render preset: {render})".format(
-			{"preset": p_preset_name, "render": p_render_preset}
+		"Saving preset: {preset} (export preset: {export})".format(
+			{"preset": p_preset_name, "export": p_export_preset}
 		)
 	)
 	
-	var dir_to_use: String = _render_info_directory if p_render_preset else _presets_directory
+	if ElementManager.get_element_count() < 1:
+		CustomLogger.log_error("Can't save an empty preset.")
+		return Error.FAILED
+	
+	var dir_to_use: String = _export_info_directory if p_export_preset else _presets_directory
 	if check_directory(dir_to_use):
-		return ERR_FILE_BAD_PATH
+		return Error.ERR_FILE_BAD_PATH
 	
 	var preset_file: FileAccess = FileAccess.open(
 		dir_to_use.path_join(p_preset_name + ".json"),
-		FileAccess.WRITE
+		FileAccess.ModeFlags.WRITE
 	)
 	if preset_file == null:
 		CustomLogger.log_critical_error(
-			"Could not create preset file. Error: {Error}".format(
-				{"Error": error_string(FileAccess.get_open_error())}
+			"Could not create preset file. Error: {error}".format(
+				{"error": error_string(FileAccess.get_open_error())}
 			)
 		)
-		return ERR_FILE_CANT_WRITE
+		return Error.ERR_FILE_CANT_WRITE
 	
 	var save_data: Dictionary[int, Dictionary]
 	for element: Element in ElementManager.get_elements(false):
@@ -116,29 +130,36 @@ func save_preset(p_preset_name: String, p_render_preset: bool = false) -> Error:
 	
 	if not preset_file.store_line(JSON.stringify(save_data, "\t", false)):
 		CustomLogger.log_critical_error(
-			"Could not write preset file. Error: {Error}".format(
-				{"Error": error_string(FileAccess.get_open_error())}
+			"Could not write preset file. Error: {error}".format(
+				{"error": error_string(FileAccess.get_open_error())}
 			)
 		)
 		preset_file.close()
-		return ERR_FILE_CANT_WRITE
+		return Error.ERR_FILE_CANT_WRITE
 	
 	preset_file.close()
 	
-	preset_saved.emit(p_preset_name)
+	if not p_export_preset:
+		preset_saved.emit(p_preset_name)
+		_selected_preset = p_preset_name
+		_unsaved_changes = false
 	
-	_selected_preset = p_preset_name
-	
-	return OK
+	return Error.OK
 
-# TODO: Handle compatibility (missing properties (TEST), new properties (TEST), and different UI configs).
-# This should be handled in ElementManager, probably during the `load_element()` call.
 func load_preset(p_preset_name: String) -> Error:
+	if p_preset_name.is_empty():
+		CustomLogger.log_normal("Resetting preset.")
+		ElementManager.clear_elements()
+		ElementManager.reset_unique_id()
+		_selected_preset = p_preset_name
+		_unsaved_changes = false
+		return Error.OK
+	
 	CustomLogger.log_normal("Loading preset: " + p_preset_name)
 	
-	var dir_to_use: String = _render_info_directory if OS.has_feature("movie") else _presets_directory
+	var dir_to_use: String = _export_info_directory if OS.has_feature("movie") else _presets_directory
 	if check_directory(dir_to_use):
-		return ERR_FILE_BAD_PATH
+		return Error.ERR_FILE_BAD_PATH
 	
 	var preset_path: String = dir_to_use.path_join(p_preset_name + ".json")
 	if not FileAccess.file_exists(preset_path):
@@ -148,39 +169,40 @@ func load_preset(p_preset_name: String) -> Error:
 	var preset_text: String = FileAccess.get_file_as_string(preset_path)
 	if preset_text.is_empty():
 		CustomLogger.log_error(
-			"Could not open preset file. Error: {Error}.".format(
-				{"Error": error_string(FileAccess.get_open_error())}
+			"Could not open preset file. Error: {error}.".format(
+				{"error": error_string(FileAccess.get_open_error())}
 			)
 		)
-		return ERR_FILE_CANT_OPEN
+		return Error.ERR_FILE_CANT_OPEN
 	if json_resource.parse(preset_text):
 		CustomLogger.log_error(
-			"Could not parse preset file. Error: {Error}; Line: {Line}".format(
-				{"Error": json_resource.get_error_message(), "Line": json_resource.get_error_line()}
+			"Could not parse preset file. Error: {error}; Line: {line}".format(
+				{"error": json_resource.get_error_message(), "line": json_resource.get_error_line()}
 			)
 		)
-		return ERR_PARSE_ERROR
+		return Error.ERR_PARSE_ERROR
 	
 	var raw_data: Dictionary = json_resource.get_data()
 	if raw_data.is_empty():
 		CustomLogger.log_error("Preset JSON data is empty.")
-		return FAILED
+		return Error.FAILED
 	
 	ElementManager.clear_elements()
 	if ElementManager.reset_unique_id():
-		return FAILED
+		return Error.FAILED
 	
 	var load_data: Dictionary[int, Dictionary] = _fix_preset_json_data(raw_data)
-	for element: int in load_data.keys():
-		var property_dict: Dictionary[StringName, Variant] = load_data.get(element)
-		if property_dict == null:
-			CustomLogger.log_warning("Could not load an Element's properties. Skipping.")
-			continue
+	for load_data_dict: Dictionary in load_data.values():
+		var property_dict: Dictionary[StringName, Variant] = load_data_dict
+		#if property_dict == null:
+		#	CustomLogger.log_warning("Could not load an Element's properties. Skipping.")
+		#	continue
 		ElementManager.load_element(property_dict)
 	
 	_selected_preset = p_preset_name
+	_unsaved_changes = false
 	
-	return OK
+	return Error.OK
 
 func get_preset_list() -> PackedStringArray:
 	var ret: PackedStringArray
@@ -188,31 +210,139 @@ func get_preset_list() -> PackedStringArray:
 	if check_directory(_presets_directory):
 		return ret
 	
-	for file: String in DirAccess.get_files_at(_presets_directory):
+	var temp_arr: Array = Array(DirAccess.get_files_at(_presets_directory))
+	# Better sorting. Array element `a` is compared to `b` and put ahead if >= 0.
+	# The normal sort goes "1, 10, 11, 12...19, 2, 20, 21...".
+	temp_arr.sort_custom(func(a: String, b: String) -> bool: return a.naturalnocasecmp_to(b) < 0)
+	for file: String in temp_arr:
 		if file.get_extension() == "json":
 			ret.append(file.get_basename())
 	
-	# TODO: Maybe sort this list.
-	
 	return ret
+
+func set_unsaved_changed(p_value: bool) -> void:
+	_unsaved_changes = p_value
+
+func get_unsaved_changes() -> bool:
+	return _unsaved_changes
+
+func set_desired_preset(p_preset_name: String) -> void:
+	_desired_preset = p_preset_name
+
+func get_desired_preset() -> String:
+	return _desired_preset
+
+func notify_canceled_preset_change() -> void:
+	canceled_preset_change.emit()
+
+func save_audio_files() -> Error:
+	CustomLogger.log_normal("Saving audio files.")
+	
+	if check_directory(_export_info_directory):
+		return Error.ERR_FILE_BAD_PATH
+	
+	var audio_list_file: FileAccess = FileAccess.open(
+		_export_info_directory.path_join(AUDIO_FOR_EXPORT + ".json"),
+		FileAccess.ModeFlags.WRITE
+	)
+	if audio_list_file == null:
+		CustomLogger.log_warning(
+			"Could not create audio list file. Error: {error}".format(
+				{"error": error_string(FileAccess.get_open_error())}
+			)
+		)
+		return Error.ERR_FILE_CANT_WRITE
+	
+	var save_data: PackedStringArray
+	var stream_names_dict: Dictionary[StringName, StringName] = AudioManager.get_stream_names()
+	for path: StringName in stream_names_dict.keys():
+		var path_str: String = String(path)
+		if not FileAccess.file_exists(path_str):
+			CustomLogger.log_error(
+				"Could not save audio paths, since {path} does not exist.".format({"path": path_str})
+			)
+		if stream_names_dict.get(path) == AudioManager.get_master_name():
+			save_data.insert(0, path_str)
+			continue
+		save_data.append(path_str)
+	
+	if not audio_list_file.store_line(JSON.stringify(save_data, "", false)):
+		CustomLogger.log_warning(
+			"Could not write audio list file. Error: {error}".format(
+				{"error": error_string(FileAccess.get_open_error())}
+			)
+		)
+		audio_list_file.close()
+		return Error.ERR_FILE_CANT_WRITE
+	
+	audio_list_file.close()
+	
+	return Error.OK
+
+func load_audio_files() -> Error:
+	CustomLogger.log_normal("Loading audio files.")
+	
+	if check_directory(_export_info_directory):
+		return Error.ERR_FILE_BAD_PATH
+	
+	var audio_path: String = _export_info_directory.path_join(AUDIO_FOR_EXPORT + ".json")
+	if not FileAccess.file_exists(audio_path):
+		CustomLogger.log_error("Audio list does not exist.")
+	
+	var json_resource: JSON = JSON.new()
+	var audio_list_text: String = FileAccess.get_file_as_string(audio_path)
+	if audio_list_text.is_empty():
+		CustomLogger.log_error(
+			"Could not open audio list file. Error: {error}.".format(
+				{"error": error_string(FileAccess.get_open_error())}
+			)
+		)
+		return Error.ERR_FILE_CANT_OPEN
+	if json_resource.parse(audio_list_text):
+		CustomLogger.log_error(
+			"Could not parse audio list file. Error: {error}; Line: {line}".format(
+				{"error": json_resource.get_error_message(), "line": json_resource.get_error_line()}
+			)
+		)
+		return Error.ERR_PARSE_ERROR
+	
+	var raw_data: Array = json_resource.get_data()
+	if raw_data.is_empty():
+		CustomLogger.log_error("Audio JSON data is empty.")
+		return Error.FAILED
+	
+	var load_data: PackedStringArray = _fix_audio_json_data(raw_data)
+	
+	for path: String in load_data:
+		if AudioManager.import_audio_files(path):
+			CustomLogger.log_error("Failed to import a file.")
+			return Error.FAILED
+	
+	var stream_names: Dictionary[StringName, StringName] = AudioManager.get_stream_names()
+	#AudioManager.set_master_name(stream_names.get(stream_names.keys()[0]))
+	AudioManager.set_master_name(stream_names.get(StringName(load_data[0])) as StringName)
+	
+	AudioManager.notify_updated_streams(true)
+	
+	return Error.OK
 
 func save_settings() -> Error:
 	CustomLogger.log_normal("Saving settings.")
 	
 	if check_directory(_settings_directory):
-		return ERR_FILE_BAD_PATH
+		return Error.ERR_FILE_BAD_PATH
 	
 	var settings_file: FileAccess = FileAccess.open(
 		_settings_directory.path_join(SETTINGS_FILENAME),
-		FileAccess.WRITE
+		FileAccess.ModeFlags.WRITE
 	)
 	if settings_file == null:
 		CustomLogger.log_warning(
-			"Could not create settings file. Error: {Error}".format(
-				{"Error": error_string(FileAccess.get_open_error())}
+			"Could not create settings file. Error: {error}".format(
+				{"error": error_string(FileAccess.get_open_error())}
 			)
 		)
-		return ERR_FILE_CANT_WRITE
+		return Error.ERR_FILE_CANT_WRITE
 	
 	var save_data: Dictionary[StringName, Variant]
 	var settings_getters: Dictionary[StringName, StringName] = SettingsManager.get_getters()
@@ -226,23 +356,22 @@ func save_settings() -> Error:
 	
 	if not settings_file.store_line(JSON.stringify(save_data, "\t", false)):
 		CustomLogger.log_warning(
-			"Could not write settings file. Error: {Error}".format(
-				{"Error": error_string(FileAccess.get_open_error())}
+			"Could not write settings file. Error: {error}".format(
+				{"error": error_string(FileAccess.get_open_error())}
 			)
 		)
 		settings_file.close()
-		return ERR_FILE_CANT_WRITE
+		return Error.ERR_FILE_CANT_WRITE
 	
 	settings_file.close()
 	
-	return OK
+	return Error.OK
 
-# TODO: Handle compatibility: missing properties, and new properties.
 func load_settings() -> Error:
 	CustomLogger.log_normal("Loading settings.")
 	
 	if check_directory(_settings_directory):
-		return ERR_FILE_BAD_PATH
+		return Error.ERR_FILE_BAD_PATH
 	
 	var settings_path: String = _settings_directory.path_join(SETTINGS_FILENAME)
 	if not FileAccess.file_exists(settings_path):
@@ -252,47 +381,47 @@ func load_settings() -> Error:
 	var settings_text: String = FileAccess.get_file_as_string(settings_path)
 	if settings_text.is_empty():
 		CustomLogger.log_error(
-			"Could not open settings file. Error: {Error}.".format(
-				{"Error": error_string(FileAccess.get_open_error())}
+			"Could not open settings file. Error: {error}.".format(
+				{"error": error_string(FileAccess.get_open_error())}
 			)
 		)
-		return ERR_FILE_CANT_OPEN
+		return Error.ERR_FILE_CANT_OPEN
 	if json_resource.parse(settings_text):
 		CustomLogger.log_error(
-			"Could not parse settings file. Error: {Error}; Line: {Line}".format(
-				{"Error": json_resource.get_error_message(), "Line": json_resource.get_error_line()}
+			"Could not parse settings file. Error: {error}; Line: {line}".format(
+				{"error": json_resource.get_error_message(), "line": json_resource.get_error_line()}
 			)
 		)
-		return ERR_PARSE_ERROR
+		return Error.ERR_PARSE_ERROR
 	
 	var raw_data: Dictionary = json_resource.get_data()
 	if raw_data.is_empty():
 		CustomLogger.log_error("Settings JSON data is empty.")
-		return FAILED
+		return Error.FAILED
 	
-	var load_data: Dictionary[StringName, Variant] = _fix_json_data(raw_data)
+	var load_data: Dictionary[StringName, Variant] = _fix_settings_json_data(raw_data)
 	
 	var settings_properties: Dictionary[StringName, Variant] = SettingsManager.get_properties()
 	for property_key: StringName in settings_properties.keys():
 		# If file has missing information.
 		if not load_data.has(property_key):
 			CustomLogger.log_warning(
-				"{Property} is not available in the property dictionary. Keeping its default value.".format(
-					{"Property": property_key}
+				"{property} is not available in the property dictionary. Keeping its default value.".format(
+					{"property": property_key}
 				)
 			)
 	
 	for property_key: StringName in load_data.keys():
 		var property_value: Variant = load_data.get(property_key)
 		if typeof(property_value) == TYPE_STRING and property_value.is_empty():
-			CustomLogger.log_warning("{Property} has an empty value.".format({"Property": property_key}))
+			CustomLogger.log_warning("{property} has an empty value.".format({"property": property_key}))
 			continue
 		
 		var settings_setters: Dictionary[StringName, StringName] = SettingsManager.get_setters()
 		# If settings has missing information.
 		if not settings_setters.has(property_key):
 			CustomLogger.log_warning(
-				"{Property} does not exist in the settings class. Skipping.".format({"Property": property_key})
+				"{property} does not exist in the settings class. Skipping.".format({"property": property_key})
 			)
 			continue
 		
@@ -309,7 +438,7 @@ func load_settings() -> Error:
 			#SettingsManager.SN_APP_THEME:
 				#SettingsManager.set_app_theme(load_data.get(property_key))
 	
-	return OK
+	return Error.OK
 
 func check_directory(p_path: String) -> Error:
 	if not DirAccess.dir_exists_absolute(p_path):
@@ -318,9 +447,9 @@ func check_directory(p_path: String) -> Error:
 		)
 		if DirAccess.make_dir_absolute(p_path):
 			push_error("Could not make \"{Directory}\".".format({"Directory": p_path}))
-			return FAILED
+			return Error.FAILED
 	
-	return OK
+	return Error.OK
 
 func _fix_preset_json_data(p_data: Dictionary) -> Dictionary[int, Dictionary]:
 	var ret: Dictionary[int, Dictionary] = {}
@@ -431,7 +560,14 @@ func _fix_preset_json_data(p_data: Dictionary) -> Dictionary[int, Dictionary]:
 	
 	return ret
 
-func _fix_json_data(p_data: Dictionary) -> Dictionary[StringName, Variant]:
+func _fix_audio_json_data(p_data: Array) -> PackedStringArray:
+	var ret: PackedStringArray = []
+	for idx: int in p_data.size():
+		ret.append(p_data[idx])
+	
+	return ret
+
+func _fix_settings_json_data(p_data: Dictionary) -> Dictionary[StringName, Variant]:
 	var ret: Dictionary[StringName, Variant] = {}
 	
 	for item: String in p_data.keys():

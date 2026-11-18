@@ -42,7 +42,7 @@ const SN_SMOOTHING_AMOUNT: StringName = &"(Reactive)_Smoothing_Amount"
 var _begin_frequency: int = 20
 var _end_frequency: int = 80
 var _minimum_decibels: int = -25
-var _smoothing_type: ReactiveSmoothingType = ReactiveSmoothingType.DECAY
+var _smoothing_type: ReactiveSmoothingType = ReactiveSmoothingType.INTERPOLATION
 var _smoothing_amount: float = 0.5
 
 func set_begin_frequency(p_value: int) -> void:

@@ -15,7 +15,9 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-# TODO: Needs to be rewritten (including in C#).
+# TODO: Needs to be rewritten (including using C++ GDExtension).
+# This should be done much later, as I won't be debugging GDExtension, and I want to keep it simple for now.
+# The GDExtension should include all audio analyzers. Figure out how to include RealTimeAudioData.
 
 extends Node2D
 
@@ -133,9 +135,10 @@ func _draw_waveform() -> void:
 		_waveform_points[point_idx].y = \
 		base_line[point_idx].y + _waveform_data[point_idx] * _analyzer_height * _positive_direction.y
 	
-	draw_polyline(
-		_waveform_points,
-		_waveform_color,
-		_waveform_thickness,
-		_waveform_antialiasing
-	)
+	if _waveform_points.size() >= 2:
+		draw_polyline(
+			_waveform_points,
+			_waveform_color,
+			_waveform_thickness,
+			_waveform_antialiasing
+		)

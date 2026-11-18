@@ -24,7 +24,7 @@ func _ready() -> void:
 	if is_visible():
 		hide()
 	
-	panel_container.set_anchors_preset(Control.PRESET_CENTER)
+	panel_container.set_anchors_preset(Control.LayoutPreset.PRESET_CENTER)
 	panel_container.set_pivot_offset(panel_container.get_size() * 0.5)
 	
 	_quit_button.pressed.connect(_on_quit_pressed)
@@ -33,7 +33,7 @@ func _ready() -> void:
 func _on_quit_pressed() -> void:
 	if FileManager.save_settings():
 		CustomLogger.log_warning(
-			"Could not save settings. Next app luanch will load either default settings, or settings \
+			"Could not save settings. Next app launch will load either default settings, or settings \
 saved previously"
 		)
 	CustomLogger.log_normal("Closing Oscillody.")

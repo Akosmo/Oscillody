@@ -35,10 +35,6 @@ var _vignette_shader_material: ShaderMaterial
 #var _world_environment: WorldEnvironment
 #var _environment: Environment
 
-# NOTE: Use these if not making the grain shader static.
-#var _soft_light_color_rect: ColorRect
-#var _soft_light_shader_material: ShaderMaterial
-
 var _audio_data: RealTimeAudioData
 
 var _glitch_block_time: float
@@ -47,13 +43,11 @@ var _scanlines_time: float
 var _tape_distortion_wave_time: float
 var _tape_distortion_block_time: float
 
-# TEST: Setting reaction controls to non-zero, then removing the audio source, to see if things break.
-
 func _ready() -> void:
 	_element_ui_configurations = ElementManager.get_configurations_for_element(element)
 	
 	_color_rect = ColorRect.new()
-	_color_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_color_rect.set_anchors_preset(Control.LayoutPreset.PRESET_FULL_RECT)
 	_bloom_shader_material = ShaderMaterial.new()
 	_chromatic_aberration_shader_material = ShaderMaterial.new()
 	_glitch_shader_material = ShaderMaterial.new()
@@ -108,7 +102,7 @@ func _ready() -> void:
 	if _connect_signals():
 		CustomLogger.log_critical_error("Could not connect signals in ElementCanvasVisualEffect.")
 
-func _process(_delta: float) -> void:
+func _process(_p_delta: float) -> void:
 	if element.get_visual_effect_type() == ElementVisualEffect.VisualEffectType.GLITCH:
 		_glitch_block_time += 0.5 * \
 		element.get_glitch_block_speed() + \
@@ -124,9 +118,13 @@ func _process(_delta: float) -> void:
 		_get_reaction_magnitude(element.get_scanlines_speed_reaction()) - 1.0
 		_scanlines_shader_material.set_shader_parameter("custom_time", _scanlines_time)
 	elif element.get_visual_effect_type() == ElementVisualEffect.VisualEffectType.TAPE_DISTORTION:
-		_tape_distortion_wave_time += 0.02 * element.get_tape_distortion_wave_speed()
+		_tape_distortion_wave_time += 0.02 * \
+		element.get_tape_distortion_wave_speed() + \
+		_get_reaction_magnitude(element.get_tape_distortion_wave_speed_reaction() * 0.1) - 1.0
 		_tape_distortion_shader_material.set_shader_parameter("wave_speed", _tape_distortion_wave_time)
-		_tape_distortion_block_time += 0.02 * element.get_tape_distortion_block_speed()
+		_tape_distortion_block_time += 0.02 * \
+		element.get_tape_distortion_block_speed() + \
+		_get_reaction_magnitude(element.get_tape_distortion_block_speed_reaction() * 0.1) - 1.0
 		_tape_distortion_shader_material.set_shader_parameter("block_speed", _tape_distortion_block_time)
 	
 	if element.get_visual_effect_type() == ElementVisualEffect.VisualEffectType.BLOOM:
@@ -142,7 +140,7 @@ func _process(_delta: float) -> void:
 			(element.get_chromatic_aberration_amount() + \
 			_get_reaction_magnitude(element.get_chromatic_aberration_amount_reaction()) - \
 			1.0) * \
-			0.01 
+			0.01
 		)
 	elif element.get_visual_effect_type() == ElementVisualEffect.VisualEffectType.GLITCH:
 		_glitch_shader_material.set_shader_parameter(
@@ -168,8 +166,8 @@ func _process(_delta: float) -> void:
 		)
 		_lens_distortion_shader_material.set_shader_parameter(
 			"zoom_factor",
-			element.get_lens_distortion_zoom_factor() + \
-			_get_reaction_magnitude(element.get_lens_distortion_zoom_factor_reaction() * 0.2) - \
+			(2.0 - element.get_lens_distortion_zoom_factor()) + \
+			_get_reaction_magnitude((1.0 - element.get_lens_distortion_zoom_factor_reaction() + -1.0) * 0.5) - \
 			1.0
 		)
 	elif element.get_visual_effect_type() == ElementVisualEffect.VisualEffectType.SPIN_ZOOM_BLUR:
@@ -179,12 +177,27 @@ func _process(_delta: float) -> void:
 			_get_reaction_magnitude(element.get_spin_zoom_blur_amount_reaction()) - \
 			1.0
 		)
+	elif element.get_visual_effect_type() == ElementVisualEffect.VisualEffectType.TAPE_DISTORTION:
+		_tape_distortion_shader_material.set_shader_parameter(
+			"wave_offset_amount",
+			(element.get_tape_distortion_wave_offset_amount() + \
+			_get_reaction_magnitude(element.get_tape_distortion_wave_offset_amount_reaction()) - \
+			1.0) * \
+			0.5
+		)
+		_tape_distortion_shader_material.set_shader_parameter(
+			"block_offset_amount",
+			(element.get_tape_distortion_block_offset_amount() + \
+			_get_reaction_magnitude(element.get_tape_distortion_block_offset_amount_reaction()) - \
+			1.0) * \
+			0.1
+		)
 	elif element.get_visual_effect_type() == ElementVisualEffect.VisualEffectType.VIGNETTE:
 		_vignette_shader_material.set_shader_parameter(
 			"size",
 			element.get_vignette_size() * \
 			4.0 + \
-			_get_reaction_magnitude(element.get_vignette_size_reaction()) - \
+			_get_reaction_magnitude(element.get_vignette_size_reaction() * 2.0) - \
 			1.0
 		)
 
@@ -220,12 +233,12 @@ func _get_reaction_magnitude(p_amount: float) -> float:
 
 func _connect_signals() -> Error:
 	if element.property_changed.connect(_on_element_property_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
 	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
-	return OK
+	return Error.OK
 
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:
@@ -317,10 +330,11 @@ func _on_element_property_changed(p_property: StringName) -> void:
 		ElementVisualEffect.SN_SPIN_ZOOM_BLUR_MODE:
 			_spin_zoom_blur_shader_material.set_shader_parameter("mode", element.get_spin_zoom_blur_mode())
 		ElementVisualEffect.SN_TAPE_DISTORTION_WAVE_OFFSET_AMOUNT:
-			_tape_distortion_shader_material.set_shader_parameter(
-				"wave_offset_amount",
-				element.get_tape_distortion_wave_offset_amount() * 0.5
-			)
+			pass
+			#_tape_distortion_shader_material.set_shader_parameter(
+			#	"wave_offset_amount",
+			#	element.get_tape_distortion_wave_offset_amount() * 0.5
+			#)
 		ElementVisualEffect.SN_TAPE_DISTORTION_WAVE_AMOUNT:
 			_tape_distortion_shader_material.set_shader_parameter(
 				"wave_amount",
@@ -329,15 +343,16 @@ func _on_element_property_changed(p_property: StringName) -> void:
 		ElementVisualEffect.SN_TAPE_DISTORTION_WAVE_THICKNESS:
 			_tape_distortion_shader_material.set_shader_parameter(
 				"wave_thickness",
-				element.get_tape_distortion_wave_thickness() * 90.0 + 10.0
+				(1.0 - element.get_tape_distortion_wave_thickness()) * 90.0 + 10.0
 			)
 		ElementVisualEffect.SN_TAPE_DISTORTION_WAVE_SPEED:
 			pass
 		ElementVisualEffect.SN_TAPE_DISTORTION_BLOCK_OFFSET_AMOUNT:
-			_tape_distortion_shader_material.set_shader_parameter(
-				"block_offset_amount",
-				element.get_tape_distortion_block_offset_amount() * 0.1
-			)
+			pass
+			#_tape_distortion_shader_material.set_shader_parameter(
+			#	"block_offset_amount",
+			#	element.get_tape_distortion_block_offset_amount() * 0.1
+			#)
 		ElementVisualEffect.SN_TAPE_DISTORTION_BLOCK_AMOUNT:
 			_tape_distortion_shader_material.set_shader_parameter(
 				"block_amount",
@@ -395,17 +410,22 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			pass
 		ElementVisualEffect.SN_SPIN_ZOOM_BLUR_AMOUNT_REACTION:
 			pass
+		ElementVisualEffect.SN_TAPE_DISTORTION_WAVE_OFFSET_AMOUNT_REACTION:
+			pass
+		ElementVisualEffect.SN_TAPE_DISTORTION_WAVE_SPEED_REACTION:
+			pass
+		ElementVisualEffect.SN_TAPE_DISTORTION_BLOCK_OFFSET_AMOUNT_REACTION:
+			pass
+		ElementVisualEffect.SN_TAPE_DISTORTION_BLOCK_SPEED_REACTION:
+			pass
 		ElementVisualEffect.SN_VIGNETTE_SIZE_REACTION:
 			pass
 
 func _on_stream_list_updated() -> void:
-	if AudioServer.get_bus_index(element.get_audio_source()) > 0:
+	var bus_idx: int = AudioServer.get_bus_index(element.get_audio_source())
+	if bus_idx > 0:
 		var spectrum_analyzer_effect_instance: AudioEffectSpectrumAnalyzerInstance
-		spectrum_analyzer_effect_instance = AudioServer.get_bus_effect_instance(
-			AudioServer.get_bus_index(element.get_audio_source()),
-			1,
-			0
-		)
+		spectrum_analyzer_effect_instance = AudioServer.get_bus_effect_instance(bus_idx, 0)
 		_audio_data.set_spectrum_analyzer_effect_instance(spectrum_analyzer_effect_instance)
 	else:
 		_audio_data.set_spectrum_analyzer_effect_instance(null)

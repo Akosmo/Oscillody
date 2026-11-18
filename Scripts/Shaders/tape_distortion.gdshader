@@ -43,7 +43,7 @@ vec2 wave_distortion(highp vec2 p_uv) {
 void fragment() {
 	highp vec2 uv = SCREEN_UV;
 	uv.x += hash(vec2(uv.y) * block_amount) * block_offset_amount;
-	uv = wave_distortion(uv + vec2(0.0, fract(wave_speed))) - vec2(0.0, fract(wave_speed));
+	uv = wave_distortion(uv + vec2(0.0, wave_speed)) - vec2(0.0, wave_speed);
 
 	highp vec4 screen_tex = texture(SCREEN_TEXTURE, uv);
 

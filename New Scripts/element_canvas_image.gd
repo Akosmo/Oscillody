@@ -31,8 +31,6 @@ var _image_texture: ImageTexture
 var _noise_utilities: NoiseUtilities
 var _audio_data: RealTimeAudioData
 
-# TEST: Setting reaction controls to non-zero, then removing the audio source, to see if things break.
-
 func _ready() -> void:
 	#set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
 	#set_layer(element.get_layer())
@@ -41,12 +39,12 @@ func _ready() -> void:
 	#_element_ui_configurations.set_reaction_visibility(not element.get_audio_source().is_empty())
 	
 	_texture_rect = TextureRect.new()
-	_texture_rect.set_expand_mode(TextureRect.EXPAND_IGNORE_SIZE)
-	_texture_rect.set_stretch_mode(TextureRect.STRETCH_KEEP_ASPECT_CENTERED)
-	_texture_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_texture_rect.set_expand_mode(TextureRect.ExpandMode.EXPAND_IGNORE_SIZE)
+	#_texture_rect.set_stretch_mode(TextureRect.StretchMode.STRETCH_KEEP_ASPECT_COVERED)
+	_texture_rect.set_anchors_preset(Control.LayoutPreset.PRESET_FULL_RECT)
 	add_child(_texture_rect)
 	_color_rect = ColorRect.new()
-	_color_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_color_rect.set_anchors_preset(Control.LayoutPreset.PRESET_FULL_RECT)
 	_shader_material = ShaderMaterial.new()
 	_shader_material.set_shader(preload("uid://nddyss8tny8y"))
 	_color_rect.set_material(_shader_material)
@@ -79,7 +77,7 @@ func _ready() -> void:
 	if _connect_signals():
 		CustomLogger.log_critical_error("Could not connect signals in ElementCanvasImage.")
 
-func _process(_delta: float) -> void:
+func _process(_p_delta: float) -> void:
 	if not is_equal_approx(element.get_image_rotation_reaction(), 0.0):
 		_texture_rect.set_rotation_degrees(
 			element.get_image_rotation() + \
@@ -170,16 +168,16 @@ func _get_reaction_magnitude(p_amount: float) -> float:
 
 func _connect_signals() -> Error:
 	if element.property_changed.connect(_on_element_property_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
 	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if SettingsManager.sync_element_shake_requested.connect(_on_sync_element_shake):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if WindowUtilities.get_subviewport().size_changed.connect(_on_subviewport_size_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
-	return OK
+	return Error.OK
 
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:
@@ -197,7 +195,7 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			var image_path: String = element.get_image_path()
 			if not image_path.is_empty():
 				if not FileAccess.file_exists(image_path):
-					CustomLogger.log_warning("{Path} does not exist.".format({"Path": image_path}))
+					CustomLogger.log_warning("{path} does not exist.".format({"path": image_path}))
 					return
 				_native_image = Image.load_from_file(image_path)
 				if _native_image == null:
@@ -215,10 +213,31 @@ func _on_element_property_changed(p_property: StringName) -> void:
 					return
 				_texture_rect.set_texture(_image_texture)
 				_texture_rect.set_pivot_offset(WindowUtilities.get_subviewport().get_size() * 0.5)
+				
+				if element.get_image_stretch_mode() == ElementImage.CustomStretchMode.DETECT:
+					if is_equal_approx(
+						float(_image_texture.get_width()) / float(_image_texture.get_height()), 16.0 / 9.0
+					):
+						_texture_rect.set_stretch_mode(TextureRect.StretchMode.STRETCH_KEEP_ASPECT_COVERED)
+					else:
+						_texture_rect.set_stretch_mode(TextureRect.StretchMode.STRETCH_KEEP_ASPECT_CENTERED)
 			else:
 				_texture_rect.set_texture(null)
 			
 			_texture_rect.set_position(_get_fixed_position())
+		ElementImage.SN_IMAGE_STRETCH_MODE:
+			if element.get_image_stretch_mode() == ElementImage.CustomStretchMode.DETECT:
+				if _image_texture != null:
+					if is_equal_approx(
+						float(_image_texture.get_width()) / float(_image_texture.get_height()), 16.0 / 9.0
+					):
+						_texture_rect.set_stretch_mode(TextureRect.StretchMode.STRETCH_KEEP_ASPECT_COVERED)
+					else:
+						_texture_rect.set_stretch_mode(TextureRect.StretchMode.STRETCH_KEEP_ASPECT_CENTERED)
+			elif element.get_image_stretch_mode() == ElementImage.CustomStretchMode.COVER:
+				_texture_rect.set_stretch_mode(TextureRect.StretchMode.STRETCH_KEEP_ASPECT_COVERED)
+			else:
+				_texture_rect.set_stretch_mode(TextureRect.StretchMode.STRETCH_KEEP_ASPECT_CENTERED)
 		ElementImage.SN_IMAGE_X_POSITION, ElementImage.SN_IMAGE_Y_POSITION:
 			pass
 		ElementImage.SN_IMAGE_ROTATION:
@@ -261,13 +280,10 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			pass
 
 func _on_stream_list_updated() -> void:
-	if AudioServer.get_bus_index(element.get_audio_source()) > 0:
+	var bus_idx: int = AudioServer.get_bus_index(element.get_audio_source())
+	if bus_idx > 0:
 		var spectrum_analyzer_effect_instance: AudioEffectSpectrumAnalyzerInstance
-		spectrum_analyzer_effect_instance = AudioServer.get_bus_effect_instance(
-			AudioServer.get_bus_index(element.get_audio_source()),
-			1,
-			0
-		)
+		spectrum_analyzer_effect_instance = AudioServer.get_bus_effect_instance(bus_idx, 0)
 		_audio_data.set_spectrum_analyzer_effect_instance(spectrum_analyzer_effect_instance)
 	else:
 		_audio_data.set_spectrum_analyzer_effect_instance(null)

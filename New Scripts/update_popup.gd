@@ -26,7 +26,7 @@ func _ready() -> void:
 	if is_visible():
 		hide()
 	
-	panel_container.set_anchors_preset(Control.PRESET_CENTER)
+	panel_container.set_anchors_preset(Control.LayoutPreset.PRESET_CENTER)
 	panel_container.set_pivot_offset(panel_container.get_size() * 0.5)
 	
 	_open_button.set_tooltip_text(_LINK_ITCH_IO)
@@ -36,7 +36,7 @@ func _ready() -> void:
 
 func _on_open_button_pressed() -> void:
 	if OS.shell_open(_LINK_ITCH_IO):
-		CustomLogger.log_error("Could not open link.")
+		CustomLogger.log_error("Could not open link: " + _LINK_ITCH_IO)
 	
 	popup_hide()
 

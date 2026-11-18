@@ -56,6 +56,13 @@ enum ShaderBlendMode {
 	SIMPLE_DIFFERENCE
 }
 
+enum ShaderMirror {
+	NORMAL,
+	HORIZONTAL,
+	VERTICAL,
+	BOTH
+}
+
 const SHADER_TYPES: Array[StringName] = [
 	&"(Shader)_Current_Flow",
 	&"(Shader)_Domain_Warping",
@@ -80,18 +87,25 @@ const SIMPLE_GRADIENT_ORIGINS: Array[StringName] = [
 ]
 
 const SHADER_BLEND_MODES: Array[StringName] = [
-	&"(Shader)_Normal",
-	&"(Shader)_Multiply",
-	&"(Shader)_Screen",
-	&"(Shader)_Overlay",
-	&"(Shader)_Soft-Light",
-	&"(Shader)_Color_Dodge",
-	&"(Shader)_Linear_Dodge",
-	&"(Shader)_Color_Burn",
-	&"(Shader)_Linear_Burn",
-	&"(Shader)_Simple_Divide",
-	&"(Shader)_Simple_Subtract",
-	&"(Shader)_Simple_Difference"
+	&"(Shader_Blend_Mode)_Normal",
+	&"(Shader_Blend_Mode)_Multiply",
+	&"(Shader_Blend_Mode)_Screen",
+	&"(Shader_Blend_Mode)_Overlay",
+	&"(Shader_Blend_Mode)_Soft-Light",
+	&"(Shader_Blend_Mode)_Color_Dodge",
+	&"(Shader_Blend_Mode)_Linear_Dodge",
+	&"(Shader_Blend_Mode)_Color_Burn",
+	&"(Shader_Blend_Mode)_Linear_Burn",
+	&"(Shader_Blend_Mode)_Simple_Divide",
+	&"(Shader_Blend_Mode)_Simple_Subtract",
+	&"(Shader_Blend_Mode)_Simple_Difference"
+]
+
+const SHADER_MIRRORS: Array[StringName] = [
+	&"(Shader_Mirror)_Normal",
+	&"(Shader_Mirror)_Horizontal",
+	&"(Shader_Mirror)_Vertical",
+	&"(Shader_Mirror)_Both"
 ]
 
 const SN_SHADER_TYPE: StringName = &"Shader_Type"
@@ -145,7 +159,9 @@ const SN_TIDES_HUE_SHIFT: StringName = &"(Tides)_Hue_Shift"
 const SN_TIDES_ITERATIONS: StringName = &"(Tides)_Iterations"
 
 const SN_SHADER_SPEED: StringName = &"(Shader)_Speed"
+const SN_SHADER_TIME_OFFSET: StringName = &"(Shader)_Time_Offset"
 const SN_SHADER_BLEND_MODE: StringName = &"(Shader)_Blend_Mode"
+const SN_SHADER_MIRROR: StringName = &"(Shader)_Mirror"
 
 const SN_SHADER_X_POSITION: StringName = &"(Shader)_X_Position"
 const SN_SHADER_Y_POSITION: StringName = &"(Shader)_Y_Position"
@@ -163,9 +179,9 @@ var _shader_type: ShaderType = ShaderType.DOMAIN_WARPING
 var _current_flow_wave_color: Color = Color.WHITE
 var _current_flow_background_color: Color = Color.BLACK
 var _current_flow_iterations: int = 10
-var _current_flow_uv_scale: float = 0.5 # TODO: `remap(x, 0.05, 1.0, 1.0, 20.0)`
+var _current_flow_uv_scale: float = 0.5
 var _current_flow_filled: bool = false
-var _current_flow_wave_thickness: float = 0.25 # TODO: `remap(x, 0.1, 1.0, 0.01, 0.5)`
+var _current_flow_wave_thickness: float = 0.25
 
 var _domain_warping_color: Color = Color.WHITE
 var _domain_warping_color_mix: bool = false
@@ -184,18 +200,18 @@ var _echoes_uv_scale: float = 0.1
 var _echoes_fractional_uv: bool = false
 var _echoes_split: bool = false
 var _echoes_iterator_factor: float = 1.0
-var _echoes_pulse_duration: float = 0.1 # TODO: `remap(x, 0.05, 1.0, 0.01, 16.0)`
-var _echoes_pulse_oscillation: float = 0.1 # TODO: `remap(x, 0.05, 1.0, 0.01, 2.0)`
-var _echoes_pulse_thickness: float = 1.0 # TODO: x * 0.1 (original: 0.01 to 0.1).
+var _echoes_pulse_duration: float = 0.1
+var _echoes_pulse_oscillation: float = 0.1
+var _echoes_pulse_thickness: float = 1.0
 var _echoes_pulse_mode: EchoesPulseMode = EchoesPulseMode.MULTIPLICATION
 
 var _isolines_line_color: Color = Color.WHITE
 var _isolines_background_color: Color = Color.BLACK
-var _isolines_uv_scale: float = 0.25 # TODO: x * 20.0 (original: 1.0 to 20.0).
+var _isolines_uv_scale: float = 0.25
 var _isolines_filled: bool = false
-var _isolines_line_thickness: float = 0.5 # TODO: x * 20.0 (original: 1.0, 20.0).
-var _isolines_thickness_variation: float = 0.0 # TEST: Maybe this could be a boolean.
-var _isolines_line_amount: float = 0.25 # TODO: `remap(x, 0.05, 1.0, 1.0, 50.0)`
+var _isolines_line_thickness: float = 0.5
+var _isolines_thickness_variation: float = 0.0
+var _isolines_line_amount: float = 0.25
 
 var _simple_gradient_color_1: Color = Color.WHITE
 var _simple_gradient_color_2: Color = Color.BLACK
@@ -208,15 +224,17 @@ var _tides_invert_colors: bool = false
 var _tides_hue_shift: float = 0.0
 var _tides_iterations: int = 6
 
-var _shader_speed: float = 0.1 # TODO: x * 20.0 (original: 0.0 to 20.0).
+var _shader_speed: float = 0.2
+var _shader_time_offset: float = 0.0
 var _shader_blend_mode: ShaderBlendMode = ShaderBlendMode.NORMAL
+var _shader_mirror: ShaderMirror = ShaderMirror.NORMAL
 
 var _shader_x_position: float = 0.5
 var _shader_y_position: float = 0.5
 var _shader_rotation: float = 0.0
 var _shader_scale: float = 1.0
 var _shader_blur: float = 0.0
-var _shader_brightness: float = 0.0 # TODO: Hide this if unnecessary?
+var _shader_brightness: float = 0.0
 
 var _shader_speed_reaction: float = 0.0
 var _shader_rotation_reaction: float = 0.0
@@ -530,12 +548,26 @@ func set_shader_speed(p_value: float) -> void:
 func get_shader_speed() -> float:
 	return _shader_speed
 
+func set_shader_time_offset(p_value: float) -> void:
+	_shader_time_offset = p_value
+	property_changed.emit(SN_SHADER_TIME_OFFSET)
+
+func get_shader_time_offset() -> float:
+	return _shader_time_offset
+
 func set_shader_blend_mode(p_value: ShaderBlendMode) -> void:
 	_shader_blend_mode = p_value
 	property_changed.emit(SN_SHADER_BLEND_MODE)
 
 func get_shader_blend_mode() -> ShaderBlendMode:
 	return _shader_blend_mode
+
+func set_shader_mirror(p_value: ShaderMirror) -> void:
+	_shader_mirror = p_value
+	property_changed.emit(SN_SHADER_MIRROR)
+
+func get_shader_mirror() -> ShaderMirror:
+	return _shader_mirror
 
 func set_shader_x_position(p_value: float) -> void:
 	_shader_x_position = p_value
@@ -650,7 +682,9 @@ func get_properties() -> Dictionary[StringName, Variant]:
 		SN_TIDES_HUE_SHIFT: _tides_hue_shift,
 		SN_TIDES_ITERATIONS: _tides_iterations,
 		SN_SHADER_SPEED: _shader_speed,
+		SN_SHADER_TIME_OFFSET: _shader_time_offset,
 		SN_SHADER_BLEND_MODE: _shader_blend_mode,
+		SN_SHADER_MIRROR: _shader_mirror,
 		SN_SHADER_X_POSITION: _shader_x_position,
 		SN_SHADER_Y_POSITION: _shader_y_position,
 		SN_SHADER_ROTATION: _shader_rotation,
@@ -726,7 +760,9 @@ func get_setters() -> Dictionary[StringName, StringName]:
 		SN_TIDES_HUE_SHIFT: set_tides_hue_shift.get_method(),
 		SN_TIDES_ITERATIONS: set_tides_iterations.get_method(),
 		SN_SHADER_SPEED: set_shader_speed.get_method(),
+		SN_SHADER_TIME_OFFSET: set_shader_time_offset.get_method(),
 		SN_SHADER_BLEND_MODE: set_shader_blend_mode.get_method(),
+		SN_SHADER_MIRROR: set_shader_mirror.get_method(),
 		SN_SHADER_X_POSITION: set_shader_x_position.get_method(),
 		SN_SHADER_Y_POSITION: set_shader_y_position.get_method(),
 		SN_SHADER_ROTATION: set_shader_rotation.get_method(),

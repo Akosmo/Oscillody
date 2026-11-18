@@ -45,7 +45,7 @@ func popup_show() -> void:
 	_tween = create_tween()
 	_tween.set_parallel(true)
 	
-	_tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	_tween.set_ease(Tween.EaseType.EASE_OUT).set_trans(Tween.TransitionType.TRANS_BACK)
 	#tween.tween_property(panel_container, "scale", Vector2.ONE, 0.25).from(Vector2.ZERO)
 	#tween.tween_property(
 		#blur_color_rect,
@@ -66,7 +66,7 @@ func popup_hide() -> void:
 	_tween = create_tween()
 	_tween.set_parallel(true)
 	
-	_tween.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_BACK)
+	_tween.set_ease(Tween.EaseType.EASE_IN).set_trans(Tween.TransitionType.TRANS_BACK)
 	_tween.tween_method(panel_container.set_scale, Vector2.ONE, Vector2.ZERO, 0.25)
 	_tween.tween_method(_set_blur_amount, 2.0, 0.0, 0.25)
 	_tween.tween_method(

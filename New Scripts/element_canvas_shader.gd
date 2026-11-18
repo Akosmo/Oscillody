@@ -29,7 +29,7 @@ var _isolines_shader_material: ShaderMaterial
 var _simple_gradient_shader_material: ShaderMaterial
 var _tides_shader_material: ShaderMaterial
 
-# Needed for blurring, since both the normal shaders and the blur shader read from screen.
+# Needed for blurring, since both the normal shaders (blend modes) and the blur shader read from screen.
 var _back_buffer_copy: BackBufferCopy
 
 var _blur_color_rect: ColorRect
@@ -39,10 +39,9 @@ var _brightness_color_rect: ColorRect
 
 var _noise_utilities: NoiseUtilities
 var _audio_data: RealTimeAudioData
+var _shader_utilities: ShaderUtilities
 
 var _shader_time: float
-
-# TEST: Setting reaction controls to non-zero, then removing the audio source, to see if things break.
 
 func _ready() -> void:
 	#set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
@@ -53,7 +52,7 @@ func _ready() -> void:
 	#_element_ui_configurations.set_reaction_visibility(not element.get_audio_source().is_empty())
 	
 	_color_rect = ColorRect.new()
-	_color_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_color_rect.set_anchors_preset(Control.LayoutPreset.PRESET_FULL_RECT)
 	_current_flow_shader_material = ShaderMaterial.new()
 	_domain_warping_shader_material = ShaderMaterial.new()
 	_echoes_shader_material = ShaderMaterial.new()
@@ -71,18 +70,18 @@ func _ready() -> void:
 	add_child(_color_rect)
 	
 	_back_buffer_copy = BackBufferCopy.new()
-	_back_buffer_copy.set_copy_mode(BackBufferCopy.COPY_MODE_VIEWPORT)
+	_back_buffer_copy.set_copy_mode(BackBufferCopy.CopyMode.COPY_MODE_VIEWPORT)
 	add_child(_back_buffer_copy)
 	
 	_blur_color_rect = ColorRect.new()
-	_blur_color_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_blur_color_rect.set_anchors_preset(Control.LayoutPreset.PRESET_FULL_RECT)
 	_blur_shader_material = ShaderMaterial.new()
 	_blur_shader_material.set_shader(preload("uid://nddyss8tny8y"))
 	_blur_color_rect.set_material(_blur_shader_material)
 	add_child(_blur_color_rect)
 	
 	_brightness_color_rect = ColorRect.new()
-	_brightness_color_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_brightness_color_rect.set_anchors_preset(Control.LayoutPreset.PRESET_FULL_RECT)
 	#if element.get_shader_brightness() > 0.0:
 		#_brightness_color_rect.set_color(Color(1.0, 1.0, 1.0, element.get_shader_brightness()))
 	#elif element.get_shader_brightness() < 0.0:
@@ -112,7 +111,9 @@ func _ready() -> void:
 	#_audio_data.set_smoothing_type(element.get_smoothing_type())
 	#_audio_data.set_smoothing_amount(element.get_smoothing_amount())
 	
-	_shader_time = 0.0
+	_shader_utilities = ShaderUtilities.new()
+	
+	#_shader_time = _shader_utilities.get_shader_time()
 	
 	for property_key: StringName in element.get_properties().keys():
 		_on_element_property_changed(property_key)
@@ -120,10 +121,13 @@ func _ready() -> void:
 	if _connect_signals():
 		CustomLogger.log_critical_error("Could not connect signals in ElementCanvasShader.")
 
-func _process(_delta: float) -> void:
-	_shader_time += 0.04 * \
-	element.get_shader_speed() + \
-	_get_reaction_magnitude(element.get_shader_speed_reaction() * 0.05) - 1.0
+func _process(_p_delta: float) -> void:
+	_shader_utilities.increment_shader_time(
+		_shader_utilities.get_increment_constant() * \
+		element.get_shader_speed() + \
+		_get_reaction_magnitude(element.get_shader_speed_reaction() * 0.05) - 1.0
+	)
+	_shader_time = _shader_utilities.get_shader_time()
 	_get_shader_material(element.get_shader_type()).set_shader_parameter("speed", _shader_time)
 	
 	if not is_equal_approx(element.get_shader_rotation_reaction(), 0.0):
@@ -237,16 +241,18 @@ func _get_reaction_magnitude(p_amount: float) -> float:
 
 func _connect_signals() -> Error:
 	if element.property_changed.connect(_on_element_property_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
 	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if SettingsManager.sync_element_shake_requested.connect(_on_sync_element_shake):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
+	if SettingsManager.sync_shader_time_requested.connect(_on_sync_shader_time):
+		return Error.ERR_INVALID_PARAMETER
 	if WindowUtilities.get_subviewport().size_changed.connect(_on_subviewport_size_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
-	return OK
+	return Error.OK
 
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:
@@ -263,6 +269,13 @@ func _on_element_property_changed(p_property: StringName) -> void:
 		ElementShader.SN_SHADER_TYPE:
 			_color_rect.set_material(_get_shader_material(element.get_shader_type()))
 			_element_ui_configurations.enable_shader_visibility(element.get_shader_type())
+			if (
+				element.get_shader_type() != ElementShader.ShaderType.DOMAIN_WARPING and
+				element.get_shader_type() != ElementShader.ShaderType.TIDES
+			):
+				_brightness_color_rect.hide()
+			else:
+				_brightness_color_rect.show()
 		ElementShader.SN_CURRENT_FLOW_WAVE_COLOR:
 			_current_flow_shader_material.set_shader_parameter(
 				"wave_color",
@@ -391,7 +404,6 @@ func _on_element_property_changed(p_property: StringName) -> void:
 		ElementShader.SN_ISOLINES_THICKNESS_VARIATION:
 			_isolines_shader_material.set_shader_parameter(
 				"thickness_variation",
-				# TEST: Either use shader range, or UI range.
 				lerp(0.5, 1.2, 1.0 - pow(2.0, -10.0 * element.get_isolines_thickness_variation()))
 			)
 		ElementShader.SN_ISOLINES_LINE_AMOUNT:
@@ -431,10 +443,17 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			_tides_shader_material.set_shader_parameter("iterations", element.get_tides_iterations())
 		ElementShader.SN_SHADER_SPEED:
 			pass
+		ElementShader.SN_SHADER_TIME_OFFSET:
+			_shader_utilities.reset_time(element.get_shader_time_offset() * 0.5)
 		ElementShader.SN_SHADER_BLEND_MODE:
 			_get_shader_material(element.get_shader_type()).set_shader_parameter(
 				"blend_mode",
 				element.get_shader_blend_mode()
+			)
+		ElementShader.SN_SHADER_MIRROR:
+			_get_shader_material(element.get_shader_type()).set_shader_parameter(
+				"mirror",
+				element.get_shader_mirror()
 			)
 		ElementShader.SN_SHADER_X_POSITION, ElementShader.SN_SHADER_Y_POSITION:
 			pass
@@ -486,13 +505,10 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			pass
 
 func _on_stream_list_updated() -> void:
-	if AudioServer.get_bus_index(element.get_audio_source()) > 0:
+	var bus_idx: int = AudioServer.get_bus_index(element.get_audio_source())
+	if bus_idx > 0:
 		var spectrum_analyzer_effect_instance: AudioEffectSpectrumAnalyzerInstance
-		spectrum_analyzer_effect_instance = AudioServer.get_bus_effect_instance(
-			AudioServer.get_bus_index(element.get_audio_source()),
-			1,
-			0
-		)
+		spectrum_analyzer_effect_instance = AudioServer.get_bus_effect_instance(bus_idx, 0)
 		_audio_data.set_spectrum_analyzer_effect_instance(spectrum_analyzer_effect_instance)
 	else:
 		_audio_data.set_spectrum_analyzer_effect_instance(null)
@@ -501,6 +517,9 @@ func _on_stream_list_updated() -> void:
 
 func _on_sync_element_shake() -> void:
 	_noise_utilities.reset_noise_scroll()
+
+func _on_sync_shader_time() -> void:
+	_shader_utilities.reset_time(element.get_shader_time_offset() * 0.5)
 
 func _on_subviewport_size_changed() -> void:
 	_color_rect.set_pivot_offset(WindowUtilities.get_subviewport().get_size() * 0.5)

@@ -40,19 +40,19 @@ func _ready() -> void:
 
 func _connect_signals() -> Error:
 	if _add_element_button.pressed.connect(_on_add_element_pressed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if ElementManager.element_created.connect(_on_element_created):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if ElementManager.element_deleted.connect(_on_element_deleted):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if ElementManager.element_type_changed.connect(_on_element_type_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if ElementManager.element_layers_updated.connect(_on_element_layers_updated):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	#if ElementManager.elements_cleared.connect(_on_elements_cleared):
 		#return ERR_INVALID_PARAMETER
 	
-	return OK
+	return Error.OK
 
 func _on_add_element_pressed() -> void:
 	_current_element_selected = ElementManager.create_element()
@@ -63,23 +63,30 @@ func _on_add_element_pressed() -> void:
 		#printerr("Could not connect signal.")
 	#_element_box_container.add_child(element_node)
 
-func _update_properties_container(p_element: Element) -> void:
-	if p_element == _current_element_selected:
-		return
+func _update_properties_container(p_element: Element, p_visible: bool) -> void:
+	if p_element != _current_element_selected:
+		_current_element_selected = p_element
 	
 	#var previous_element: Element = _current_element_selected
-	_current_element_selected = p_element
 	
 	#if _properties_box_container.get_child_count():
 		#for node: ElementPropertyContainer in _properties_box_container.get_children():
 			#node.queue_free()
 	
+	for node: Control in _element_box_container.get_children():
+		if (
+			node.has_method("get_element") and
+			node.get_element() != p_element and
+			not node.is_queued_for_deletion()
+		):
+			node.set_button_toggled(false, false)
+	
 	var found_node_for_element: bool = false
 	for node: Control in _properties_scroll_container.get_children():
-		if node.has_method("get_element"):
+		if node.has_method("get_element") and not node.is_queued_for_deletion():
 			var matching_elements: bool = node.get_element() == p_element
-			node.set_visible(matching_elements)
-			if not found_node_for_element:
+			node.set_visible(matching_elements and p_visible)
+			if not found_node_for_element and matching_elements:
 				found_node_for_element = matching_elements
 		#if node.is_visible():
 			#node.queue_free()
@@ -111,7 +118,7 @@ func _on_element_created(p_element: Element) -> void:
 	var element_node: ElementContainer = _ELEMENT_CONTAINER.instantiate()
 	element_node.element = p_element
 	if element_node.element_selected.connect(_update_properties_container):
-		CustomLogger.log_critical_error("Could not connect element selected signal.")
+		CustomLogger.log_critical_error("Could not connect \"element_selected\" signal.")
 	#if element_node.element_container_deleted.connect(_on_element_container_deleted):
 		#printerr("Could not connect signal.")
 	_element_box_container.add_child(element_node)
@@ -127,6 +134,9 @@ func _on_element_created(p_element: Element) -> void:
 		var node: ElementPropertiesContainer = _ELEMENT_PROPERTIES_CONTAINER.instantiate()
 		node.element = p_element
 		_properties_scroll_container.add_child(node)
+		node.hide()
+	
+	element_node.set_button_toggled(true)
 	
 	# Subtract one: an irrelevant node.
 	DebugUtilities.set_element_container_count(_element_box_container.get_child_count() - 1)
@@ -164,7 +174,7 @@ func _on_element_type_changed(p_old_element: Element, p_new_element: Element) ->
 				node.queue_free()
 				break
 	
-	_update_properties_container(p_new_element)
+	#_update_properties_container(p_new_element, true)
 
 func _on_element_layers_updated() -> void:
 	for node: Node in _element_box_container.get_children():

@@ -18,6 +18,12 @@
 class_name ElementEmptyUIConfigurations
 extends ElementUIConfigurations
 
+func set_element(p_element: Element) -> void:
+	_element = p_element
+
+func get_element() -> Element:
+	return _element
+
 func get_configurations() -> Dictionary[StringName, Dictionary]:
 	var ret: Dictionary[StringName, Dictionary] = {
 		ElementEmpty.SN_ELEMENT_NAME: {

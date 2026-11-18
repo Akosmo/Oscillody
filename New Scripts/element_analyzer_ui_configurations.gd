@@ -18,6 +18,12 @@
 class_name ElementAnalyzerUIConfigurations
 extends ElementUIConfigurations
 
+func set_element(p_element: Element) -> void:
+	_element = p_element
+
+func get_element() -> Element:
+	return _element
+
 func get_configurations() -> Dictionary[StringName, Dictionary]:
 	var ret: Dictionary[StringName, Dictionary] = {
 		ElementAnalyzer.SN_ELEMENT_NAME: {
@@ -41,6 +47,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementAnalyzer.SN_AUDIO_SOURCE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
+			DEFAULT_VALUE: &"",
 			OPTIONS: AudioManager.get_stream_names().values()
 		},
 		ElementAnalyzer.SN_ANALYZER_TYPE: {

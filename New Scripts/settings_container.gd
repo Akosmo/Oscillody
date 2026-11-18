@@ -28,9 +28,11 @@ extends PanelContainer
 @onready var _output_device_container: BasicPropertyContainer = %OutputDeviceContainer
 @onready var _export_resolution_container: BasicPropertyContainer = %ExportResolutionContainer
 @onready var _ffmpeg_path_container: BasicPropertyContainer = %FFmpegPathContainer
+@onready var _delete_temporary_files_container: BasicPropertyContainer = %DeleteTemporaryFilesContainer
 @onready var _theme_container: BasicPropertyContainer = %ThemeContainer
 @onready var _switch_to_sliders_container: BasicPropertyContainer = %SwitchToSlidersContainer
 @onready var _sync_element_shake_container: BasicPropertyContainer = %SyncElementShakeContainer
+@onready var _sync_shader_time_container: BasicPropertyContainer = %SyncShaderTimeContainer
 @onready var _debug_panel_container: BasicPropertyContainer = %DebugPanelContainer
 
 func _ready() -> void:
@@ -55,16 +57,23 @@ func _ready() -> void:
 	_export_resolution_container.set_property_value_with_node(SettingsManager.get_export_resolution())
 	_export_resolution_container.property_value_changed.connect(_on_property_value_changed)
 	
-	# TODO: Make sure this is loaded and set currently on launch.
 	_ffmpeg_path_container.set_control_node(BasicPropertyContainer.ControlNode.BUTTON)
 	_ffmpeg_path_container.set_property_key(SettingsManager.SN_FFMPEG_PATH)
 	_ffmpeg_path_container.use_file_dialog()
 	_ffmpeg_path_container.button.set_text("Select Path")
+	_ffmpeg_path_container.button.set_disabled(not SettingsManager.get_ffmpeg_path().is_empty())
 	_ffmpeg_path_container.file_dialog.set_filters(PackedStringArray(["*.exe ; Supported Format"]))
 	_ffmpeg_path_container.set_property_value_with_node(SettingsManager.get_ffmpeg_path())
 	_ffmpeg_path_container.set_reset_value("")
 	_ffmpeg_path_container.property_value_changed.connect(_on_property_value_changed)
-	_ffmpeg_path_container.property_reset_pressed.connect(_on_property_reset_pressed)
+	#_ffmpeg_path_container.property_reset_pressed.connect(_on_property_reset_pressed)
+	
+	_delete_temporary_files_container.set_control_node(BasicPropertyContainer.ControlNode.CHECK_BUTTON)
+	_delete_temporary_files_container.set_property_key(SettingsManager.SN_DELETE_TEMPORARY_FILES)
+	_delete_temporary_files_container.set_property_value_with_node(SettingsManager.get_delete_temporary_files())
+	_delete_temporary_files_container.set_reset_value(true)
+	_delete_temporary_files_container.property_value_changed.connect(_on_property_value_changed)
+	#_delete_temporary_files_container.property_reset_pressed.connect(_on_property_reset_pressed)
 	
 	_theme_container.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
 	_theme_container.set_property_key(SettingsManager.SN_APP_THEME)
@@ -81,6 +90,12 @@ func _ready() -> void:
 	_sync_element_shake_container.use_file_dialog(false)
 	_sync_element_shake_container.button.set_text("Sync")
 	_sync_element_shake_container.property_value_changed.connect(_on_property_value_changed)
+	
+	_sync_shader_time_container.set_control_node(BasicPropertyContainer.ControlNode.BUTTON)
+	_sync_shader_time_container.set_property_key(SettingsManager.SN_SYNC_SHADER_TIME)
+	_sync_shader_time_container.use_file_dialog(false)
+	_sync_shader_time_container.button.set_text("Sync")
+	_sync_shader_time_container.property_value_changed.connect(_on_property_value_changed)
 	
 	_debug_panel_container.set_control_node(BasicPropertyContainer.ControlNode.CHECK_BUTTON)
 	_debug_panel_container.set_property_key(SettingsManager.SN_DEBUG_PANEL)
@@ -125,10 +140,14 @@ func _on_property_value_changed(p_property_key: StringName, p_property_value: Va
 				CustomLogger.log_error("Could not set export resolution.")
 		SettingsManager.SN_FFMPEG_PATH:
 			if SettingsManager.set_ffmpeg_path(str(p_property_value)):
-				CustomLogger.log_error("Could not set FFmpeg path.")
+				CustomLogger.log_error(
+					"Could not set FFmpeg path. File should be named \"ffmpeg.exe\"."
+				)
 				_ffmpeg_path_container.set_property_value_with_node(_ffmpeg_path_container.get_reset_value())
 			else:
 				_ffmpeg_path_container.button.set_disabled(true)
+		SettingsManager.SN_DELETE_TEMPORARY_FILES:
+			SettingsManager.set_delete_temporary_files(p_property_value as bool)
 		SettingsManager.SN_APP_THEME:
 			if SettingsManager.set_app_theme(str(p_property_value)):
 				CustomLogger.log_error("Could not set theme.")
@@ -136,13 +155,18 @@ func _on_property_value_changed(p_property_key: StringName, p_property_value: Va
 			SettingsManager.enable_sliders(p_property_value as bool)
 		SettingsManager.SN_SYNC_ELEMENT_SHAKE:
 			SettingsManager.sync_element_shake_requested.emit()
+		SettingsManager.SN_SYNC_SHADER_TIME:
+			SettingsManager.sync_shader_time_requested.emit()
 		SettingsManager.SN_DEBUG_PANEL:
 			SettingsManager.set_debug_panel(p_property_value)
 
-func _on_property_reset_pressed(p_property_key: StringName) -> void:
-	match p_property_key:
-		SettingsManager.SN_FFMPEG_PATH:
-			if SettingsManager.set_ffmpeg_path(""):
-				CustomLogger.log_critical_error("Could not reset FFmpeg path.")
-			else:
-				_ffmpeg_path_container.button.set_disabled(false)
+#func _on_property_reset_pressed(p_property_key: StringName) -> void:
+#	match p_property_key:
+#		SettingsManager.SN_FFMPEG_PATH:
+#			if SettingsManager.set_ffmpeg_path(""):
+#				CustomLogger.log_critical_error("Could not reset FFmpeg path.")
+#			else:
+#				_ffmpeg_path_container.button.set_disabled(false)
+		#SettingsManager.SN_DELETE_TEMPORARY_FILES:
+		#	if not SettingsManager.get_delete_temporary_files():
+		#		SettingsManager.set_delete_temporary_files(true)

@@ -59,8 +59,8 @@ func _ready() -> void:
 	if _connect_signals():
 		CustomLogger.log_critical_error("Could not connect signals in PlayerControl.")
 
-func _process(_delta: float) -> void:
-	if not _user_seeking and AudioManager.is_master_playing():
+func _process(_p_delta: float) -> void:
+	if not _user_seeking:
 		_time_slider.set_value_no_signal(AudioManager.get_master_position())
 	
 	_position_mins = str(floori(AudioManager.get_master_position() / 60.0))
@@ -68,8 +68,10 @@ func _process(_delta: float) -> void:
 	
 	_time_label.set_text(
 		"{pm}:{ps} / {dm}:{ds}".format(
-			{"pm": _position_mins, "ps": _position_secs,
-			"dm": _duration_mins, "ds": _duration_secs}
+			{
+				"pm": _position_mins, "ps": _position_secs,
+				"dm": _duration_mins, "ds": _duration_secs
+			}
 		)
 	)
 
@@ -77,33 +79,42 @@ func _process(_delta: float) -> void:
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event.is_action_pressed("play_pause"):
 		AudioManager.request_play_pause()
+	elif not is_visible():
+		if event.is_action_pressed("seek_backward"):
+			AudioManager.request_seek(
+				clampf(AudioManager.get_master_position() - 5.0, 0.0, AudioManager.get_master_duration() - 0.01)
+			)
+		elif event.is_action_pressed("seek_forward"):
+			AudioManager.request_seek(
+				clampf(AudioManager.get_master_position() + 5.0, 0.0, AudioManager.get_master_duration() - 0.01)
+			)
 
 func _connect_signals() -> Error:
 	if _play_pause_button.pressed.connect(_on_play_pause_pressed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _stop_button.pressed.connect(_on_stop_pressed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _loop_button.toggled.connect(_on_loop_toggled):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _volume_slider.value_changed.connect(_on_volume_value_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _time_slider.drag_started.connect(_on_time_slider_drag_started):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _time_slider.drag_ended.connect(_on_time_slider_drag_ended):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _time_slider.gui_input.connect(_on_time_slider_gui_input):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _time_slider.mouse_entered.connect(_on_time_slider_mouse_entered):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if _time_slider.mouse_exited.connect(_on_time_slider_mouse_exited):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
 	if AudioManager.master_changed.connect(_on_master_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	if AudioManager.master_play_state_changed.connect(_on_master_play_state_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
-	return OK
+	return Error.OK
 
 func _on_play_pause_pressed() -> void:
 	AudioManager.request_play_pause()
@@ -147,7 +158,6 @@ func _on_time_slider_gui_input(p_event: InputEvent) -> void:
 	if _time_slider_position_hint.get_text().length() == 4:
 		_hint_position_offset = 6.0
 	else:
-		# TEST: Check with long files.
 		_hint_position_offset = 12.0
 	
 	# Remapped.
@@ -173,7 +183,6 @@ func _on_master_changed() -> void:
 	
 	_time_slider.set_value_no_signal(AudioManager.get_master_position())
 
-# TEST: Check how this changes on loop.
 func _on_master_play_state_changed() -> void:
 	if AudioManager.is_master_playing():
 		_play_pause_button.set_text("PAUSE")

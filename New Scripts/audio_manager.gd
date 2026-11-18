@@ -15,11 +15,6 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-# TODO: Disallow loading the same audio file, and files with the same name and extension.
-# TODO: This class can probably be refactored along with the `visualizer_subcontainer` class,
-# especially in regards to signals (`new_audio_imported`, `stream_list_updated`, `master_changed`,
-# and `master_play_state_changed`).
-
 extends Node
 ## Manager class that handles audio playback.
 ##
@@ -60,6 +55,16 @@ var _master_volume: float = 1.0
 
 var _time_position: float = 0.0
 var _time_duration: float = 0.0
+
+#func _ready() -> void:
+#	CustomLogger.log_normal(
+#		"Sample rate (in Hz): " + str(int(AudioServer.get_mix_rate())) +
+#		"\nInput sample rate (in Hz): " + str(int(AudioServer.get_input_mix_rate())) +
+#		"\nAudio input: " + str(ProjectSettings.get_setting("audio/driver/enable_input")) +
+#		"\nNumber of channels: " + str(AudioServer.get_bus_channels(0) * 2) +
+#		"\nAudio driver: " + str(AudioServer.get_driver_name()) +
+#		"\nOutput latency (in ms): " + str(roundi(AudioServer.get_output_latency() * 1000.0))
+#	)
 
 ## Emits [signal play_pause_requested], connected to an [AudioStreamPlayer].
 func request_play_pause() -> void:
@@ -166,7 +171,7 @@ func notify_cleared_streams() -> void:
 func import_audio_files(p_path: String) -> Error:
 	if p_path.is_empty():
 		CustomLogger.log_error("Audio path is empty.")
-		return FAILED
+		return Error.FAILED
 	
 	CustomLogger.log_normal("Importing audio file: " + p_path.get_file())
 	
@@ -174,44 +179,48 @@ func import_audio_files(p_path: String) -> Error:
 		"mp3":
 			var stream: AudioStreamMP3 = AudioStreamMP3.load_from_file(p_path)
 			if stream == null:
-				CustomLogger.log_error("{Path} could not be set as stream.".format({"Path": p_path}))
-				return FAILED
+				CustomLogger.log_error("{path} could not be set as stream.".format({"path": p_path}))
+				return Error.FAILED
 			if not _streams.set(StringName(p_path), stream):
 				CustomLogger.log_critical_error("Could not set stream to streams dictionary.")
+				return Error.FAILED
 			if not _stream_names.set(StringName(p_path), StringName(p_path.get_file().get_basename())):
 				CustomLogger.log_critical_error("Could not set stream name to path dictionary.")
+				return Error.FAILED
 		"wav":
 			var stream: AudioStreamWAV = AudioStreamWAV.load_from_file(p_path)
 			if stream == null:
 				CustomLogger.log_error(
-					"{Path} could not be set as stream. \
+					"{path} could not be set as stream. \
 If it's .wav, make sure it has no more than 2 channels, \
-and prefer 16bit depth".format({"Path": p_path})
+and is either uncompressed PCM or IEEE float format.".format({"path": p_path})
 				)
-				return FAILED
+				return Error.FAILED
 			if not _streams.set(StringName(p_path), stream):
 				CustomLogger.log_critical_error("Could not set stream to streams dictionary.")
+				return Error.FAILED
 			if not _stream_names.set(StringName(p_path), StringName(p_path.get_file().get_basename())):
 				CustomLogger.log_critical_error("Could not set stream name to path dictionary.")
+				return Error.FAILED
 		"ogg":
 			var stream: AudioStreamOggVorbis = AudioStreamOggVorbis.load_from_file(p_path)
 			if stream == null:
 				CustomLogger.log_error(
-					"{Path} could not be set as stream. \
+					"{path} could not be set as stream. \
 If it's .ogg, make sure it's a Vorbis \
-audio in the Ogg file container.".format({"Path": p_path})
+audio in the Ogg file container.".format({"path": p_path})
 				)
-				return FAILED
+				return Error.FAILED
 			if not _streams.set(StringName(p_path), stream):
 				CustomLogger.log_critical_error("Could not set stream to streams dictionary.")
+				return Error.FAILED
 			if not _stream_names.set(StringName(p_path), StringName(p_path.get_file().get_basename())):
 				CustomLogger.log_critical_error("Could not set stream name to path dictionary.")
+				return Error.FAILED
 		_:
-			CustomLogger.log_error("{Path} does not contain valid audio extension.".format(
-				{"Path": p_path})
-			)
-			return FAILED
+			CustomLogger.log_error("{path} does not contain valid audio extension.".format({"path": p_path}))
+			return Error.FAILED
 	
 	#new_audio_imported.emit()
 	
-	return OK
+	return Error.OK

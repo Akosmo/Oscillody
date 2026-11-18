@@ -22,9 +22,19 @@ var _reaction_visibility: bool = false
 
 func set_reaction_visibility(p_value: bool) -> void:
 	_reaction_visibility = p_value
-	ElementManager.notify_property_node_visibility_changed()
+	ElementManager.notify_property_node_visibility_changed(_element)
+
+func set_element(p_element: Element) -> void:
+	_element = p_element
+
+func get_element() -> Element:
+	return _element
 
 func get_configurations() -> Dictionary[StringName, Dictionary]:
+	var fonts: PackedStringArray = OS.get_system_fonts()
+	if fonts.is_empty():
+		CustomLogger.log_error("Could not load system fonts.")
+	
 	var ret: Dictionary[StringName, Dictionary] = {
 		ElementText.SN_ELEMENT_NAME: {
 			CONTROL_NODE: ControlNode.LINE_EDIT,
@@ -48,6 +58,10 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		ElementText.SN_TEXT: {
 			CONTROL_NODE: ControlNode.TEXT_EDIT
 		},
+		ElementText.SN_TEXT_DYNAMIC: {
+			CONTROL_NODE: ControlNode.CHECK_BUTTON,
+			DEFAULT_VALUE: true
+		},
 		ElementText.SN_TEXT_FONT: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
 			DEFAULT_VALUE: "Calibri",
@@ -65,7 +79,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 72.0,
 			MINIMUM: 8.0,
-			MAXIMUM: 256.0,
+			MAXIMUM: 512.0,
 			STEP: 4.0,
 			ROUNDED: true
 		},
@@ -100,16 +114,16 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		ElementText.SN_TEXT_SHADOW_X_POSITION: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 0.0,
-			MINIMUM: -64.0,
-			MAXIMUM: 64.0,
+			MINIMUM: -128.0,
+			MAXIMUM: 128.0,
 			STEP: 2.0,
 			ROUNDED: true
 		},
 		ElementText.SN_TEXT_SHADOW_Y_POSITION: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 0.0,
-			MINIMUM: -64.0,
-			MAXIMUM: 64.0,
+			MINIMUM: -128.0,
+			MAXIMUM: 128.0,
 			STEP: 2.0,
 			ROUNDED: true
 		},
@@ -117,7 +131,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 0.0,
 			MINIMUM: 0.0,
-			MAXIMUM: 128.0,
+			MAXIMUM: 256.0,
 			STEP: 2.0,
 			ROUNDED: true
 		},
@@ -129,7 +143,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 0.0,
 			MINIMUM: 0.0,
-			MAXIMUM: 128.0,
+			MAXIMUM: 256.0,
 			STEP: 2.0,
 			ROUNDED: true
 		},
@@ -140,8 +154,8 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		ElementText.SN_TEXT_LINE_SPACING: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 3.0,
-			MINIMUM: -20.0,
-			MAXIMUM: 20.0,
+			MINIMUM: -128.0,
+			MAXIMUM: 128.0,
 			STEP: 1.0,
 			ROUNDED: true
 		},
@@ -180,6 +194,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementText.SN_AUDIO_SOURCE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
+			DEFAULT_VALUE: &"",
 			OPTIONS: AudioManager.get_stream_names().values()
 		},
 		ElementText.SN_BEGIN_FREQUENCY: {
@@ -211,7 +226,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementText.SN_SMOOTHING_TYPE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
-			DEFAULT_VALUE: ElementText.ReactiveSmoothingType.DECAY,
+			DEFAULT_VALUE: ElementText.ReactiveSmoothingType.INTERPOLATION,
 			VISIBLE: _reaction_visibility,
 			OPTIONS: ElementText.SMOOTHING_TYPES
 		},

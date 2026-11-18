@@ -18,7 +18,20 @@
 class_name ElementImage
 extends ElementShakable
 
+enum CustomStretchMode {
+	DETECT,
+	COVER,
+	CENTER,
+}
+
+const CUSTOM_STRETCH_MODES: Array[StringName] = [
+	&"(Image)_Detect",
+	&"(Image)_Cover",
+	&"(Image)_Center"
+]
+
 const SN_IMAGE_PATH: StringName = &"Image_Path"
+const SN_IMAGE_STRETCH_MODE: StringName = &"(Image)_Stretch_Mode"
 const SN_IMAGE_X_POSITION: StringName = &"(Image)_X_Position"
 const SN_IMAGE_Y_POSITION: StringName = &"(Image)_Y_Position"
 const SN_IMAGE_ROTATION: StringName = &"(Image)_Rotation"
@@ -29,6 +42,7 @@ const SN_IMAGE_ROTATION_REACTION: StringName = &"(Image)_Rotation_Reaction"
 const SN_IMAGE_SCALE_REACTION: StringName = &"(Image)_Scale_Reaction"
 
 var _image_path: String = ""
+var _image_stretch_mode: CustomStretchMode = CustomStretchMode.DETECT
 var _image_x_position: float = 0.5
 var _image_y_position: float = 0.5
 var _image_rotation: float = 0.0
@@ -44,6 +58,13 @@ func set_image_path(p_value: String) -> void:
 
 func get_image_path() -> String:
 	return _image_path
+
+func set_image_stretch_mode(p_value: CustomStretchMode) -> void:
+	_image_stretch_mode = p_value
+	property_changed.emit(SN_IMAGE_STRETCH_MODE)
+
+func get_image_stretch_mode() -> CustomStretchMode:
+	return _image_stretch_mode
 
 func set_image_x_position(p_value: float) -> void:
 	_image_x_position = p_value
@@ -108,6 +129,7 @@ func get_properties() -> Dictionary[StringName, Variant]:
 		SN_ELEMENT_LAYER: _element_layer,
 		SN_ELEMENT_VISIBILITY: _element_visibility,
 		SN_IMAGE_PATH: _image_path,
+		SN_IMAGE_STRETCH_MODE: _image_stretch_mode,
 		SN_IMAGE_X_POSITION: _image_x_position,
 		SN_IMAGE_Y_POSITION: _image_y_position,
 		SN_IMAGE_ROTATION: _image_rotation,
@@ -139,6 +161,7 @@ func get_setters() -> Dictionary[StringName, StringName]:
 		SN_ELEMENT_LAYER: set_element_layer.get_method(),
 		SN_ELEMENT_VISIBILITY: set_element_visibility.get_method(),
 		SN_IMAGE_PATH: set_image_path.get_method(),
+		SN_IMAGE_STRETCH_MODE: set_image_stretch_mode.get_method(),
 		SN_IMAGE_X_POSITION: set_image_x_position.get_method(),
 		SN_IMAGE_Y_POSITION: set_image_y_position.get_method(),
 		SN_IMAGE_ROTATION: set_image_rotation.get_method(),

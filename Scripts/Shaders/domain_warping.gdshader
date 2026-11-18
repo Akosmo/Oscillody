@@ -54,6 +54,12 @@ uniform lowp int blend_mode : hint_enum(
 	"Simple Subtract",
 	"Simple Difference"
 ) = 0;
+uniform lowp int mirror : hint_enum(
+	"Normal",
+	"Horizontal",
+	"Vertical",
+	"Both"
+) = 0;
 
 // Hash function from https://www.shadertoy.com/view/MdcfDj
 // This hash function is dedicated to the public domain under the Unlicense.
@@ -122,6 +128,15 @@ void fragment() {
 	highp vec2 uv = UV;
 	uv.y = 1.0 - uv.y; // Invert `Y` coord.
 	uv.x *= 16.0 / 9.0; // Adjust ratio.
+	
+	if (mirror == 1) {
+		uv.x = 16.0 / 9.0 - uv.x;
+	} else if (mirror == 2) {
+		uv.y = 1.0 - uv.y;
+	} else if (mirror == 3) {
+		uv.x = 16.0 / 9.0 - uv.x;
+		uv.y = 1.0 - uv.y;
+	}
 
 	//fBm's that are going to warp the base noise.
 	highp vec2 warper1 = vec2(0.0);

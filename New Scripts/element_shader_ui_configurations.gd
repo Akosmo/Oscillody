@@ -26,6 +26,8 @@ var _simple_gradient_visibility: bool = false
 var _tides_visibility: bool = false
 
 var _speed_visibility: bool = false
+var _mirror_visibility: bool = false
+var _brightness_visibility: bool = false
 var _reaction_visibility: bool = false
 
 func enable_shader_visibility(p_shader: ElementShader.ShaderType) -> void:
@@ -37,32 +39,52 @@ func enable_shader_visibility(p_shader: ElementShader.ShaderType) -> void:
 	_tides_visibility = false
 	
 	_speed_visibility = false
+	_mirror_visibility = false
+	_brightness_visibility = false
 	
 	match p_shader:
 		ElementShader.ShaderType.CURRENT_FLOW:
 			_current_flow_visibility = true
 			_speed_visibility = true
+			_mirror_visibility = true
+			_brightness_visibility = false
 		ElementShader.ShaderType.DOMAIN_WARPING:
 			_domain_warping_visibility = true
 			_speed_visibility = true
+			_mirror_visibility = true
+			_brightness_visibility = true
 		ElementShader.ShaderType.ECHOES:
 			_echoes_visibility = true
 			_speed_visibility = true
+			_mirror_visibility = false
+			_brightness_visibility = false
 		ElementShader.ShaderType.ISOLINES:
 			_isolines_visibility = true
 			_speed_visibility = true
+			_mirror_visibility = false
+			_brightness_visibility = false
 		ElementShader.ShaderType.SIMPLE_GRADIENT:
 			_simple_gradient_visibility = true
 			_speed_visibility = false
+			_mirror_visibility = false
+			_brightness_visibility = false
 		ElementShader.ShaderType.TIDES:
 			_tides_visibility = true
 			_speed_visibility = true
+			_mirror_visibility = true
+			_brightness_visibility = true
 	
-	ElementManager.notify_property_node_visibility_changed()
+	ElementManager.notify_property_node_visibility_changed(_element)
 
 func set_reaction_visibility(p_value: bool) -> void:
 	_reaction_visibility = p_value
-	ElementManager.notify_property_node_visibility_changed()
+	ElementManager.notify_property_node_visibility_changed(_element)
+
+func set_element(p_element: Element) -> void:
+	_element = p_element
+
+func get_element() -> Element:
+	return _element
 
 func get_configurations() -> Dictionary[StringName, Dictionary]:
 	var ret: Dictionary[StringName, Dictionary] = {
@@ -214,7 +236,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 8.0,
 			VISIBLE: _echoes_visibility,
-			MINIMUM: 2.0,
+			MINIMUM: 4.0,
 			MAXIMUM: 10.0,
 			STEP: 1.0,
 			ROUNDED: true
@@ -386,10 +408,19 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementShader.SN_SHADER_SPEED: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
-			DEFAULT_VALUE: 0.1,
+			DEFAULT_VALUE: 0.2,
 			VISIBLE: _speed_visibility,
 			MINIMUM: 0.0,
-			MAXIMUM: 1.0,
+			MAXIMUM: 2.0,
+			STEP: 0.05,
+			ROUNDED: false
+		},
+		ElementShader.SN_SHADER_TIME_OFFSET: {
+			CONTROL_NODE: ControlNode.NUMERICAL,
+			DEFAULT_VALUE: 0.0,
+			VISIBLE: _speed_visibility,
+			MINIMUM: -2.0,
+			MAXIMUM: 2.0,
 			STEP: 0.05,
 			ROUNDED: false
 		},
@@ -397,6 +428,12 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
 			DEFAULT_VALUE: ElementShader.ShaderBlendMode.NORMAL,
 			OPTIONS: ElementShader.SHADER_BLEND_MODES
+		},
+		ElementShader.SN_SHADER_MIRROR: {
+			CONTROL_NODE: ControlNode.OPTION_BUTTON,
+			DEFAULT_VALUE: ElementShader.ShaderMirror.NORMAL,
+			VISIBLE: _mirror_visibility,
+			OPTIONS: ElementShader.SHADER_MIRRORS
 		},
 		ElementShader.SN_SHADER_X_POSITION: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
@@ -441,6 +478,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		ElementShader.SN_SHADER_BRIGHTNESS: {
 			CONTROL_NODE: ControlNode.NUMERICAL,
 			DEFAULT_VALUE: 0.0,
+			VISIBLE: _brightness_visibility,
 			MINIMUM: -1.0,
 			MAXIMUM: 1.0,
 			STEP: 0.1,
@@ -476,6 +514,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementShader.SN_AUDIO_SOURCE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
+			DEFAULT_VALUE: &"",
 			OPTIONS: AudioManager.get_stream_names().values()
 		},
 		ElementShader.SN_BEGIN_FREQUENCY: {
@@ -507,7 +546,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementShader.SN_SMOOTHING_TYPE: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
-			DEFAULT_VALUE: ElementShader.ReactiveSmoothingType.DECAY,
+			DEFAULT_VALUE: ElementShader.ReactiveSmoothingType.INTERPOLATION,
 			VISIBLE: _reaction_visibility,
 			OPTIONS: ElementShader.SMOOTHING_TYPES
 		},

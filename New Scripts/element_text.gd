@@ -31,6 +31,7 @@ const HORIZONTAL_ALIGNMENTS: Array[StringName] = [
 ]
 
 const SN_TEXT: StringName = &"(Text)_Text"
+const SN_TEXT_DYNAMIC: StringName = &"(Text)_Dynamic"
 const SN_TEXT_FONT: StringName = &"(Text)_Font"
 const SN_TEXT_BOLD: StringName = &"(Text)_Bold"
 const SN_TEXT_ITALIC: StringName = &"(Text)_Italic"
@@ -51,7 +52,8 @@ const SN_TEXT_ROTATION_REACTION: StringName = &"(Text)_Rotation_Reaction"
 const SN_TEXT_SCALE_REACTION: StringName = &"(Text)_Scale_Reaction"
 
 var _text: String = ""
-var _text_font: String = "Calibri" # TODO: Change?
+var _text_dynamic: bool = true
+var _text_font: String = "Calibri"
 var _text_bold: bool = false
 var _text_italic: bool = false
 var _text_size: int = 72
@@ -76,6 +78,13 @@ func set_text(p_value: String) -> void:
 
 func get_text() -> String:
 	return _text
+
+func set_text_dynamic(p_value: bool) -> void:
+	_text_dynamic = p_value
+	property_changed.emit(SN_TEXT_DYNAMIC)
+
+func get_text_dynamic() -> bool:
+	return _text_dynamic
 
 func set_text_font(p_value: String) -> void:
 	_text_font = p_value
@@ -210,6 +219,7 @@ func get_properties() -> Dictionary[StringName, Variant]:
 		SN_ELEMENT_LAYER: _element_layer,
 		SN_ELEMENT_VISIBILITY: _element_visibility,
 		SN_TEXT: _text,
+		SN_TEXT_DYNAMIC: _text_dynamic,
 		SN_TEXT_FONT: _text_font,
 		SN_TEXT_BOLD: _text_bold,
 		SN_TEXT_ITALIC: _text_italic,
@@ -251,6 +261,7 @@ func get_setters() -> Dictionary[StringName, StringName]:
 		SN_ELEMENT_LAYER: set_element_layer.get_method(),
 		SN_ELEMENT_VISIBILITY: set_element_visibility.get_method(),
 		SN_TEXT: set_text.get_method(),
+		SN_TEXT_DYNAMIC: set_text_dynamic.get_method(),
 		SN_TEXT_FONT: set_text_font.get_method(),
 		SN_TEXT_BOLD: set_text_bold.get_method(),
 		SN_TEXT_ITALIC: set_text_italic.get_method(),

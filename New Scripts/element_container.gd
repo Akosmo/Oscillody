@@ -20,7 +20,7 @@ extends PanelContainer
 ## UI class represending an [Element].
 
 ## Emitted when the button with the Element's name is pressed.
-signal element_selected(p_element: Element)
+signal element_selected(p_element: Element, p_toggled_on: bool)
 ## Emitter when the delete button is pressed.
 #signal element_container_deleted(p_element: Element)
 
@@ -42,19 +42,29 @@ func _ready() -> void:
 func get_element() -> Element:
 	return element
 
+func set_button_toggled(p_toggled: bool, p_emit_signal: bool = true) -> void:
+	#if p_emit_signal:
+	#	_element_name_button.set_pressed(p_toggled)
+	#else:
+	#	_element_name_button.set_pressed_no_signal(p_toggled)
+	
+	_element_name_button.set_pressed_no_signal(p_toggled)
+	if p_emit_signal:
+		element_selected.emit(element, p_toggled)
+
 func _connect_signals() -> Error:
 	if _delete_button.pressed.connect(_on_delete_button_pressed):
-		return ERR_INVALID_PARAMETER
-	if _element_name_button.pressed.connect(_on_element_name_button_pressed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
+	if _element_name_button.toggled.connect(_on_element_name_button_toggled):
+		return Error.ERR_INVALID_PARAMETER
 	
 	if element.property_changed.connect(_on_element_name_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
 	if ElementManager.element_type_changed.connect(_on_element_type_changed):
-		return ERR_INVALID_PARAMETER
+		return Error.ERR_INVALID_PARAMETER
 	
-	return OK
+	return Error.OK
 
 func _on_delete_button_pressed() -> void:
 	ElementManager.delete_element(element)
@@ -62,8 +72,8 @@ func _on_delete_button_pressed() -> void:
 	if not is_queued_for_deletion():
 		queue_free()
 
-func _on_element_name_button_pressed() -> void:
-	element_selected.emit(element)
+func _on_element_name_button_toggled(p_toggled_on: bool) -> void:
+	element_selected.emit(element, p_toggled_on)
 
 func _on_element_name_changed(p_property: StringName) -> void:
 	if p_property == Element.SN_ELEMENT_NAME:
@@ -75,3 +85,5 @@ func _on_element_type_changed(_p_old_element: Element, p_new_element: Element) -
 		
 		@warning_ignore("return_value_discarded")
 		element.property_changed.connect(_on_element_name_changed)
+		
+		set_button_toggled(true)

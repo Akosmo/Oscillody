@@ -24,8 +24,8 @@ var _seed: int = 0
 var _noise_scroll: float
 
 func _init() -> void:
-	_noise.set_noise_type(FastNoiseLite.TYPE_SIMPLEX_SMOOTH)
-	_noise.set_fractal_type(FastNoiseLite.FRACTAL_NONE)
+	_noise.set_noise_type(FastNoiseLite.NoiseType.TYPE_SIMPLEX_SMOOTH)
+	_noise.set_fractal_type(FastNoiseLite.FractalType.FRACTAL_NONE)
 	_noise.set_frequency(0.0005)
 
 func reset_noise_scroll() -> void:

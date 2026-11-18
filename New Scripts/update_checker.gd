@@ -65,7 +65,7 @@ Check your Internet connection if you want Oscillody to check for updates upon l
 
 func _on_request_completed(
 	result: int,
-	_response_code: int,
+	response_code: int,
 	_headers: PackedStringArray,
 	body: PackedByteArray
 ) -> void:
@@ -77,32 +77,59 @@ func _on_request_completed(
 	
 	SettingsManager.set_update_last_checked_at(_current_time)
 	
-	if result == HTTPRequest.RESULT_SUCCESS:
-		var json_body: Dictionary = JSON.parse_string(body.get_string_from_utf8())
-		if json_body == null:
-			CustomLogger.log_error("Could not parse request for latest version.")
-			return
-		var current_version: String = ProjectSettings.get_setting("application/config/version")
-		var latest_version: String = json_body["tag_name"]
-		latest_version = latest_version.replacen("v", "")
-		CustomLogger.log_normal(
-			"Current version: {current} - Latest version: {latest}".format(
-				{"current": current_version, "latest": latest_version}
-			)
-		)
-		var current_version_int: int = current_version.replacen(".", "").to_int()
-		var latest_version_int: int = latest_version.replacen(".", "").to_int()
-		CustomLogger.log_normal(
-			"Current version (int): {current} - Latest version (int): {latest}".format(
-				{"current": current_version_int, "latest": latest_version_int}
-			)
-		)
-		if current_version_int < latest_version_int:
-			CustomLogger.log_normal("New version available!")
-			PopupManager.request_popup(PopupManager.PopupType.UPDATE)
-		else:
-			CustomLogger.log_normal("There are no new updates.")
-	else:
+	if result != HTTPRequest.Result.RESULT_SUCCESS:
 		CustomLogger.log_error(
-			"Request failed for latest version, check manually for updates. Error code: " + str(result)
+			"Request failed for latest version, check manually for updates. Result code: " + str(result)
 		)
+		return
+	
+	if response_code != 200:
+		CustomLogger.log_error(
+			"Request failed for latest version, check manually for updates. Response code: " + str(response_code)
+		)
+		return
+	
+	var json_body: Dictionary = JSON.parse_string(body.get_string_from_utf8())
+	if json_body == null:
+		CustomLogger.log_error("Could not parse request for latest version.")
+		return
+	var current_version: String = ProjectSettings.get_setting("application/config/version")
+	if current_version.containsn("v"):
+		current_version = current_version.replacen("v", "")
+	var latest_version: String = json_body["tag_name"]
+	if latest_version.containsn("v"):
+		latest_version = latest_version.replacen("v", "")
+	CustomLogger.log_normal(
+		"Current version: {current} - Latest version: {latest}".format(
+			{"current": current_version, "latest": latest_version}
+		)
+	)
+	var current_version_array: PackedStringArray = current_version.split(".")
+	var latest_version_array: PackedStringArray = latest_version.split(".")
+	CustomLogger.log_normal(
+		"Current version (array): {current} - Latest version (array): {latest}".format(
+			{"current": current_version_array, "latest": latest_version_array}
+		)
+	)
+	if current_version_array[0].to_int() == latest_version_array[0].to_int():
+		if current_version_array[1].to_int() == latest_version_array[1].to_int():
+			if current_version_array[2].to_int() >= latest_version_array[2].to_int():
+				CustomLogger.log_normal("There are no new updates (checked major, minor, and patch numbers).")
+			else:
+				CustomLogger.log_normal("New patch version available.")
+				PopupManager.request_popup(PopupManager.PopupType.UPDATE)
+		elif current_version_array[1].to_int() > latest_version_array[1].to_int():
+			CustomLogger.log_normal("There are no new updates (checked major and minor numbers).")
+		else:
+			CustomLogger.log_normal("New minor version available.")
+			PopupManager.request_popup(PopupManager.PopupType.UPDATE)
+	elif current_version_array[0].to_int() > latest_version_array[0].to_int():
+		CustomLogger.log_normal("There are no new updates (checked major number).")
+	else:
+		CustomLogger.log_normal("New major version available.")
+		PopupManager.request_popup(PopupManager.PopupType.UPDATE)
+	#if current_version_int < latest_version_int:
+		#CustomLogger.log_normal("New version available!")
+		#PopupManager.request_popup(PopupManager.PopupType.UPDATE)
+	#else:
+	#	CustomLogger.log_normal("There are no new updates.")
