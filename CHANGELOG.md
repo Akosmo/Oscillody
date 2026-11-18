@@ -96,22 +96,35 @@
 
 ## 3.0.0 (February 23, 2026)
 ### Additions:
-- Cursor becomes hidden when UI is also hidden
+- Cursor becomes hidden when UI is also hidden (re-add... along with a bunch of these)
 - Dividers on vertical layout
 - Bloom Blend Mode
+- Added User Agent when checking for updates
+- Complete system overhaul, allowing multiple Elements (visualizer components), with free control over type, layer, visibility, and more (v3)
+- Button to open preset folder (v3)
+- Master selector (v3)
+- Input device selector (v3)
+- Theme selector (v3)
+- Option to switch from spin boxes to slider (v3)
+- Documentation, support, and about buttons (v3)
+- Tooltip area (v3)
+- Analyzer type selector (v3)
+- Audio source selector for analyzers (v3)
+- Full control of analyzer position (v3)
+- Control position, rotation, and scale of images (v3)
+- Option to change seed for the noise used for shaking (v3)
 
 ### Removals:
 x
 
 ### Changes:
 - Code optimization, reorganization, and comments
-- Changing Buffer Queue Size (now NEW-NAME) no longer requires restart
+- Changing Buffer Queue Size (now Sample History Length) no longer requires restart, and moved it to waveform settings
 - CHANGELOG, README, and TROUBLESHOOTING
 - About section of the app
 - Improved logs
 - Copyright year
 - Tooltips
-- Added User Agent
 - Adjusted parameter ranges
 - Size of Title during reaction is dependent on the static size
 - Increased Waveform Height range (in code, not UI)
@@ -119,6 +132,9 @@ x
 - Audio reaction also has effect if the element it is for has the amount/strength set to 0
 - "Video Resolution" to "Export Resolution"
 - Default Bloom Blend Mode from Screen to Add
+- Allow importing multiple audio files at once (v3 - more details needed)
+- Complete UI overhaul (v3)
+- Merge icon and background image into the same Element type (v3)
 
 ### Fixes:
 - Variable pointing to non-existent file (debug only)
