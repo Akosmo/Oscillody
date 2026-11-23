@@ -27,8 +27,13 @@ func _ready() -> void:
 	panel_container.set_anchors_preset(Control.PRESET_CENTER)
 	panel_container.set_pivot_offset(panel_container.get_size() * 0.5)
 	
+	PopupManager.popup_requested.connect(_on_popup_requested)
 	_change_button.pressed.connect(_on_change_button_pressed)
 	_cancel_button.pressed.connect(_on_cancel_button_pressed)
+
+func _on_popup_requested(p_popup_type: PopupManager.PopupType) -> void:
+	if p_popup_type == PopupManager.PopupType.UNSAVED_CHANGES:
+		popup_show()
 
 func _on_change_button_pressed() -> void:
 	FileManager.load_preset(FileManager.get_desired_preset())

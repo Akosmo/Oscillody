@@ -31,8 +31,13 @@ func _ready() -> void:
 	
 	_open_button.set_tooltip_text(_LINK_ITCH_IO)
 	
+	PopupManager.popup_requested.connect(_on_popup_requested)
 	_open_button.pressed.connect(_on_open_button_pressed)
 	_close_button.pressed.connect(_on_close_button_pressed)
+
+func _on_popup_requested(p_popup_type: PopupManager.PopupType) -> void:
+	if p_popup_type == PopupManager.PopupType.UPDATE:
+		popup_show()
 
 func _on_open_button_pressed() -> void:
 	if OS.shell_open(_LINK_ITCH_IO):

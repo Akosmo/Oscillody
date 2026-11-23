@@ -111,7 +111,7 @@ func _log_system_info() -> void:
 	if memory_info > 0:
 		info.append("Memory: " + String.humanize_size(memory_info))
 	info.append(
-		"Audio: {driver} ({out_sample_rate} output, {in_sample_rate} input, {channels} channels, \
+		"Audio: {driver} ({out_sample_rate} Hz output, {in_sample_rate} Hz input, {channels} channels, \
 {latency} ms latency)".format(
 			{
 				"driver": AudioServer.get_driver_name(),

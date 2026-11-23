@@ -57,7 +57,7 @@ enum ShaderBlendMode {
 }
 
 enum ShaderMirror {
-	NORMAL,
+	NO_MIRROR,
 	HORIZONTAL,
 	VERTICAL,
 	BOTH
@@ -102,7 +102,7 @@ const SHADER_BLEND_MODES: Array[StringName] = [
 ]
 
 const SHADER_MIRRORS: Array[StringName] = [
-	&"(Shader_Mirror)_Normal",
+	&"(Shader_Mirror)_No_Mirror",
 	&"(Shader_Mirror)_Horizontal",
 	&"(Shader_Mirror)_Vertical",
 	&"(Shader_Mirror)_Both"
@@ -227,7 +227,7 @@ var _tides_iterations: int = 6
 var _shader_speed: float = 0.2
 var _shader_time_offset: float = 0.0
 var _shader_blend_mode: ShaderBlendMode = ShaderBlendMode.NORMAL
-var _shader_mirror: ShaderMirror = ShaderMirror.NORMAL
+var _shader_mirror: ShaderMirror = ShaderMirror.NO_MIRROR
 
 var _shader_x_position: float = 0.5
 var _shader_y_position: float = 0.5

@@ -247,6 +247,9 @@ func _on_property_visibility_changed(p_element: Element) -> void:
 
 func _on_stream_list_updated() -> void:
 	var element_ui_configs: Dictionary[StringName, Dictionary] = _ui_configurations.get_configurations()
+	if not element_ui_configs.has(ElementWithAudio.SN_AUDIO_SOURCE):
+		return
+	
 	var property_configs: Dictionary = element_ui_configs.get(ElementWithAudio.SN_AUDIO_SOURCE)
 	for node: BasicPropertyContainer in get_children():
 		if node.get_property_key() == ElementWithAudio.SN_AUDIO_SOURCE:

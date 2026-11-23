@@ -431,7 +431,7 @@ func get_configurations() -> Dictionary[StringName, Dictionary]:
 		},
 		ElementShader.SN_SHADER_MIRROR: {
 			CONTROL_NODE: ControlNode.OPTION_BUTTON,
-			DEFAULT_VALUE: ElementShader.ShaderMirror.NORMAL,
+			DEFAULT_VALUE: ElementShader.ShaderMirror.NO_MIRROR,
 			VISIBLE: _mirror_visibility,
 			OPTIONS: ElementShader.SHADER_MIRRORS
 		},

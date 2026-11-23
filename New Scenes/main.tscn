@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://vi4x6vawkfqw" path="res://New Scripts/files_container.gd" id="2_0at2v"]
 [ext_resource type="PackedScene" uid="uid://bfv2ne33xxlso" path="res://New Scenes/property_container.tscn" id="2_jtfbr"]
 [ext_resource type="PackedScene" uid="uid://bo8typ4f1m1v4" path="res://New Scenes/visualizer.tscn" id="2_kx00h"]
+[ext_resource type="Texture2D" uid="uid://bipcer2j8hmp3" path="res://New Images/Oscillody_Background.png" id="2_stuqy"]
 [ext_resource type="PackedScene" uid="uid://d1oevod46vgin" path="res://New Scenes/new_player_control.tscn" id="2_titj8"]
 [ext_resource type="PackedScene" uid="uid://b6lc61kxj5sqa" path="res://New Scenes/update_checker.tscn" id="2_xupgd"]
 [ext_resource type="Script" uid="uid://blv1t6mo5lluu" path="res://New Scripts/visualizer_container.gd" id="3_au6c5"]
@@ -19,10 +20,31 @@
 [ext_resource type="PackedScene" uid="uid://b4hu5cvj3wcdj" path="res://New Scenes/update_popup.tscn" id="15_pi7kj"]
 [ext_resource type="PackedScene" uid="uid://bge0vplp815uw" path="res://New Scenes/unsaved_changes_popup.tscn" id="16_pl53u"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y02qo"]
+bg_color = Color(0.07, 0.07, 0.07, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.63, 0.63, 0.63, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
 [sub_resource type="LabelSettings" id="LabelSettings_0oqpi"]
 
 [node name="Main" type="CanvasLayer" unique_id=1711849750]
 script = ExtResource("1_pff5h")
+
+[node name="Background" type="TextureRect" parent="." unique_id=1705558633]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_stuqy")
+expand_mode = 1
 
 [node name="MouseTimer" type="Timer" parent="." unique_id=169174755]
 one_shot = true
@@ -67,6 +89,7 @@ tab_3/title = "Help"
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_y02qo")
 script = ExtResource("2_0at2v")
 metadata/_tab_index = 0
 metadata/_tab_name = "Files"
@@ -199,6 +222,7 @@ metadata/_tab_name = "Visualizer"
 
 [node name="PanelContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer" unique_id=1496483231 instance=ExtResource("1_t468s")]
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_y02qo")
 
 [node name="Label" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/PanelContainer/MarginContainer" parent_id_path=PackedInt32Array(1496483231, 894961615) index="0" unique_id=1088716193]
 text = "ELEMENTS"
@@ -217,6 +241,7 @@ text = "Add Element"
 
 [node name="PanelContainer2" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer" unique_id=936013622 instance=ExtResource("1_t468s")]
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_y02qo")
 
 [node name="Label" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/PanelContainer2/MarginContainer" parent_id_path=PackedInt32Array(936013622, 894961615) index="0" unique_id=1088716193]
 text = "PROPERTIES"
@@ -227,6 +252,7 @@ visible = false
 [node name="SettingsContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer" unique_id=1768564502 instance=ExtResource("1_t468s")]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_y02qo")
 script = ExtResource("6_2xnxb")
 metadata/_tab_index = 2
 metadata/_tab_name = "Settings"
@@ -307,6 +333,7 @@ text = "Debug Panel"
 [node name="HelpContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer" unique_id=1383400275 instance=ExtResource("1_t468s")]
 visible = false
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_y02qo")
 script = ExtResource("7_325ne")
 metadata/_tab_index = 3
 metadata/_tab_name = "Help"
@@ -365,6 +392,7 @@ text = "About Oscillody"
 [node name="TooltipsPanel" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer" unique_id=2041220195 instance=ExtResource("1_t468s")]
 custom_maximum_size = Vector2(-1, 300)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_y02qo")
 script = ExtResource("8_0oqpi")
 
 [node name="Label" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TooltipsPanel/MarginContainer" parent_id_path=PackedInt32Array(2041220195, 894961615) index="0" unique_id=1088716193]

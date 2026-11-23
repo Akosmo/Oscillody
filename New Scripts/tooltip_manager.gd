@@ -209,6 +209,8 @@ results in the selected color."
 time offset and speed, they should overlap (make sure to resync in Settings)."
 		ElementShader.SN_SHADER_BLEND_MODE:
 			ret = "Sets the blend mode for this shader. It will blend with every layer that's behind it."
+		ElementShader.SN_SHADER_MIRROR:
+			ret = "Sets the mirroring axis of the shader."
 		ElementShader.SN_SHADER_X_POSITION:
 			ret = "Sets the position of the shader in the horizontal axis."
 		ElementShader.SN_SHADER_Y_POSITION:

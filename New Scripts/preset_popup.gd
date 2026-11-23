@@ -31,6 +31,7 @@ func _ready() -> void:
 	panel_container.set_anchors_preset(Control.LayoutPreset.PRESET_CENTER)
 	panel_container.set_pivot_offset(panel_container.get_size() * 0.5)
 	
+	PopupManager.popup_requested.connect(_on_popup_requested)
 	_line_edit.text_submitted.connect(_on_text_submitted)
 	_save_button.pressed.connect(_on_save_pressed)
 	_cancel_button.pressed.connect(_on_cancel_pressed)
@@ -52,6 +53,10 @@ func _set_to_overwrite(p_overwrite: bool = true) -> void:
 	_line_edit.set_editable(false)
 	_save_button.set_text("Yes")
 	_cancel_button.set_text("No")
+
+func _on_popup_requested(p_popup_type: PopupManager.PopupType) -> void:
+	if p_popup_type == PopupManager.PopupType.PRESET:
+		popup_show()
 
 func _on_text_submitted(p_text: String) -> void:
 	if not p_text.is_empty():

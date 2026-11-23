@@ -51,7 +51,7 @@ uniform lowp int blend_mode : hint_enum(
 	"Simple Difference"
 ) = 0;
 uniform lowp int mirror : hint_enum(
-	"Normal",
+	"No Mirror",
 	"Horizontal",
 	"Vertical",
 	"Both"

@@ -8,10 +8,10 @@ script = ExtResource("2_kwlo8")
 
 [node name="PanelContainer" parent="." index="2" unique_id=2106430377]
 custom_maximum_size = Vector2(512, 256)
-offset_left = -33.0
-offset_top = -63.0
-offset_right = 33.0
-offset_bottom = 63.0
+offset_left = -256.0
+offset_top = -65.5
+offset_right = 256.0
+offset_bottom = 65.5
 
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer" parent_id_path=PackedInt32Array(575107532) index="0" unique_id=568263534]
 layout_mode = 2

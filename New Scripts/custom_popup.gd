@@ -53,6 +53,8 @@ func popup_show() -> void:
 		#2.0,
 		#0.25
 	#).from(0.0)
+	
+	# Using offset transform doesn't work.
 	_tween.tween_method(panel_container.set_scale, Vector2.ZERO, Vector2.ONE, 0.25)
 	_tween.tween_method(_set_blur_amount, 0.0, 2.0, 0.25)
 	_tween.tween_method(

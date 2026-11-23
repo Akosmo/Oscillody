@@ -31,7 +31,12 @@ func _ready() -> void:
 	)
 	panel_container.set_pivot_offset(fixed_pivot)
 	
+	PopupManager.popup_requested.connect(_on_popup_requested)
 	_button.pressed.connect(_on_button_pressed)
+
+func _on_popup_requested(p_popup_type: PopupManager.PopupType) -> void:
+	if p_popup_type == PopupManager.PopupType.ABOUT:
+		popup_show()
 
 func _on_button_pressed() -> void:
 	popup_hide()

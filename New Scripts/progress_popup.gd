@@ -33,6 +33,7 @@ func _ready() -> void:
 	
 	DisplayServer.window_set_taskbar_progress_state(DisplayServer.ProgressState.PROGRESS_STATE_NORMAL)
 	
+	PopupManager.popup_requested.connect(_on_popup_requested)
 	_cancel_button.pressed.connect(_on_cancel_pressed)
 	MovieWriterUtilities.export_finished.connect(_on_export_finished)
 
@@ -40,6 +41,10 @@ func _process(_p_delta: float) -> void:
 	_total_progress_value = MovieWriterUtilities.get_progress_value()
 	_progress_bar.set_value(_total_progress_value * 100.0)
 	DisplayServer.window_set_taskbar_progress_value(_total_progress_value)
+
+func _on_popup_requested(p_popup_type: PopupManager.PopupType) -> void:
+	if p_popup_type == PopupManager.PopupType.PROGRESS:
+		popup_show()
 
 func _toast_notification_callback(p_id: int, p_status: DisplayServer.NotificationStatus) -> void:
 	CustomLogger.log_normal("Toast notification callback: ID: " + str(p_id))
