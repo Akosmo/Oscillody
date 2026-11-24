@@ -29,20 +29,13 @@ func _ready() -> void:
 	_suggest_features_report_bugs_button.set_tooltip_text(_LINK_GITHUB_ISSUES)
 	_support_button.set_tooltip_text(_LINK_PATREON)
 	
-	if _connect_signals():
-		CustomLogger.log_critical_error("Could not connect signals in HelpContainer.")
+	_connect_signals()
 
-func _connect_signals() -> Error:
-	if _documentation_button.pressed.connect(_on_documentation_pressed):
-		return Error.ERR_INVALID_PARAMETER
-	if _suggest_features_report_bugs_button.pressed.connect(_on_suggest_features_report_bugs_pressed):
-		return Error.ERR_INVALID_PARAMETER
-	if _support_button.pressed.connect(_on_support_pressed):
-		return Error.ERR_INVALID_PARAMETER
-	if _about_oscillody_button.pressed.connect(_on_about_oscillody_pressed):
-		return Error.ERR_INVALID_PARAMETER
-	
-	return Error.OK
+func _connect_signals() -> void:
+	_documentation_button.pressed.connect(_on_documentation_pressed)
+	_suggest_features_report_bugs_button.pressed.connect(_on_suggest_features_report_bugs_pressed)
+	_support_button.pressed.connect(_on_support_pressed)
+	_about_oscillody_button.pressed.connect(_on_about_oscillody_pressed)
 
 func _on_documentation_pressed() -> void:
 	pass

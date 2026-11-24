@@ -21,8 +21,6 @@ extends PanelContainer
 
 ## Emitted when the button with the Element's name is pressed.
 signal element_selected(p_element: Element, p_toggled_on: bool)
-## Emitter when the delete button is pressed.
-#signal element_container_deleted(p_element: Element)
 
 var element: Element
 
@@ -30,45 +28,29 @@ var element: Element
 @onready var _element_name_button: Button = %ElementNameButton
 
 func _ready() -> void:
-	#element = ElementManager.create_element()
 	set_name(element.get_element_name() + "_" + str(element.get_element_unique_id()))
 	_element_name_button.set_text(element.get_element_name())
 	
-	if _connect_signals():
-		CustomLogger.log_critical_error("Could not connect signals in ElementContainer.")
-	
-	#_element_name_button.pressed.emit()
+	_connect_signals()
 
 func get_element() -> Element:
 	return element
 
 func set_button_toggled(p_toggled: bool, p_emit_signal: bool = true) -> void:
-	#if p_emit_signal:
-	#	_element_name_button.set_pressed(p_toggled)
-	#else:
-	#	_element_name_button.set_pressed_no_signal(p_toggled)
-	
 	_element_name_button.set_pressed_no_signal(p_toggled)
 	if p_emit_signal:
 		element_selected.emit(element, p_toggled)
 
-func _connect_signals() -> Error:
-	if _delete_button.pressed.connect(_on_delete_button_pressed):
-		return Error.ERR_INVALID_PARAMETER
-	if _element_name_button.toggled.connect(_on_element_name_button_toggled):
-		return Error.ERR_INVALID_PARAMETER
+func _connect_signals() -> void:
+	_delete_button.pressed.connect(_on_delete_button_pressed)
+	_element_name_button.toggled.connect(_on_element_name_button_toggled)
 	
-	if element.property_changed.connect(_on_element_name_changed):
-		return Error.ERR_INVALID_PARAMETER
+	element.property_changed.connect(_on_element_name_changed)
 	
-	if ElementManager.element_type_changed.connect(_on_element_type_changed):
-		return Error.ERR_INVALID_PARAMETER
-	
-	return Error.OK
+	ElementManager.element_type_changed.connect(_on_element_type_changed)
 
 func _on_delete_button_pressed() -> void:
 	ElementManager.delete_element(element)
-	#element_container_deleted.emit(element)
 	if not is_queued_for_deletion():
 		queue_free()
 
@@ -83,7 +65,6 @@ func _on_element_type_changed(_p_old_element: Element, p_new_element: Element) -
 	if element.get_element_unique_id() == p_new_element.get_element_unique_id():
 		element = p_new_element
 		
-		@warning_ignore("return_value_discarded")
 		element.property_changed.connect(_on_element_name_changed)
 		
 		set_button_toggled(true)

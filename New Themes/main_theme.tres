@@ -53,7 +53,7 @@ expand_margin_top = 2.0
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t8bdm"]
 content_margin_left = 4.0
 content_margin_right = 4.0
-bg_color = Color(0.27999997, 0.27999997, 0.7, 1)
+bg_color = Color(0.2784314, 0.2784314, 0.7019608, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1

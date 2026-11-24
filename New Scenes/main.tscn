@@ -220,33 +220,33 @@ script = ExtResource("3_au6c5")
 metadata/_tab_index = 1
 metadata/_tab_name = "Visualizer"
 
-[node name="PanelContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer" unique_id=1496483231 instance=ExtResource("1_t468s")]
+[node name="ElementsPanelContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer" unique_id=1496483231 instance=ExtResource("1_t468s")]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_y02qo")
 
-[node name="Label" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/PanelContainer/MarginContainer" parent_id_path=PackedInt32Array(1496483231, 894961615) index="0" unique_id=1088716193]
+[node name="Label" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/ElementsPanelContainer/MarginContainer" parent_id_path=PackedInt32Array(1496483231, 894961615) index="0" unique_id=1088716193]
 text = "ELEMENTS"
 
-[node name="MarginContainer" type="MarginContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1496483231, 998451736) index="0" unique_id=1768638543]
+[node name="MarginContainer" type="MarginContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/ElementsPanelContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1496483231, 998451736) index="0" unique_id=1768638543]
 layout_mode = 2
 theme_override_constants/margin_left = 4
 theme_override_constants/margin_top = 4
 theme_override_constants/margin_right = 4
 theme_override_constants/margin_bottom = 4
 
-[node name="AddElementButton" type="Button" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MarginContainer" unique_id=1416106627]
+[node name="AddElementButton" type="Button" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/ElementsPanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MarginContainer" unique_id=1416106627]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Add Element"
 
-[node name="PanelContainer2" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer" unique_id=936013622 instance=ExtResource("1_t468s")]
+[node name="ElementPropertiesPanelContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer" unique_id=936013622 instance=ExtResource("1_t468s")]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_y02qo")
 
-[node name="Label" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/PanelContainer2/MarginContainer" parent_id_path=PackedInt32Array(936013622, 894961615) index="0" unique_id=1088716193]
+[node name="Label" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/ElementPropertiesPanelContainer/MarginContainer" parent_id_path=PackedInt32Array(936013622, 894961615) index="0" unique_id=1088716193]
 text = "PROPERTIES"
 
-[node name="VBoxContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/PanelContainer2/MarginContainer/ScrollContainer" parent_id_path=PackedInt32Array(936013622, 1998990987) index="0" unique_id=998451736]
+[node name="VBoxContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/ElementPropertiesPanelContainer/MarginContainer/ScrollContainer" parent_id_path=PackedInt32Array(936013622, 1998990987) index="0" unique_id=998451736]
 visible = false
 
 [node name="SettingsContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer" unique_id=1768564502 instance=ExtResource("1_t468s")]
@@ -295,35 +295,21 @@ layout_mode = 2
 [node name="PropertyLabel" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/DeleteTemporaryFilesContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(391630967, 1985752979) index="0" unique_id=1523211957]
 text = "Delete Temporary Files"
 
-[node name="ThemeContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="5" unique_id=2138609664 instance=ExtResource("2_jtfbr")]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="PropertyLabel" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/ThemeContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(2138609664, 1985752979) index="0" unique_id=1523211957]
-text = "Theme"
-
-[node name="SwitchToSlidersContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="6" unique_id=1258595353 instance=ExtResource("2_jtfbr")]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="PropertyLabel" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/SwitchToSlidersContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(1258595353, 1985752979) index="0" unique_id=1523211957]
-text = "Switch To Sliders"
-
-[node name="SyncElementShakeContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="7" unique_id=1408356062 instance=ExtResource("2_jtfbr")]
+[node name="SyncElementShakeContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="5" unique_id=1408356062 instance=ExtResource("2_jtfbr")]
 unique_name_in_owner = true
 layout_mode = 2
 
 [node name="PropertyLabel" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/SyncElementShakeContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(1408356062, 1985752979) index="0" unique_id=1523211957]
 text = "Sync Element Shake"
 
-[node name="SyncShaderTimeContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="8" unique_id=1177281189 instance=ExtResource("2_jtfbr")]
+[node name="SyncShaderTimeContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="6" unique_id=1177281189 instance=ExtResource("2_jtfbr")]
 unique_name_in_owner = true
 layout_mode = 2
 
 [node name="PropertyLabel" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/SyncShaderTimeContainer/MarginContainer/HBoxContainer" parent_id_path=PackedInt32Array(1177281189, 1985752979) index="0" unique_id=1523211957]
 text = "Sync Shader Time"
 
-[node name="DebugPanelContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="9" unique_id=1380665767 instance=ExtResource("2_jtfbr")]
+[node name="DebugPanelContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(1768564502, 998451736) index="7" unique_id=1380665767 instance=ExtResource("2_jtfbr")]
 unique_name_in_owner = true
 layout_mode = 2
 
@@ -398,11 +384,16 @@ script = ExtResource("8_0oqpi")
 [node name="Label" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TooltipsPanel/MarginContainer" parent_id_path=PackedInt32Array(2041220195, 894961615) index="0" unique_id=1088716193]
 text = "TOOLTIPS"
 
-[node name="TooltipLabel" type="Label" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TooltipsPanel/MarginContainer/ScrollContainer/VBoxContainer" parent_id_path=PackedInt32Array(2041220195, 998451736) index="0" unique_id=1650716940]
+[node name="VBoxContainer" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TooltipsPanel/MarginContainer/ScrollContainer" parent_id_path=PackedInt32Array(2041220195, 1998990987) index="0" unique_id=998451736]
+visible = false
+
+[node name="TooltipLabel" type="Label" parent="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TooltipsPanel/MarginContainer/ScrollContainer" parent_id_path=PackedInt32Array(2041220195, 1998990987) index="1" unique_id=1650716940]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(1, 1)
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 label_settings = SubResource("LabelSettings_0oqpi")
 autowrap_mode = 3
 
@@ -449,16 +440,14 @@ visible = false
 [editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer"]
 [editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/PresetContainer"]
 [editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/FilesContainer/MarginContainer/ScrollContainer/VBoxContainer/MasterContainer"]
-[editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/PanelContainer"]
-[editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/PanelContainer2"]
+[editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/ElementsPanelContainer"]
+[editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/VisualizerContainer/ElementPropertiesPanelContainer"]
 [editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer"]
 [editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/InputDeviceContainer"]
 [editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/OutputDeviceContainer"]
 [editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/ExportResolutionContainer"]
 [editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/FFmpegPathContainer"]
 [editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/DeleteTemporaryFilesContainer"]
-[editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/ThemeContainer"]
-[editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/SwitchToSlidersContainer"]
 [editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/SyncElementShakeContainer"]
 [editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/SyncShaderTimeContainer"]
 [editable path="HSplitContainer/MainContainer/MarginContainer/VSplitContainer/TabContainer/SettingsContainer/MarginContainer/ScrollContainer/VBoxContainer/DebugPanelContainer"]

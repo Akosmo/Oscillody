@@ -128,8 +128,3 @@ func _on_request_completed(
 	else:
 		CustomLogger.log_normal("New major version available.")
 		PopupManager.request_popup(PopupManager.PopupType.UPDATE)
-	#if current_version_int < latest_version_int:
-		#CustomLogger.log_normal("New version available!")
-		#PopupManager.request_popup(PopupManager.PopupType.UPDATE)
-	#else:
-	#	CustomLogger.log_normal("There are no new updates.")

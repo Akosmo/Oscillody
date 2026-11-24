@@ -18,12 +18,7 @@
 class_name ElementText
 extends ElementShakable
 
-#enum HorizontalAlignment {
-	#LEFT,
-	#CENTER,
-	#RIGHT
-#}
-
+# Enum not needed, since `HorizontalAlignment` is already a built-in type.
 const HORIZONTAL_ALIGNMENTS: Array[StringName] = [
 	&"(Text)_Left",
 	&"(Text)_Center",

@@ -39,9 +39,6 @@ func _ready() -> void:
 	_freeze_button.toggled.connect(_on_freeze_button_toggled)
 
 func _process(_p_delta: float) -> void:
-	#if Engine.get_process_frames() % 60 != 0:
-		#return
-	
 	if not is_visible() or _tab_container.get_current_tab() == 5:
 		return
 	
@@ -51,9 +48,7 @@ func _process(_p_delta: float) -> void:
 				"FPS": int(Engine.get_frames_per_second()),
 				"Refresh_Rate": int(DisplayServer.screen_get_refresh_rate()),
 				"Sample_Rate": int(AudioServer.get_mix_rate()),
-				#"Export_Sample_Rate": ProjectSettings.get_setting("editor/movie_writer/mix_rate"),
 				"Input_Sample_Rate": int(AudioServer.get_input_mix_rate()),
-				#"Audio_Input": ProjectSettings.get_setting("audio/driver/enable_input"),
 				"Number_Of_Channels": AudioServer.get_bus_channels(0) * 2,
 				"Audio_Driver": AudioServer.get_driver_name(),
 				"Output_Latency": roundi(AudioServer.get_output_latency() * 1000.0),
@@ -64,14 +59,11 @@ func _process(_p_delta: float) -> void:
 				"Visualizer_Size": WindowUtilities.get_subviewport().get_size(),
 				"Time_Since_Launch": str(Time.get_ticks_msec() / 1000.0).pad_decimals(2),
 				"Unix_Time": str(Time.get_unix_time_from_system()).pad_decimals(2),
-				#"Update_Last_Checked_At": SettingsManager.get_update_last_checked_at(),
 				"Memory_Usage": String.humanize_size(
 					RenderingServer.get_rendering_device().get_memory_usage(
 						RenderingDevice.MemoryType.MEMORY_TOTAL
 					)
-				),
-				#"Version": ProjectSettings.get_setting("application/config/version"),
-				#"Engine_Version": Engine.get_version_info().get("string")
+				)
 			}
 			# Label won't include indents.
 			_general_label.set_text(
@@ -150,8 +142,6 @@ func _process(_p_delta: float) -> void:
 		2:
 			var full_element_dict_str: String = ""
 			var element_array: Array[Element] = ElementManager.get_elements(false)
-			#if not element_array.is_empty():
-				#full_element_dict_str = "{\n"
 			for element: Element in element_array:
 				full_element_dict_str += "{\n"
 				var element_properties: Dictionary[StringName, Variant] = element.get_properties()
@@ -182,15 +172,13 @@ func _process(_p_delta: float) -> void:
 				"Input_Device": AudioServer.get_input_device(),
 				"Output_Device": AudioServer.get_output_device(),
 				"Export_Resolution": SettingsManager.get_export_resolution(),
-				"FFmpeg_Status": not SettingsManager.get_ffmpeg_path().is_empty(),
-				"App_Theme": SettingsManager.get_app_theme()
+				"FFmpeg_Status": not SettingsManager.get_ffmpeg_path().is_empty()
 			}
 			_settings_label.set_text(
 				"Input Device: {Input_Device}
 				Output Device: {Output_Device}
 				Export Resolution: {Export_Resolution}
-				FFmpeg Status: {FFmpeg_Status}
-				App Theme: {App_Theme}".format(_format_dictionary)
+				FFmpeg Status: {FFmpeg_Status}".format(_format_dictionary)
 			)
 		4:
 			_log_label.set_text(DebugUtilities.get_log_text())

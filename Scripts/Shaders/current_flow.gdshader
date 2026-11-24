@@ -74,8 +74,8 @@ vec2 waves(highp vec2 p_uv) {
 	else {
 		wave = abs(sin(p_uv.x + p_uv.y));
 	}
-	// 0.0 if wave_thickness < wave, 1.0 otherwise. Usually this would be inverted like `step(wave_thickness, wave)`,
-	// but I want to invert the colors.
+	// 0.0 if wave_thickness < wave, 1.0 otherwise. Usually this would be inverted like
+	//`step(wave_thickness, wave)`, but I want to invert the colors.
 	wave = step(wave, wave_thickness);
 
 	lowp float zero_step = 0.0; // Allowing background color to not conflict with main color.

@@ -31,16 +31,13 @@ enum ControlNode {
 	COLOR_PICKER_BUTTON,
 	## Uses [LineEdit].
 	LINE_EDIT,
-	## Uses [SpinBox], or [CustomHSlider] if
-	## [method SettingsManager.are_sliders_enabled] is [code]true[/code].
+	## Uses [SpinBox], or a custom slider if ever implemented.
 	NUMERICAL,
 	## Uses [OptionButton].
 	OPTION_BUTTON,
 	## Uses [TextEdit].
 	TEXT_EDIT
 }
-
-const _CUSTOM_H_SLIDER_SCENE: PackedScene = preload("uid://dmhreh16g5u1n")
 
 var _control_node: ControlNode
 
@@ -62,26 +59,12 @@ var _use_file_dialog: bool
 @onready var color_picker_button: ColorPickerButton
 @onready var line_edit: LineEdit
 @onready var spin_box: SpinBox
-@onready var custom_h_slider: CustomHSlider
 @onready var option_button: OptionButton
 @onready var text_edit: TextEdit
 
 func _ready() -> void:
-	SettingsManager.slider_preference_changed.connect(_on_slider_preference_changed)
-	
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
-	
-	#reset_button.pressed.connect(_on_reset_pressed)
-	#button.pressed.connect(_on_button_pressed)
-	#file_dialog.file_selected.connect(_on_file_selected)
-	#check_button.toggled.connect(_on_check_toggled)
-	#color_picker_button.color_changed.connect(_on_color_changed)
-	#line_edit.text_changed.connect(_on_line_edit_text_changed)
-	#spin_box.value_changed.connect(_on_spin_box_value_changed)
-	#custom_h_slider.value_changed.connect(_on_slider_value_changed)
-	#option_button.item_selected.connect(_on_option_item_selected)
-	#text_edit.text_changed.connect(_on_text_edit_text_changed)
 
 func set_control_node(p_control_node: ControlNode) -> void:
 	_control_node = p_control_node
@@ -92,43 +75,29 @@ func set_control_node(p_control_node: ControlNode) -> void:
 	
 	match _control_node:
 		ControlNode.BUTTON:
-			#button.show()
 			button = Button.new()
 			control_node_box_container.add_child(button)
 			button.pressed.connect(_on_button_pressed)
 		ControlNode.CHECK_BUTTON:
-			#check_button.show()
 			check_button = CheckButton.new()
 			control_node_box_container.add_child(check_button)
 			check_button.toggled.connect(_on_check_toggled)
 		ControlNode.COLOR_PICKER_BUTTON:
-			#color_picker_button.show()
 			color_picker_button = ColorPickerButton.new()
 			color_picker_button.set_pick_color(Color.WHITE)
 			color_picker_button.set_custom_minimum_size(Vector2(32.0, 0.0))
 			control_node_box_container.add_child(color_picker_button)
 			color_picker_button.color_changed.connect(_on_color_changed)
 		ControlNode.LINE_EDIT:
-			#line_edit.show()
 			line_edit = LineEdit.new()
 			line_edit.set_custom_minimum_size(Vector2(128.0, 0.0))
 			control_node_box_container.add_child(line_edit)
 			line_edit.text_changed.connect(_on_line_edit_text_changed)
 		ControlNode.NUMERICAL:
 			spin_box = SpinBox.new()
-			#spin_box.set_update_on_text_changed(true)
 			control_node_box_container.add_child(spin_box)
 			spin_box.value_changed.connect(_on_spin_box_value_changed)
-			custom_h_slider = _CUSTOM_H_SLIDER_SCENE.instantiate()
-			control_node_box_container.add_child(custom_h_slider)
-			custom_h_slider.h_slider.set_custom_minimum_size(Vector2(100.0, 0.0))
-			custom_h_slider.value_changed.connect(_on_slider_value_changed)
-			if not SettingsManager.are_sliders_enabled():
-				custom_h_slider.hide()
-			else:
-				spin_box.hide()
 		ControlNode.OPTION_BUTTON:
-			#option_button.show()
 			option_button = OptionButton.new()
 			option_button.set_fit_to_longest_item(false)
 			option_button.set_clip_text(true)
@@ -136,7 +105,6 @@ func set_control_node(p_control_node: ControlNode) -> void:
 			control_node_box_container.add_child(option_button)
 			option_button.item_selected.connect(_on_option_item_selected)
 		ControlNode.TEXT_EDIT:
-			#text_edit.show()
 			text_edit = TextEdit.new()
 			text_edit.set_custom_minimum_size(Vector2(200.0, 100.0))
 			control_node_box_container.add_child(text_edit)
@@ -152,23 +120,8 @@ func set_property_key(p_key: StringName) -> void:
 	_property_key = p_key
 	
 	var property_str: String = String(_property_key)
-	#var close_parenthesis_idx: int = property_str.find(")")
 	property_label.set_text(property_str.get_slice(")_", 1).replace("_", " "))
 	set_name(property_str.replace(" ", ""))
-	#var property_str: String = String(_property_key)
-	#var open_parenthesis_idx: int = property_str.findn("(")
-	#var property_key_substr: String
-	#var property_key_no_substr: String
-	#if open_parenthesis_idx >= 0:
-		#var close_parenthesis_idx: int = property_str.findn(")")
-		## Also remove close parenthesis and the space afterwards.
-		#property_key_substr = property_str.substr(open_parenthesis_idx, close_parenthesis_idx + 2)
-		#@warning_ignore("unsafe_property_access")
-		#property_key_no_substr = property_str.replacen(property_key_substr, "")
-	#else:
-		#property_key_no_substr = property_str
-	#property_label.set_text(property_key_no_substr)
-	#set_name(property_key_no_substr.replacen(" ", ""))
 
 func get_property_key() -> StringName:
 	return _property_key
@@ -187,7 +140,6 @@ func set_property_value_with_node(p_value: Variant) -> void:
 		ControlNode.BUTTON:
 			pass
 		ControlNode.CHECK_BUTTON:
-			@warning_ignore("unsafe_cast")
 			check_button.set_pressed_no_signal(p_value as bool)
 		ControlNode.COLOR_PICKER_BUTTON:
 			color_picker_button.set_pick_color(p_value as Color)
@@ -195,12 +147,10 @@ func set_property_value_with_node(p_value: Variant) -> void:
 			line_edit.set_text(p_value as String)
 		ControlNode.NUMERICAL:
 			spin_box.set_value_no_signal(p_value as float)
-			custom_h_slider.set_value_no_signal(p_value as float)
 		ControlNode.OPTION_BUTTON:
 			option_button.select(-1)
 			if option_button.get_item_count() > 0:
 				if typeof(p_value) == TYPE_INT:
-					@warning_ignore("unsafe_cast")
 					option_button.select(p_value as int)
 				elif typeof(p_value) == TYPE_STRING_NAME:
 					for idx: int in option_button.get_item_count():
@@ -250,7 +200,6 @@ func use_file_dialog(p_enable: bool = true) -> void:
 		file_dialog.set_access(FileDialog.Access.ACCESS_FILESYSTEM)
 		file_dialog.set_use_native_dialog(true)
 		file_dialog.set_hide_on_ok(true)
-		#file_dialog.set_title("Open a File")
 		button.add_child(file_dialog)
 		file_dialog.file_selected.connect(_on_file_selected)
 
@@ -260,90 +209,6 @@ func _set_reset_button_visibility() -> void:
 			reset_button.show()
 		else:
 			reset_button.hide()
-
-#func set_property_label(p_property: StringName) -> void:
-	#var property_str: String = String(p_property)
-	#var open_parenthesis_idx: int = property_str.findn("(")
-	#var property_key_substr: String
-	#var property_key_no_substr: String
-	#if open_parenthesis_idx >= 0:
-		#var close_parenthesis_idx: int = property_str.findn(")")
-		## Also remove close parenthesis and the space afterwards.
-		#property_key_substr = property_str.substr(open_parenthesis_idx, close_parenthesis_idx + 2)
-		#@warning_ignore("unsafe_property_access")
-		#property_key_no_substr = property_str.replacen(property_key_substr, "")
-	#else:
-		#property_key_no_substr = property_str
-	#_property_label.set_text(property_key_no_substr)
-	#
-	#set_name(_property_label.get_text().replacen(" ", ""))
-#
-#func set_property_label_basic(p_property: String) -> void:
-	#pass
-#
-#func set_reset_button_visibility(p_visible: bool) -> void:
-	#pass
-#
-#func set_control_node_visibility(p_control_node: ControlNode) -> void:
-	#match p_control_node:
-		#ControlNode.BUTTON:
-			#_button.show()
-		#ControlNode.CHECK_BUTTON:
-			#_check_button.show()
-		#ControlNode.COLOR_PICKER_BUTTON:
-			#_color_picker_button.show()
-		#ControlNode.LINE_EDIT:
-			#_line_edit.show()
-		#ControlNode.NUMERICAL:
-			#if SettingsManager.are_sliders_enabled():
-				#_spin_box.hide()
-				#_custom_h_slider.show()
-			#else:
-				#_spin_box.show()
-				#_custom_h_slider.hide()
-		#ControlNode.OPTION_BUTTON:
-			#_option_button.show()
-		#ControlNode.TEXT_EDIT:
-			#_text_edit.show()
-#
-#func set_button_text(p_text: String) -> void:
-	#pass
-#
-#func set_file_dialog_filters(p_filters: PackedStringArray) -> void:
-	#_file_dialog.set_filters(p_filters)
-#
-#func set_numerical_range(p_min: float, p_max: float, p_step: float, p_rounded: bool) -> void:
-	#pass
-#
-#func set_options(p_options: Array) -> void:
-	#pass
-#
-#func set_check_button_toggled(p_toggled_on: bool) -> void:
-	#pass
-#
-#func set_color_picker_color(p_color: Color) -> void:
-	#pass
-#
-#func set_line_edit_text(p_text: String) -> void:
-	#pass
-#
-#func set_numerical_value(p_value: float) -> void:
-	#pass
-#
-#func set_option_button_index(p_index: int) -> void:
-	#pass
-#
-#func set_option_button_index_by_text(p_text: String) -> void:
-	#pass
-#
-#func set_text_edit_text(p_text: String) -> void:
-	#pass
-#
-
-func _on_slider_preference_changed() -> void:
-	if _control_node == ControlNode.NUMERICAL:
-		spin_box.set_visible(custom_h_slider.is_visible())
-		custom_h_slider.set_visible(not spin_box.is_visible())
 
 func _on_mouse_entered() -> void:
 	TooltipManager.notify_tooltip(true, self)
@@ -357,17 +222,15 @@ func _on_reset_pressed() -> void:
 		ControlNode.BUTTON:
 			pass
 		ControlNode.CHECK_BUTTON:
-			check_button.set_pressed_no_signal(_reset_value)
+			check_button.set_pressed_no_signal(_reset_value as bool)
 		ControlNode.COLOR_PICKER_BUTTON:
-			color_picker_button.set_pick_color(_reset_value)
+			color_picker_button.set_pick_color(_reset_value as Color)
 		ControlNode.LINE_EDIT:
 			line_edit.set_text(_reset_value)
 		ControlNode.NUMERICAL:
 			spin_box.set_value_no_signal(_reset_value)
-			custom_h_slider.set_value_no_signal(_reset_value)
 		ControlNode.OPTION_BUTTON:
 			if typeof(_reset_value) == TYPE_INT:
-				@warning_ignore("unsafe_cast")
 				option_button.select(_reset_value as int)
 			elif typeof(_reset_value) == TYPE_STRING_NAME:
 				var found_item: bool = false
@@ -390,7 +253,7 @@ func _on_reset_pressed() -> void:
 			else:
 				CustomLogger.log_warning("Wrong type for OptionButton.")
 		ControlNode.TEXT_EDIT:
-			line_edit.set_text(_reset_value)
+			line_edit.set_text(String(_reset_value))
 	property_value_changed.emit(_property_key, _property_value)
 	property_reset_pressed.emit(_property_key)
 
@@ -420,22 +283,14 @@ func _on_spin_box_value_changed(p_value: float) -> void:
 	set_property_value(p_value)
 	property_value_changed.emit(_property_key, p_value)
 
-func _on_slider_value_changed(p_value: float) -> void:
-	set_property_value(p_value)
-	property_value_changed.emit(_property_key, p_value)
-
 func _on_option_item_selected(p_index: int) -> void:
 	if typeof(_property_value) == TYPE_INT:
 		set_property_value(p_index)
 		property_value_changed.emit(_property_key, p_index)
 	elif typeof(_property_value) == TYPE_STRING_NAME:
-		#var options: Array = _property_configurations.get(ElementUIConfigurations.OPTIONS)
-		#var new_value: StringName = options[p_index]
 		set_property_value(StringName(option_button.get_item_text(p_index)))
 		property_value_changed.emit(_property_key, StringName(option_button.get_item_text(p_index)))
 	elif typeof(_property_value) == TYPE_STRING:
-		#var options: Array = _property_configurations.get(ElementUIConfigurations.OPTIONS)
-		#var new_value: StringName = options[p_index]
 		set_property_value(option_button.get_item_text(p_index))
 		property_value_changed.emit(_property_key, option_button.get_item_text(p_index))
 	else:

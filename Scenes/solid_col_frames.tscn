@@ -1,7 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://dlkl4xfcgwflc"]
-
-[ext_resource type="Script" uid="uid://cseiday0obqii" path="res://Scripts/solid_col_frames.gd" id="1_1wyno"]
-
-[node name="SolidColFrames" type="Node2D"]
-visible = false
-script = ExtResource("1_1wyno")

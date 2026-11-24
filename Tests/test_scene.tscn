@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://djwy4gjxggs1b"]
 
-[ext_resource type="Texture2D" uid="uid://csjehne85bikb" path="res://Images/1_bloom_test.png" id="1_ia1lp"]
+[ext_resource type="Texture2D" uid="uid://csjehne85bikb" path="res://Tests/1_bloom_test.png" id="1_ia1lp"]
 [ext_resource type="Shader" uid="uid://cspxuscf7xri7" path="res://Scripts/Shaders/isolines.gdshader" id="2_sasra"]
 [ext_resource type="Shader" uid="uid://nddyss8tny8y" path="res://Scripts/Shaders/blur.gdshader" id="3_coq8p"]
 

@@ -25,15 +25,6 @@ var _subviewport: SubViewport
 func _ready() -> void:
 	_window_size = DisplayServer.window_get_size()
 	DisplayServer.window_set_min_size(DisplayServer.window_get_size())
-	
-	#"Monitor_Resolution": DisplayServer.screen_get_size(),
-	#"Rendering_Method": RenderingServer.get_current_rendering_method(),
-	
-	#CustomLogger.log_normal(
-	#	"Monitor resolution: " + str(DisplayServer.screen_get_size()) +
-	#	"\nRendering method: " + RenderingServer.get_current_rendering_method() +
-	#	"\n"
-	#)
 
 func _process(_p_delta: float) -> void:
 	if _window_size != DisplayServer.window_get_size():

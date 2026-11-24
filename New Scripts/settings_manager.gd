@@ -18,32 +18,21 @@
 extends Node
 ## Manager class that handles settings.
 ##
-## This class handles settings such as audio devices, export resolution, and slider preferences.
+## This class handles settings such as audio devices and export resolution.
 
 ## Emitted when a property container for a setting property is ready to be properly set up.
 signal setup_requested
-## Emitted when [method enable_sliders] is called.
-signal slider_preference_changed
 ## Emitted when requesting all [ElementShakable] instances
 ## to call [method NoiseUtilities.reset_noise_scroll].
 signal sync_element_shake_requested
 signal sync_shader_time_requested
 signal debug_visibility_changed
 
-### The [StringName] for 720p export resolution.
-#const RESOLUTION_720P: StringName = &"(Settings)_720p"
-### The [StringName] for 1080p export resolution.
-#const RESOLUTION_1080P: StringName = &"(Settings)_1080p"
-### The [StringName] for 1440p export resolution.
-#const RESOLUTION_1440P: StringName = &"(Settings)_1440p"
-
 const SN_INPUT_DEVICE: StringName = &"(Settings)_Input_Device"
 const SN_OUTPUT_DEVICE: StringName = &"(Settings)_Output_Device"
 const SN_EXPORT_RESOLUTION: StringName = &"(Settings)_Export_Resolution"
 const SN_FFMPEG_PATH: StringName = &"(Settings)_FFmpeg_Path"
 const SN_DELETE_TEMPORARY_FILES: StringName = &"(Settings)_Delete_Temporary_Files"
-const SN_APP_THEME: StringName = &"(Settings)_App_Theme"
-const SN_SWITCH_TO_SLIDERS: StringName = &"(Settings)_Switch_To_Slider"
 const SN_SYNC_ELEMENT_SHAKE: StringName = &"(Settings)_Sync_Element_Shake"
 const SN_SYNC_SHADER_TIME: StringName = &"(Settings)_Sync_Shader_Time"
 const SN_DEBUG_PANEL: StringName = &"(Settings)_Debug_Panel"
@@ -60,8 +49,6 @@ var _output_device: String
 var _export_resolution: String
 var _ffmpeg_path: String
 var _delete_temporary_files: bool
-var _app_theme: String
-var _slider_preference: bool
 var _debug_panel: bool
 var _update_last_checked_at: int
 
@@ -71,13 +58,8 @@ func _init() -> void:
 	_export_resolution = EXPORT_RESOLUTIONS[1]
 	_ffmpeg_path = ""
 	_delete_temporary_files = true
-	_app_theme = ""
-	_slider_preference = false
 	_debug_panel = false
 	_update_last_checked_at = 0
-	
-	#if FileManager.load_settings():
-	#	CustomLogger.log_error("Could not load settings. Using default values.")
 
 func _ready() -> void:
 	# Settings are loaded in `movie_writer_utilities` if writing movie,
@@ -117,10 +99,7 @@ func get_output_device() -> String:
 func set_export_resolution(p_resolution: String) -> Error:
 	if p_resolution not in EXPORT_RESOLUTIONS:
 		return Error.FAILED
-	#if p_resolution.remove_char(-1).is_valid_int():
-		#return FAILED
 	
-	#_export_resolution = p_resolution.get_slice(")_", 1).replace("_", " ")
 	_export_resolution = p_resolution
 	
 	if OS.has_feature("movie"):
@@ -163,25 +142,11 @@ func set_delete_temporary_files(p_value: bool) -> void:
 func get_delete_temporary_files() -> bool:
 	return _delete_temporary_files
 
-## Sets the theme of the app to the given [param p_theme].
-func set_app_theme(p_theme: String) -> Error:
-	if p_theme.is_empty():
-		return Error.FAILED
-	
-	return Error.OK
+func request_sync_element_shake() -> void:
+	sync_element_shake_requested.emit()
 
-func get_app_theme() -> String:
-	return _app_theme
-
-## If [param p_enable] is [code]true[/code], [ElementPropertyContainer] will use [CustomHSlider]s instead
-## of [SpinBox]es.
-func enable_sliders(p_enable: bool) -> void:
-	_slider_preference = p_enable
-	slider_preference_changed.emit()
-
-## Returns whether sliders are enabled. See [method enable_sliders].
-func are_sliders_enabled() -> bool:
-	return _slider_preference
+func request_sync_shader_time() -> void:
+	sync_shader_time_requested.emit()
 
 func set_debug_panel(p_enable: bool) -> void:
 	_debug_panel = p_enable
@@ -207,7 +172,6 @@ func get_properties() -> Dictionary[StringName, Variant]:
 		SN_EXPORT_RESOLUTION: _export_resolution,
 		SN_FFMPEG_PATH: _ffmpeg_path,
 		SN_DELETE_TEMPORARY_FILES: _delete_temporary_files,
-		SN_APP_THEME: _app_theme,
 		SN_UPDATE_LAST_CHECKED_AT: _update_last_checked_at
 	}
 	
@@ -220,7 +184,6 @@ func get_setters() -> Dictionary[StringName, StringName]:
 		SN_EXPORT_RESOLUTION: set_export_resolution.get_method(),
 		SN_FFMPEG_PATH: set_ffmpeg_path.get_method(),
 		SN_DELETE_TEMPORARY_FILES: set_delete_temporary_files.get_method(),
-		SN_APP_THEME: set_app_theme.get_method(),
 		SN_UPDATE_LAST_CHECKED_AT: set_update_last_checked_at.get_method()
 	}
 	
@@ -233,7 +196,6 @@ func get_getters() -> Dictionary[StringName, StringName]:
 		SN_EXPORT_RESOLUTION: get_export_resolution.get_method(),
 		SN_FFMPEG_PATH: get_ffmpeg_path.get_method(),
 		SN_DELETE_TEMPORARY_FILES: get_delete_temporary_files.get_method(),
-		SN_APP_THEME: get_app_theme.get_method(),
 		SN_UPDATE_LAST_CHECKED_AT: get_update_last_checked_at.get_method()
 	}
 	

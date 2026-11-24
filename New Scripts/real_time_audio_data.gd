@@ -20,10 +20,6 @@ extends RefCounted
 
 const _SAMPLES_PER_SECOND: int = 1024
 
-#static var _audio_data_dictionary: Dictionary[AudioEffectCapture, PackedVector2Array]
-#static var _samples_available: bool = false
-#static var _engine_frame: int
-
 var _capture_effect: AudioEffectCapture
 var _sample_history_length: int
 
@@ -46,16 +42,6 @@ var _magnitude_stereo: Vector2
 var _current_magnitude: float
 var _previous_magnitude: float
 
-#func _ready() -> void:
-	#_samples_available
-#
-#func _process(_delta: float) -> void:
-	#if _capture_effect.can_get_buffer(_SAMPLES_PER_SECOND):
-		#_audio_data_dictionary.set(_capture_effect, _capture_effect.get_buffer(_SAMPLES_PER_SECOND))
-		#_samples_available = true
-	#else:
-		#_samples_available = false
-
 func get_samples_per_second() -> int:
 	return _SAMPLES_PER_SECOND
 
@@ -69,7 +55,6 @@ func set_sample_history_length(p_length: int) -> void:
 	_sample_history_length = p_length
 
 func get_waveform_data() -> PackedFloat32Array:
-	#print("------------------------ NEW VISUAL FRAME ------------------------")
 	if _capture_effect == null:
 		if _sample_history_length == null or _sample_history_length < 1:
 			_pre_waveform_points.resize(_SAMPLES_PER_SECOND * 1)
@@ -78,34 +63,10 @@ func get_waveform_data() -> PackedFloat32Array:
 		_pre_waveform_points.fill(0.0)
 		return _pre_waveform_points
 	
-	#print("Frames available: " + str(_capture_effect.get_frames_available()))
-	
-	#if _capture_effect.can_get_buffer(_SAMPLES_PER_SECOND):
-		#_audio_data_dictionary.set(_capture_effect, _capture_effect.get_buffer(_SAMPLES_PER_SECOND))
-		#_samples_available = true
-	#elif Engine.get_process_frames() != _engine_frame:
-		#_samples_available = false
-	#
-	#_engine_frame = Engine.get_process_frames()
-	
-	#if _capture_effect.can_get_buffer(_SAMPLES_PER_SECOND):
-		#_audio_data_dictionary.set(_capture_effect, _capture_effect.get_buffer(_SAMPLES_PER_SECOND))
-		#_samples_available = true
-	#elif not _audio_data_dictionary.has(_capture_effect):
-		#_samples_available = false
-	
 	if  _capture_effect.can_get_buffer(_SAMPLES_PER_SECOND):
 		_temporary_stereo_buffer = _capture_effect.get_buffer(_SAMPLES_PER_SECOND)
 	else:
-		#print("Not enough frames in buffer. Returning previous pre_waveform_points.")
 		return _pre_waveform_points
-	
-	#if _capture_effect.can_get_buffer(_SAMPLES_PER_SECOND):
-		#_temporary_stereo_buffer = _capture_effect.get_buffer(_SAMPLES_PER_SECOND)
-		#_audio_data_dictionary.set(_capture_effect, _temporary_stereo_buffer)
-	#elif _audio_data_dictionary.has(_capture_effect):
-		#print("Not enough frames in buffer. Getting from dictionary.")
-		#_temporary_stereo_buffer = _audio_data_dictionary.get(_capture_effect)
 	
 	_temporary_average_buffer.resize(_SAMPLES_PER_SECOND)
 	_sample_index = 0
@@ -114,27 +75,15 @@ func get_waveform_data() -> PackedFloat32Array:
 		_temporary_average_buffer[_sample_index] = _average_sample
 		_sample_index += 1
 	if _sample_history_length < _temporary_distributed_audio_samples.size():
-		#print("_sample_history_length < _temporary_distributed_audio_samples.size()")
 		_temporary_distributed_audio_samples.resize(_sample_history_length)
 	_temporary_distributed_audio_samples.append_array([_temporary_average_buffer.duplicate()])
 	if _temporary_distributed_audio_samples.size() > _sample_history_length:
-		#print("_temporary_distributed_audio_samples.size() > _sample_history_length")
 		_temporary_distributed_audio_samples.remove_at(0)
 	_distributed_audio_samples = _temporary_distributed_audio_samples
 	
 	_pre_waveform_points.clear()
 	for buffer: PackedFloat32Array in _distributed_audio_samples:
 		_pre_waveform_points.append_array(buffer)
-	
-	#if _pre_waveform_points.size() >= 2048:
-		#var debug_arr: PackedStringArray
-		#for idx: int in range(8):
-			#debug_arr.append(
-				#str(abs(_pre_waveform_points[1019 + idx] - _pre_waveform_points[1020 + idx])).pad_decimals(5)
-			#)
-		#print(debug_arr)
-	
-	#print("Discarded frames: " + str(_capture_effect.get_discarded_frames()))
 	
 	return _pre_waveform_points
 

@@ -29,7 +29,6 @@ extends Resource
 ## Prefer using their setters and getters.
 
 ## Emitted whenever a property changes.
-@warning_ignore("unused_signal")
 signal property_changed(p_property: StringName)
 
 ## All possible Element types, used by [member _element_type].
@@ -74,20 +73,16 @@ const SN_ELEMENT_VISIBILITY: StringName = &"(Element)_Visibility"
 var _element_unique_id: int
 ## The Element's name, not relevant for the visualizer.[br]
 ## [b]Note:[/b] Use [method set_element_name] and [method get_element_name] to access this property.
-@warning_ignore("unused_private_class_variable")
 var _element_name: String
 ## The Element's type. See [enum ElementType].[br]
 ## [b]Note:[/b] Use [method set_element_type] and [method get_element_type] to access this property.
-@warning_ignore("unused_private_class_variable")
 var _element_type: ElementType
 ## The Element's layer, used to adjust [member CanvasLayer.layer].[br]
 ## [b]Note:[/b] Use [method set_element_layer] and [method get_element_layer] to access this property.
-@warning_ignore("unused_private_class_variable")
 var _element_layer: int
 ## The Element's visibility.[br]
 ## [b]Note:[/b] Use [method set_element_visibility] and
 ## [method get_element_visibility] to access this property.
-@warning_ignore("unused_private_class_variable")
 var _element_visibility: bool
 
 ## Lock marker to disallow changing Unique ID if it's already set.

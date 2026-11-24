@@ -406,10 +406,6 @@ if the selected path is already selected. If necessary, click the reset button."
 		SettingsManager.SN_DELETE_TEMPORARY_FILES:
 			ret = "Makes Oscillody delete every temporary file generated during video export. Disabling this \
 allows you to merge both files however you want."
-		SettingsManager.SN_APP_THEME:
-			ret = "Sets the appearance of Oscillody."
-		SettingsManager.SN_SWITCH_TO_SLIDERS:
-			ret = "[TO BE DEPRECATED] Sets all spin boxes to be sliders instead."
 		SettingsManager.SN_SYNC_ELEMENT_SHAKE:
 			ret = "Resyncs every Element currently shaking. Elements with the same seed should shake equally."
 		SettingsManager.SN_SYNC_SHADER_TIME:

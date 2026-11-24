@@ -56,8 +56,7 @@ func _ready() -> void:
 	
 	_user_seeking = false
 	
-	if _connect_signals():
-		CustomLogger.log_critical_error("Could not connect signals in PlayerControl.")
+	_connect_signals()
 
 func _process(_p_delta: float) -> void:
 	if not _user_seeking:
@@ -89,32 +88,19 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				clampf(AudioManager.get_master_position() + 5.0, 0.0, AudioManager.get_master_duration() - 0.01)
 			)
 
-func _connect_signals() -> Error:
-	if _play_pause_button.pressed.connect(_on_play_pause_pressed):
-		return Error.ERR_INVALID_PARAMETER
-	if _stop_button.pressed.connect(_on_stop_pressed):
-		return Error.ERR_INVALID_PARAMETER
-	if _loop_button.toggled.connect(_on_loop_toggled):
-		return Error.ERR_INVALID_PARAMETER
-	if _volume_slider.value_changed.connect(_on_volume_value_changed):
-		return Error.ERR_INVALID_PARAMETER
-	if _time_slider.drag_started.connect(_on_time_slider_drag_started):
-		return Error.ERR_INVALID_PARAMETER
-	if _time_slider.drag_ended.connect(_on_time_slider_drag_ended):
-		return Error.ERR_INVALID_PARAMETER
-	if _time_slider.gui_input.connect(_on_time_slider_gui_input):
-		return Error.ERR_INVALID_PARAMETER
-	if _time_slider.mouse_entered.connect(_on_time_slider_mouse_entered):
-		return Error.ERR_INVALID_PARAMETER
-	if _time_slider.mouse_exited.connect(_on_time_slider_mouse_exited):
-		return Error.ERR_INVALID_PARAMETER
+func _connect_signals() -> void:
+	_play_pause_button.pressed.connect(_on_play_pause_pressed)
+	_stop_button.pressed.connect(_on_stop_pressed)
+	_loop_button.toggled.connect(_on_loop_toggled)
+	_volume_slider.value_changed.connect(_on_volume_value_changed)
+	_time_slider.drag_started.connect(_on_time_slider_drag_started)
+	_time_slider.drag_ended.connect(_on_time_slider_drag_ended)
+	_time_slider.gui_input.connect(_on_time_slider_gui_input)
+	_time_slider.mouse_entered.connect(_on_time_slider_mouse_entered)
+	_time_slider.mouse_exited.connect(_on_time_slider_mouse_exited)
 	
-	if AudioManager.master_changed.connect(_on_master_changed):
-		return Error.ERR_INVALID_PARAMETER
-	if AudioManager.master_play_state_changed.connect(_on_master_play_state_changed):
-		return Error.ERR_INVALID_PARAMETER
-	
-	return Error.OK
+	AudioManager.master_changed.connect(_on_master_changed)
+	AudioManager.master_play_state_changed.connect(_on_master_play_state_changed)
 
 func _on_play_pause_pressed() -> void:
 	AudioManager.request_play_pause()
@@ -148,7 +134,7 @@ func _on_time_slider_gui_input(p_event: InputEvent) -> void:
 		1.0
 	)
 	
-	# Mouse position converted to time position in the loaded song.
+	# Mouse position converted to time position of the master.
 	_audio_position_mouse = roundf(floorf(_time_slider.get_max()) * _mouse_x_position_remapped)
 	
 	_position_mins_mouse = str(floori(_audio_position_mouse / 60.0))

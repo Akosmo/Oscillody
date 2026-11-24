@@ -17,7 +17,6 @@
 
 extends PanelContainer
 
-#@onready var _margin_container: MarginContainer = $MarginContainer
 @onready var _tooltip_label: Label = %TooltipLabel
 
 func _ready() -> void:

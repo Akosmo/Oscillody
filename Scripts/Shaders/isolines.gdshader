@@ -132,7 +132,8 @@ void fragment() {
 		// `fract(number_of_lines * noise)` is what creates something resembling isolines,
 		// by multiplying the noise and using `fract()` on it, so every time a value goes above 1.0,
 		// it returns to 0.0 and ramps up again.
-		// `thickness_variation` is used to darken the result, and we get the absolute to get a more "rounded" result.
+		// `thickness_variation` is used to darken the result,
+		// and we get the absolute to get a more "rounded" result.
 		highp float noise_weight = abs(fract(line_amount * noise) - thickness_variation) / fwidth(noise);
 		output_color = vec4(smoothstep(line_thickness, 0.0, noise_weight));
 	}

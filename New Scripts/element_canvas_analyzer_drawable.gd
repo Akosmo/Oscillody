@@ -23,7 +23,6 @@ extends Node2D
 
 var element: ElementAnalyzer
 
-#var _capture_effect: AudioEffectCapture
 var _audio_data: RealTimeAudioData
 
 var _analyzer_type: ElementAnalyzer.AnalyzerType
@@ -40,7 +39,6 @@ var _angle: float
 var _positive_direction: Vector2
 var _total_samples: float
 var _spacing: Vector2
-#var _height: float
 var _waveform_points: PackedVector2Array
 
 func _ready() -> void:
@@ -49,8 +47,8 @@ func _ready() -> void:
 func _draw() -> void:
 	if element.get_analyzer_type() == ElementAnalyzer.AnalyzerType.WAVEFORM:
 		_draw_waveform()
-	#else:
-		#_draw_spectrum()
+	else:
+		_draw_spectrum()
 
 func set_capture_effect(p_effect: AudioEffectCapture) -> void:
 	_audio_data.set_capture_effect(p_effect)
@@ -105,24 +103,8 @@ func _draw_waveform() -> void:
 	_waveform_points.clear()
 	_waveform_points.resize(_waveform_data.size())
 	
-	#var begin_pos: Vector2 = \
-	#Vector2(element.get_begin_x_position(), element.get_begin_y_position()) * \
-	#Vector2(WindowUtilities.get_subviewport_size())
-	#var end_pos: Vector2 = \
-	#Vector2(element.get_end_x_position(), element.get_end_y_position()) * \
-	#Vector2(WindowUtilities.get_subviewport_size())
-	#_angle = _analyzer_begin_position.angle_to_point(_analyzer_end_position)
-	#_positive_direction = Vector2(sin(_angle), cos(_angle) * -1)
-	#_total_samples = float(_audio_data.get_samples_per_second() - 1) * float(_waveform_sample_history_length)
-	#_spacing = Vector2(
-		#(_analyzer_end_position.x - _analyzer_begin_position.x) / _total_samples,
-		#(_analyzer_end_position.y - _analyzer_begin_position.y) / _total_samples
-	#)
-	#_height = WindowUtilities.get_subviewport_size().y / 2.0 * element.get_height()
-	
 	# 1: Construct line
 	var base_line: PackedVector2Array
-	@warning_ignore("return_value_discarded")
 	base_line.resize(_waveform_data.size())
 	for point_idx: int in base_line.size():
 		base_line[point_idx].x = _analyzer_begin_position.x + point_idx * _spacing.x
@@ -142,3 +124,6 @@ func _draw_waveform() -> void:
 			_waveform_thickness,
 			_waveform_antialiasing
 		)
+
+func _draw_spectrum() -> void:
+	pass

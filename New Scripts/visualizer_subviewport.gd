@@ -42,8 +42,7 @@ func _ready() -> void:
 	
 	WindowUtilities.set_subviewport(_sub_viewport)
 	
-	if _connect_signals():
-		CustomLogger.log_critical_error("Could not connect signals in VisualizerSubviewport.")
+	_connect_signals()
 	
 	if OS.has_feature("movie"):
 		CustomLogger.log_normal("Initializing nodes.")
@@ -57,12 +56,6 @@ func _process(_p_delta: float) -> void:
 	
 	# Subtract one: the ColorRect and CanvasLayer nodes.
 	DebugUtilities.set_element_canvas_count(_sub_viewport.get_child_count() - 2)
-	
-	#set_size(get_size().snappedf(2.0))
-	#_sub_viewport.set_size_2d_override(_sub_viewport.get_size().snappedi(2))
-	#_sub_viewport.set_size_2d_override(Vector2i.ZERO)
-	#WindowUtilities.set_subviewport_size(_sub_viewport.get_size_2d_override())
-	#WindowUtilities.set_subviewport_size(_sub_viewport.get_size())
 
 func _pack_canvas_nodes() -> Error:
 	var element_canvas_empty: ElementCanvasEmpty = ElementCanvasEmpty.new()
@@ -95,32 +88,20 @@ func _pack_canvas_nodes() -> Error:
 	
 	return Error.OK
 
-func _connect_signals() -> Error:
-	if AudioManager.stream_list_updated.connect(_update_audio):
-		return Error.ERR_INVALID_PARAMETER
-	if AudioManager.master_changed.connect(_on_master_changed):
-		return Error.ERR_INVALID_PARAMETER
+func _connect_signals() -> void:
+	AudioManager.stream_list_updated.connect(_update_audio)
+	AudioManager.master_changed.connect(_on_master_changed)
 	
-	if AudioManager.play_pause_requested.connect(_on_play_pause_requested):
-		return Error.ERR_INVALID_PARAMETER
-	if AudioManager.stop_requested.connect(_on_stop_requested):
-		return Error.ERR_INVALID_PARAMETER
-	if AudioManager.volume_change_requested.connect(_on_volume_change_requested):
-		return Error.ERR_INVALID_PARAMETER
-	if AudioManager.seek_requested.connect(_on_seek_requested):
-		return Error.ERR_INVALID_PARAMETER
+	AudioManager.play_pause_requested.connect(_on_play_pause_requested)
+	AudioManager.stop_requested.connect(_on_stop_requested)
+	AudioManager.volume_change_requested.connect(_on_volume_change_requested)
+	AudioManager.seek_requested.connect(_on_seek_requested)
 	
-	if ElementManager.element_created.connect(_on_element_created):
-		return Error.ERR_INVALID_PARAMETER
-	if ElementManager.element_deleted.connect(_on_element_deleted):
-		return Error.ERR_INVALID_PARAMETER
-	if ElementManager.element_type_changed.connect(_on_element_type_changed):
-		return Error.ERR_INVALID_PARAMETER
+	ElementManager.element_created.connect(_on_element_created)
+	ElementManager.element_deleted.connect(_on_element_deleted)
+	ElementManager.element_type_changed.connect(_on_element_type_changed)
 	
-	if DebugUtilities.freeze_visualizer_changed.connect(_on_freeze_visualizer):
-		return Error.ERR_INVALID_PARAMETER
-	
-	return Error.OK
+	DebugUtilities.freeze_visualizer_changed.connect(_on_freeze_visualizer)
 
 func _play_streams(p_at_pos: float = 0.0) -> void:
 	for player: AudioStreamPlayer in _players.values():
@@ -155,9 +136,6 @@ func _update_buses() -> void:
 		AudioServer.add_bus(bus_idx)
 		AudioServer.set_bus_name(bus_idx, stream_name)
 		AudioServer.set_bus_mute(bus_idx, true)
-		#var capture_effect: AudioEffectCapture = AudioEffectCapture.new()
-		#capture_effect.set_buffer_length(0.03)
-		#AudioServer.add_bus_effect(bus_idx, capture_effect)
 		AudioServer.add_bus_effect(bus_idx, AudioEffectSpectrumAnalyzer.new())
 		bus_idx += 1
 
@@ -172,7 +150,6 @@ func _update_players() -> void:
 	for stream_key: StringName in stream_dict.keys():
 		var stream_name: StringName = name_dict.get(stream_key)
 		var player: AudioStreamPlayer = AudioStreamPlayer.new()
-		@warning_ignore("unsafe_call_argument")
 		player.set_stream(stream_dict.get(stream_key))
 		if player.get_stream() == null:
 			CustomLogger.log_critical_error("Could not set {stream} to player.".format({"stream": stream_name}))
@@ -194,9 +171,6 @@ func _on_master_changed() -> void:
 	
 	_master_player = null
 	
-	#if not AudioManager.get_master_name().is_empty():
-		#AudioServer.set_bus_mute(AudioServer.get_bus_index(AudioManager.get_master_name()), false)
-	
 	if not AudioManager.get_master_name().is_empty():
 		for bus_idx: int in AudioServer.get_bus_count():
 			if bus_idx == 0:
@@ -212,8 +186,7 @@ func _on_master_changed() -> void:
 	
 	if _master_player != null:
 		if not _master_player.finished.is_connected(_on_master_finished):
-			if _master_player.finished.connect(_on_master_finished):
-				CustomLogger.log_critical_error("Could not connect \"finished\" signal from the Master Player.")
+			_master_player.finished.connect(_on_master_finished)
 		
 		if _master_player.get_stream() != null:
 			AudioManager.set_master_duration(_master_player.get_stream().get_length())
@@ -223,12 +196,10 @@ func _on_play_pause_requested() -> void:
 		# If Master Player is stopped.
 		if not AudioManager.is_master_playing() and not _master_player.get_stream_paused():
 			# User can seek while Master Player is stopped.
-			#_master_player.play(AudioManager.get_master_position())
 			_play_streams(AudioManager.get_master_position())
 			AudioManager.set_master_playing(true)
 		else:
 			# Master Player is either playing or paused.
-			#_master_player.set_stream_paused(AudioManager.is_master_playing())
 			_pause_streams(AudioManager.is_master_playing())
 			# If user seeked while the Master Player was paused.
 			if _master_player.get_playback_position() != AudioManager.get_master_position():
@@ -236,13 +207,11 @@ func _on_play_pause_requested() -> void:
 					AudioManager.get_master_position() < AudioManager.get_master_duration() or
 					AudioManager.is_loop_enabled()
 				):
-					#_master_player.seek(AudioManager.get_master_position())
 					_seek_streams(AudioManager.get_master_position())
 					AudioManager.set_master_playing(not AudioManager.is_master_playing())
 				else:
 					# If user seeked at or past duration and looping is disabled.
 					# Seeking at the exact duration just loops back, so avoid that.
-					#_master_player.seek(AudioManager.get_master_position() - 0.01)
 					_seek_streams(AudioManager.get_master_position() - 0.01)
 			else:
 				AudioManager.set_master_playing(not AudioManager.is_master_playing())
@@ -250,7 +219,6 @@ func _on_play_pause_requested() -> void:
 
 func _on_stop_requested() -> void:
 	if _master_player != null:
-		#_master_player.stop()
 		_stop_streams()
 	
 	AudioManager.set_master_position(0.0)
@@ -262,21 +230,17 @@ func _on_volume_change_requested() -> void:
 func _on_seek_requested(p_time: float) -> void:
 	if _master_player != null:
 		if p_time < AudioManager.get_master_duration() or AudioManager.is_loop_enabled():
-			#_master_player.seek(p_time)
 			_seek_streams(p_time)
 		else:
 			# Seeking at the exact duration just loops back, so avoid that.
-			#_master_player.seek(p_time - 0.01)
 			_seek_streams(p_time - 0.01)
 
 func _on_master_finished() -> void:
 	if OS.has_feature("movie"):
 		CustomLogger.log_normal("Video exporting has finished.")
-		#print("DEBUG: Video exporting has finished.")
 		get_tree().quit()
 	
 	if AudioManager.is_loop_enabled():
-		#_master_player.play()
 		_play_streams()
 	else:
 		AudioManager.set_master_position(0.0)
@@ -313,7 +277,6 @@ func _on_element_created(p_element: Element) -> void:
 
 func _on_element_deleted(p_element: Element) -> void:
 	for node: Node in _sub_viewport.get_children():
-		@warning_ignore("unsafe_method_access")
 		if node is ElementCanvas and node.get_element() == p_element:
 			node.queue_free()
 	
@@ -326,7 +289,6 @@ func _on_freeze_visualizer(p_frozen: bool) -> void:
 	CustomLogger.log_normal("Setting frozen visualizer status to: " + str(p_frozen))
 	
 	if p_frozen:
-		# ViewportTexture doesn't work.
 		var image_texture: ImageTexture
 		image_texture = ImageTexture.create_from_image(_sub_viewport.get_texture().get_image())
 		_texture_rect.set_texture(image_texture)

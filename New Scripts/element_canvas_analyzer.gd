@@ -27,19 +27,13 @@ var _bus_index: int
 var _effect_index: int
 
 func _ready() -> void:
-	#set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
-	#set_layer(element.get_layer())
-	
 	_element_ui_configurations = ElementManager.get_configurations_for_element(element)
 	
 	_node_2d = Node2D.new()
 	_node_2d.set_script(preload("uid://cponhhfeulyxf"))
-	@warning_ignore("unsafe_property_access")
 	_node_2d.element = element
 	add_child(_node_2d)
 	_on_stream_list_updated()
-	@warning_ignore("unsafe_method_access")
-	#_node_2d.set_sample_history_length(element.get_waveform_sample_history_length())
 	
 	_bus_index = -1
 	_effect_index = -1
@@ -47,8 +41,7 @@ func _ready() -> void:
 	for property_key: StringName in element.get_properties().keys():
 		_on_element_property_changed(property_key)
 	
-	if _connect_signals():
-		CustomLogger.log_critical_error("Could not connect signals in ElementCanvasAnalyzer.")
+	_connect_signals()
 
 func _process(_p_delta: float) -> void:
 	_node_2d.queue_redraw()
@@ -60,16 +53,11 @@ func _exit_tree() -> void:
 func get_element() -> Element:
 	return element
 
-func _connect_signals() -> Error:
-	if element.property_changed.connect(_on_element_property_changed):
-		return Error.ERR_INVALID_PARAMETER
+func _connect_signals() -> void:
+	element.property_changed.connect(_on_element_property_changed)
 	
-	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		return Error.ERR_INVALID_PARAMETER
-	if WindowUtilities.get_subviewport().size_changed.connect(_on_subviewport_size_changed):
-		return Error.ERR_INVALID_PARAMETER
-	
-	return Error.OK
+	AudioManager.stream_list_updated.connect(_on_stream_list_updated)
+	WindowUtilities.get_subviewport().size_changed.connect(_on_subviewport_size_changed)
 
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:

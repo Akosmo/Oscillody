@@ -17,20 +17,11 @@
 
 extends PanelContainer
 
-#const _INPUT_DEVICE_PROPERTY_KEY: StringName = &"Input_Device"
-#const _OUTPUT_DEVICE_PROPERTY_KEY: StringName = &"Output_Device"
-#const _EXPORT_RESOLUTION_PROPERTY_KEY: StringName = &"Export_Resolution"
-#const _THEME_PROPERTY_KEY: StringName = &"Theme"
-#const _SWITCH_TO_SLIDERS_PROPERTY_KEY: StringName = &"Switch_To_Slider"
-#const _SYNC_ELEMENT_SHAKE_PROPERTY_KEY: StringName = &"Sync_Element_Shake"
-
 @onready var _input_device_container: BasicPropertyContainer = %InputDeviceContainer
 @onready var _output_device_container: BasicPropertyContainer = %OutputDeviceContainer
 @onready var _export_resolution_container: BasicPropertyContainer = %ExportResolutionContainer
 @onready var _ffmpeg_path_container: BasicPropertyContainer = %FFmpegPathContainer
 @onready var _delete_temporary_files_container: BasicPropertyContainer = %DeleteTemporaryFilesContainer
-@onready var _theme_container: BasicPropertyContainer = %ThemeContainer
-@onready var _switch_to_sliders_container: BasicPropertyContainer = %SwitchToSlidersContainer
 @onready var _sync_element_shake_container: BasicPropertyContainer = %SyncElementShakeContainer
 @onready var _sync_shader_time_container: BasicPropertyContainer = %SyncShaderTimeContainer
 @onready var _debug_panel_container: BasicPropertyContainer = %DebugPanelContainer
@@ -66,24 +57,12 @@ func _ready() -> void:
 	_ffmpeg_path_container.set_property_value_with_node(SettingsManager.get_ffmpeg_path())
 	_ffmpeg_path_container.set_reset_value("")
 	_ffmpeg_path_container.property_value_changed.connect(_on_property_value_changed)
-	#_ffmpeg_path_container.property_reset_pressed.connect(_on_property_reset_pressed)
 	
 	_delete_temporary_files_container.set_control_node(BasicPropertyContainer.ControlNode.CHECK_BUTTON)
 	_delete_temporary_files_container.set_property_key(SettingsManager.SN_DELETE_TEMPORARY_FILES)
 	_delete_temporary_files_container.set_property_value_with_node(SettingsManager.get_delete_temporary_files())
 	_delete_temporary_files_container.set_reset_value(true)
 	_delete_temporary_files_container.property_value_changed.connect(_on_property_value_changed)
-	#_delete_temporary_files_container.property_reset_pressed.connect(_on_property_reset_pressed)
-	
-	_theme_container.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
-	_theme_container.set_property_key(SettingsManager.SN_APP_THEME)
-	_theme_container.set_property_value_with_node(SettingsManager.get_app_theme())
-	_theme_container.property_value_changed.connect(_on_property_value_changed)
-	
-	_switch_to_sliders_container.set_control_node(BasicPropertyContainer.ControlNode.CHECK_BUTTON)
-	_switch_to_sliders_container.set_property_key(SettingsManager.SN_SWITCH_TO_SLIDERS)
-	_switch_to_sliders_container.set_property_value_with_node(SettingsManager.are_sliders_enabled())
-	_switch_to_sliders_container.property_value_changed.connect(_on_property_value_changed)
 	
 	_sync_element_shake_container.set_control_node(BasicPropertyContainer.ControlNode.BUTTON)
 	_sync_element_shake_container.set_property_key(SettingsManager.SN_SYNC_ELEMENT_SHAKE)
@@ -101,23 +80,6 @@ func _ready() -> void:
 	_debug_panel_container.set_property_key(SettingsManager.SN_DEBUG_PANEL)
 	_debug_panel_container.set_property_value_with_node(SettingsManager.get_debug_panel())
 	_debug_panel_container.property_value_changed.connect(_on_property_value_changed)
-	
-	#@warning_ignore("unsafe_property_access")
-	#_input_device_container.container_property = SettingsManager.ContainerProperty.INPUT_DEVICE
-	#
-	#@warning_ignore("unsafe_property_access")
-	#_output_device_container.container_property = SettingsManager.ContainerProperty.OUTPUT_DEVICE
-	#
-	#@warning_ignore("unsafe_property_access")
-	#_export_resolution_container.container_property = SettingsManager.ContainerProperty.EXPORT_RESOLUTION
-	#
-	#@warning_ignore("unsafe_property_access")
-	#_theme_container.container_property = SettingsManager.ContainerProperty.THEME
-	#
-	#@warning_ignore("unsafe_property_access")
-	#_switch_to_sliders_container.container_property = SettingsManager.ContainerProperty.SLIDER_SWITCH
-	#
-	#SettingsManager.notify_setup_request()
 
 func _on_property_value_changed(p_property_key: StringName, p_property_value: Variant) -> void:
 	CustomLogger.log_normal(
@@ -148,25 +110,9 @@ func _on_property_value_changed(p_property_key: StringName, p_property_value: Va
 				_ffmpeg_path_container.button.set_disabled(true)
 		SettingsManager.SN_DELETE_TEMPORARY_FILES:
 			SettingsManager.set_delete_temporary_files(p_property_value as bool)
-		SettingsManager.SN_APP_THEME:
-			if SettingsManager.set_app_theme(str(p_property_value)):
-				CustomLogger.log_error("Could not set theme.")
-		SettingsManager.SN_SWITCH_TO_SLIDERS:
-			SettingsManager.enable_sliders(p_property_value as bool)
 		SettingsManager.SN_SYNC_ELEMENT_SHAKE:
-			SettingsManager.sync_element_shake_requested.emit()
+			SettingsManager.request_sync_element_shake()
 		SettingsManager.SN_SYNC_SHADER_TIME:
-			SettingsManager.sync_shader_time_requested.emit()
+			SettingsManager.request_sync_shader_time()
 		SettingsManager.SN_DEBUG_PANEL:
 			SettingsManager.set_debug_panel(p_property_value)
-
-#func _on_property_reset_pressed(p_property_key: StringName) -> void:
-#	match p_property_key:
-#		SettingsManager.SN_FFMPEG_PATH:
-#			if SettingsManager.set_ffmpeg_path(""):
-#				CustomLogger.log_critical_error("Could not reset FFmpeg path.")
-#			else:
-#				_ffmpeg_path_container.button.set_disabled(false)
-		#SettingsManager.SN_DELETE_TEMPORARY_FILES:
-		#	if not SettingsManager.get_delete_temporary_files():
-		#		SettingsManager.set_delete_temporary_files(true)

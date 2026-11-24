@@ -25,34 +25,12 @@ extends Control
 
 var _tween: Tween
 
-#func _ready() -> void:
-	#if is_visible():
-		#hide()
-	
-	#set_pivot_offset(Vector2(WindowUtilities.get_window_size()) * 0.5)
-	#_panel_container.set_pivot_offset(_panel_container.get_size() * 0.5)
-	
-	#WindowUtilities.window_size_changed.connect(_on_window_size_changed)
-
-#func _process(delta: float) -> void:
-	#if Input.is_action_just_pressed("toggle_ui"):
-		#popup_show()
-	#elif Input.is_action_just_pressed("fullscreen"):
-		#popup_hide()
-
 func popup_show() -> void:
 	show()
 	_tween = create_tween()
 	_tween.set_parallel(true)
 	
 	_tween.set_ease(Tween.EaseType.EASE_OUT).set_trans(Tween.TransitionType.TRANS_BACK)
-	#tween.tween_property(panel_container, "scale", Vector2.ONE, 0.25).from(Vector2.ZERO)
-	#tween.tween_property(
-		#blur_color_rect,
-		#"shader_parameter/blur_amount",
-		#2.0,
-		#0.25
-	#).from(0.0)
 	
 	# Using offset transform doesn't work.
 	_tween.tween_method(panel_container.set_scale, Vector2.ZERO, Vector2.ONE, 0.25)
@@ -82,9 +60,6 @@ func popup_hide() -> void:
 
 func _set_blur_amount(p_amount: float) -> void:
 	_blur_color_rect.get_material().set_shader_parameter("blur_amount", p_amount)
-
-#func _on_window_size_changed() -> void:
-	#set_pivot_offset(Vector2(WindowUtilities.get_window_size()) * 0.5)
 
 func _on_tween_hide_finished() -> void:
 	hide()

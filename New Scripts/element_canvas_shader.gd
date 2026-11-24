@@ -44,12 +44,7 @@ var _shader_utilities: ShaderUtilities
 var _shader_time: float
 
 func _ready() -> void:
-	#set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
-	#set_layer(element.get_layer())
-	
 	_element_ui_configurations = ElementManager.get_configurations_for_element(element)
-	#_element_ui_configurations.enable_shader_visibility(element.get_shader_type())
-	#_element_ui_configurations.set_reaction_visibility(not element.get_audio_source().is_empty())
 	
 	_color_rect = ColorRect.new()
 	_color_rect.set_anchors_preset(Control.LayoutPreset.PRESET_FULL_RECT)
@@ -65,8 +60,6 @@ func _ready() -> void:
 	_isolines_shader_material.set_shader(preload("uid://cspxuscf7xri7"))
 	_simple_gradient_shader_material.set_shader(preload("uid://ijhyd3qa7ldu"))
 	_tides_shader_material.set_shader(preload("uid://dc5q4smj13aiv"))
-	#_shader_material.set_shader(_get_shader_for_material(element.get_shader_type()))
-	#_color_rect.set_material(_shader_material)
 	add_child(_color_rect)
 	
 	_back_buffer_copy = BackBufferCopy.new()
@@ -82,44 +75,18 @@ func _ready() -> void:
 	
 	_brightness_color_rect = ColorRect.new()
 	_brightness_color_rect.set_anchors_preset(Control.LayoutPreset.PRESET_FULL_RECT)
-	#if element.get_shader_brightness() > 0.0:
-		#_brightness_color_rect.set_color(Color(1.0, 1.0, 1.0, element.get_shader_brightness()))
-	#elif element.get_shader_brightness() < 0.0:
-		#_brightness_color_rect.set_color(Color(0.0, 0.0, 0.0, absf(element.get_shader_brightness())))
-	#else:
-		#_brightness_color_rect.set_color(Color(1.0, 1.0, 1.0, 0.0))
 	add_child(_brightness_color_rect)
 	
 	_noise_utilities = NoiseUtilities.new()
-	#_noise_utilities.set_seed(element.get_shake_seed())
-	#_noise_utilities.reset_noise_scroll()
 	
 	_audio_data = RealTimeAudioData.new()
-	#if not element.get_audio_source().is_empty():
-		#var spectrum_analyzer_effect_instance: AudioEffectSpectrumAnalyzerInstance
-		#spectrum_analyzer_effect_instance = AudioServer.get_bus_effect_instance(
-			#AudioServer.get_bus_index(element.get_audio_source()),
-			#0,
-			#0
-		#)
-		#_audio_data.set_spectrum_analyzer_effect_instance(spectrum_analyzer_effect_instance)
-	#else:
-		#_audio_data.set_spectrum_analyzer_effect_instance(null)
-	#_audio_data.set_begin_frequency(element.get_begin_frequency())
-	#_audio_data.set_end_frequency(element.get_end_frequency())
-	#_audio_data.set_minimum_decibels(element.get_minimum_decibels())
-	#_audio_data.set_smoothing_type(element.get_smoothing_type())
-	#_audio_data.set_smoothing_amount(element.get_smoothing_amount())
 	
 	_shader_utilities = ShaderUtilities.new()
-	
-	#_shader_time = _shader_utilities.get_shader_time()
 	
 	for property_key: StringName in element.get_properties().keys():
 		_on_element_property_changed(property_key)
 	
-	if _connect_signals():
-		CustomLogger.log_critical_error("Could not connect signals in ElementCanvasShader.")
+	_connect_signals()
 
 func _process(_p_delta: float) -> void:
 	_shader_utilities.increment_shader_time(
@@ -239,20 +206,13 @@ func _get_scale_for_amplitude() -> Vector2:
 func _get_reaction_magnitude(p_amount: float) -> float:
 	return 1.0 + _audio_data.get_current_magnitude() * p_amount
 
-func _connect_signals() -> Error:
-	if element.property_changed.connect(_on_element_property_changed):
-		return Error.ERR_INVALID_PARAMETER
+func _connect_signals() -> void:
+	element.property_changed.connect(_on_element_property_changed)
 	
-	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		return Error.ERR_INVALID_PARAMETER
-	if SettingsManager.sync_element_shake_requested.connect(_on_sync_element_shake):
-		return Error.ERR_INVALID_PARAMETER
-	if SettingsManager.sync_shader_time_requested.connect(_on_sync_shader_time):
-		return Error.ERR_INVALID_PARAMETER
-	if WindowUtilities.get_subviewport().size_changed.connect(_on_subviewport_size_changed):
-		return Error.ERR_INVALID_PARAMETER
-	
-	return Error.OK
+	AudioManager.stream_list_updated.connect(_on_stream_list_updated)
+	SettingsManager.sync_element_shake_requested.connect(_on_sync_element_shake)
+	SettingsManager.sync_shader_time_requested.connect(_on_sync_shader_time)
+	WindowUtilities.get_subviewport().size_changed.connect(_on_subviewport_size_changed)
 
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:

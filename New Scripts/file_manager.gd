@@ -150,7 +150,8 @@ func load_preset(p_preset_name: String) -> Error:
 	if p_preset_name.is_empty():
 		CustomLogger.log_normal("Resetting preset.")
 		ElementManager.clear_elements()
-		ElementManager.reset_unique_id()
+		if ElementManager.reset_unique_id():
+			return Error.FAILED
 		_selected_preset = p_preset_name
 		_unsaved_changes = false
 		return Error.OK
@@ -194,9 +195,6 @@ func load_preset(p_preset_name: String) -> Error:
 	var load_data: Dictionary[int, Dictionary] = _fix_preset_json_data(raw_data)
 	for load_data_dict: Dictionary in load_data.values():
 		var property_dict: Dictionary[StringName, Variant] = load_data_dict
-		#if property_dict == null:
-		#	CustomLogger.log_warning("Could not load an Element's properties. Skipping.")
-		#	continue
 		ElementManager.load_element(property_dict)
 	
 	_selected_preset = p_preset_name
@@ -319,7 +317,6 @@ func load_audio_files() -> Error:
 			return Error.FAILED
 	
 	var stream_names: Dictionary[StringName, StringName] = AudioManager.get_stream_names()
-	#AudioManager.set_master_name(stream_names.get(stream_names.keys()[0]))
 	AudioManager.set_master_name(stream_names.get(StringName(load_data[0])) as StringName)
 	
 	AudioManager.notify_updated_streams(true)
@@ -348,11 +345,6 @@ func save_settings() -> Error:
 	var settings_getters: Dictionary[StringName, StringName] = SettingsManager.get_getters()
 	for getter_key: StringName in settings_getters.keys():
 		save_data.set(getter_key, SettingsManager.call(settings_getters.get(getter_key) as StringName))
-	#save_data.set(SettingsManager.SN_INPUT_DEVICE, SettingsManager.get_input_device())
-	#save_data.set(SettingsManager.SN_OUTPUT_DEVICE, SettingsManager.get_output_device())
-	#save_data.set(SettingsManager.SN_EXPORT_RESOLUTION, SettingsManager.get_export_resolution())
-	#save_data.set(SettingsManager.SN_FFMPEG_PATH, SettingsManager.get_ffmpeg_path())
-	#save_data.set(SettingsManager.SN_APP_THEME, SettingsManager.get_app_theme())
 	
 	if not settings_file.store_line(JSON.stringify(save_data, "\t", false)):
 		CustomLogger.log_warning(
@@ -426,17 +418,6 @@ func load_settings() -> Error:
 			continue
 		
 		SettingsManager.call(settings_setters.get(property_key) as StringName, property_value)
-		#match property_key:
-			#SettingsManager.SN_INPUT_DEVICE:
-				#SettingsManager.set_input_device(load_data.get(property_key))
-			#SettingsManager.SN_OUTPUT_DEVICE:
-				#SettingsManager.set_output_device(load_data.get(property_key))
-			#SettingsManager.SN_EXPORT_RESOLUTION:
-				#SettingsManager.set_export_resolution(load_data.get(property_key))
-			#SettingsManager.SN_FFMPEG_PATH:
-				#SettingsManager.set_ffmpeg_path(load_data.get(property_key))
-			#SettingsManager.SN_APP_THEME:
-				#SettingsManager.set_app_theme(load_data.get(property_key))
 	
 	return Error.OK
 
@@ -563,7 +544,7 @@ func _fix_preset_json_data(p_data: Dictionary) -> Dictionary[int, Dictionary]:
 func _fix_audio_json_data(p_data: Array) -> PackedStringArray:
 	var ret: PackedStringArray = []
 	for idx: int in p_data.size():
-		ret.append(p_data[idx])
+		ret.append(str(p_data[idx]))
 	
 	return ret
 

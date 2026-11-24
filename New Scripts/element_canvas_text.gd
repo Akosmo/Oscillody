@@ -58,8 +58,7 @@ func _ready() -> void:
 	for property_key: StringName in element.get_properties().keys():
 		_on_element_property_changed(property_key)
 	
-	if _connect_signals():
-		CustomLogger.log_critical_error("Could not connect signals in ElementCanvasText.")
+	_connect_signals()
 
 func _process(_p_delta: float) -> void:
 	_formatted_text = element.get_text()
@@ -78,40 +77,6 @@ func _process(_p_delta: float) -> void:
 				{_TIME_DURATION_SUBSTRING: "{dm}:{ds}".format({"dm": _duration_mins, "ds": _duration_secs})}
 			)
 		
-		#while _formatted_text.contains(_TIME_POSITION_SUBSTRING):
-		#	_substring_index = _formatted_text.find(_TIME_POSITION_SUBSTRING)
-		#	if _formatted_text[_substring_index - 1] != "\\":
-		#		_position_mins = str(floori(AudioManager.get_master_position() / 60.0))
-		#		_position_secs = str(floori(fmod(AudioManager.get_master_position(), 60.0))).pad_zeros(2)
-		#		_formatted_text = _formatted_text.erase(
-		#			_substring_index, _TIME_POSITION_SUBSTRING.length()
-		#		)
-		#		_formatted_text = _formatted_text.insert(
-		#			_substring_index, "{pm}:{ps}".format({"pm": _position_mins, "ps": _position_secs})
-		#		)
-		#	else:
-		#		_formatted_text[_formatted_text.find(_TIME_POSITION_SUBSTRING) - 1] = ""
-		#		break
-		#
-		#for occurrence: int in _formatted_text.count(_TIME_POSITION_SUBSTRING):
-		#	_substring_index = _formatted_text.find(_TIME_POSITION_SUBSTRING)
-		#	if _substring_index >= 0:
-		#		if _formatted_text[_substring_index - 1] == "\\":
-		#			_formatted_text[_formatted_text.find(_TIME_POSITION_SUBSTRING) - 1] = ""
-		#			continue
-		#		_position_mins = str(floori(AudioManager.get_master_position() / 60.0))
-		#		_position_secs = str(floori(fmod(AudioManager.get_master_position(), 60.0))).pad_zeros(2)
-		#		_formatted_text = _formatted_text.erase(
-		#			_substring_index, _TIME_POSITION_SUBSTRING.length()
-		#		)
-		#		_formatted_text = _formatted_text.insert(
-		#			_substring_index, "{pm}:{ps}".format({"pm": _position_mins, "ps": _position_secs})
-		#		)
-		#	else:
-		#		break
-		
-		#print(_formatted_text.c_escape())
-		#var lyrics_mode: bool = false
 		_text_lines = _formatted_text.c_escape().split("\\n")
 		for idx: int in _text_lines.size():
 			_text_line = _text_lines[idx]
@@ -121,23 +86,13 @@ func _process(_p_delta: float) -> void:
 				_text_line.count("<") == 2 and
 				_text_line.count(">") == 2
 			):
-				#lyrics_mode = true
 				_time_string = _text_line.get_slice(">", 0).trim_prefix("<")
 				if _time_string.is_valid_float():
 					if AudioManager.get_master_position() >= _time_string.to_float():
 						_formatted_text = _text_line.c_unescape().get_slice(">", 1).trim_prefix("<")
-						#break
 	
-	#_label.set_visible(true)
-	#print()
-	#if lyrics_mode:
-	#	_label.hide()
 	_label.set_text(_formatted_text)
 	_fix_transform()
-	#if not _label.is_visible():
-	#await RenderingServer.frame_post_draw
-	#_label.show()
-	#_label.set_visible(true)
 	
 	if not is_equal_approx(element.get_text_rotation_reaction(), 0.0):
 		_label.set_rotation_degrees(
@@ -192,12 +147,6 @@ func _process(_p_delta: float) -> void:
 			_label.set_position(_get_fixed_position())
 	else:
 		_label.set_position(_get_fixed_position())
-		#print(
-			#_get_fixed_position(),
-			#_label.get_position(),
-			#WindowUtilities.get_subviewport_size(),
-			#_label.get_pivot_offset()
-		#)
 
 func get_element() -> Element:
 	return element
@@ -221,7 +170,6 @@ func _get_fixed_scale() -> Vector2:
 	return Vector2(subviewport_min, subviewport_min)
 
 func _fix_transform() -> void:
-	#await RenderingServer.frame_post_draw
 	_label.set_size(Vector2.ZERO)
 	_label.set_pivot_offset(_label.get_size() * 0.5)
 
@@ -246,18 +194,12 @@ func _get_scale_for_amplitude() -> Vector2:
 func _get_reaction_magnitude(p_amount: float) -> float:
 	return 1.0 + _audio_data.get_current_magnitude() * p_amount
 
-func _connect_signals() -> Error:
-	if element.property_changed.connect(_on_element_property_changed):
-		return Error.ERR_INVALID_PARAMETER
+func _connect_signals() -> void:
+	element.property_changed.connect(_on_element_property_changed)
 	
-	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		return Error.ERR_INVALID_PARAMETER
-	if SettingsManager.sync_element_shake_requested.connect(_on_sync_element_shake):
-		return Error.ERR_INVALID_PARAMETER
-	if WindowUtilities.get_subviewport().size_changed.connect(_on_subviewport_size_changed):
-		return Error.ERR_INVALID_PARAMETER
-	
-	return Error.OK
+	AudioManager.stream_list_updated.connect(_on_stream_list_updated)
+	SettingsManager.sync_element_shake_requested.connect(_on_sync_element_shake)
+	WindowUtilities.get_subviewport().size_changed.connect(_on_subviewport_size_changed)
 
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:
@@ -272,29 +214,20 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			set_visible(element.get_element_visibility())
 			set_process(element.get_element_visibility())
 		ElementText.SN_TEXT:
-			#var formatted_text: String = element.get_text()
-			#if formatted_text.contains("<time_position>"):
-			#	if formatted_text[formatted_text.find("<time_position>") - 1] != "\\":
-			#		formatted_text.replace("<time_position>", AudioManager.get_master_position())
-			#_label.set_text(element.get_text())
-			#await _fix_transform()
 			pass
 		ElementText.SN_TEXT_DYNAMIC:
 			pass
 		ElementText.SN_TEXT_FONT:
 			_system_font.set_font_names(PackedStringArray([element.get_text_font()]))
-			#await _fix_transform()
 		ElementText.SN_TEXT_BOLD:
 			if element.get_text_bold():
 				_system_font.set_font_weight(700)
 			else:
 				_system_font.set_font_weight(400)
-			#await _fix_transform()
 		ElementText.SN_TEXT_ITALIC:
 			_system_font.set_font_italic(element.get_text_italic())
 		ElementText.SN_TEXT_SIZE:
 			_label_settings.set_font_size(element.get_text_size())
-			#await _fix_transform()
 		ElementText.SN_TEXT_X_POSITION, ElementText.SN_TEXT_Y_POSITION:
 			_label.set_position(Vector2(element.get_text_x_position(), element.get_text_y_position()))
 		ElementText.SN_TEXT_ROTATION:
@@ -315,10 +248,8 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			_label_settings.set_outline_color(element.get_text_outline_color())
 		ElementText.SN_TEXT_LINE_SPACING:
 			_label_settings.set_line_spacing(element.get_text_line_spacing())
-			#await _fix_transform()
 		ElementText.SN_TEXT_HORIZONTAL_ALIGNMENT:
 			_label.set_horizontal_alignment(element.get_text_horizontal_alignment())
-			#await _fix_transform()
 		ElementText.SN_SHAKE_AMPLITUDE:
 			_label.set_scale(Vector2.ONE * _get_fixed_scale() + _get_scale_for_amplitude())
 		ElementText.SN_SHAKE_AMPLITUDE_COMPENSATION:
@@ -365,6 +296,4 @@ func _on_sync_element_shake() -> void:
 	_noise_utilities.reset_noise_scroll()
 
 func _on_subviewport_size_changed() -> void:
-	#_label.set_pivot_offset(WindowUtilities.get_subviewport_size() * 0.5)
-	
 	_label.set_position(_get_fixed_position())

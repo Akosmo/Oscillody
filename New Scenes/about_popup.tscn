@@ -7,18 +7,17 @@
 script = ExtResource("2_kwlo8")
 
 [node name="PanelContainer" parent="." index="2" unique_id=2106430377]
-custom_maximum_size = Vector2(512, 256)
-offset_left = -256.0
-offset_top = -65.5
-offset_right = 256.0
-offset_bottom = 65.5
+offset_left = -217.0
+offset_top = -58.5
+offset_right = 217.0
+offset_bottom = 58.5
 
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer" parent_id_path=PackedInt32Array(575107532) index="0" unique_id=568263534]
 layout_mode = 2
-text = "Oscillody is a free and open-source video creation application developed by Akosmo specifically made for audio visualization.
+text = "Oscillody is a free and open-source video creation application
+developed by Akosmo specifically made for audio visualization.
 Oscillody is also completely made without generative AI."
 horizontal_alignment = 1
-autowrap_mode = 3
 
 [node name="Button" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer" parent_id_path=PackedInt32Array(575107532) index="1" unique_id=302793]
 unique_name_in_owner = true

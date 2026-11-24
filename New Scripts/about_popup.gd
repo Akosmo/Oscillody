@@ -24,12 +24,9 @@ func _ready() -> void:
 		hide()
 	
 	panel_container.set_anchors_preset(Control.LayoutPreset.PRESET_CENTER)
-	# HACK: Pivot offset is not set correctly unless I do this. Probably related to text wrapping.
-	var fixed_pivot: Vector2 = Vector2(
-		panel_container.get_size().x * 4.0,
-		panel_container.get_size().y * 0.25
-	)
-	panel_container.set_pivot_offset(fixed_pivot)
+	# NOTE: Text is split manually instead of using autowrapper, which messes with the container size,
+	# makes it difficult to set the correct pivot offset, and breaks the look of the popup.
+	panel_container.set_pivot_offset(panel_container.get_size() * 0.5)
 	
 	PopupManager.popup_requested.connect(_on_popup_requested)
 	_button.pressed.connect(_on_button_pressed)

@@ -21,7 +21,6 @@ extends RefCounted
 const INCREMENT: float = 0.02
 
 var _shader_time: float
-#var _offset: float
 
 func _init() -> void:
 	_shader_time = 2.0 # Defaulting to the absolute maximum of `SN_SHADER_TIME_OFFSET`.
@@ -33,12 +32,7 @@ func reset_time(p_offset: float) -> void:
 	_shader_time = 2.0 + p_offset
 
 func get_shader_time() -> float:
-	#_shader_time += INCREMENT
 	return _shader_time
 
 func increment_shader_time(p_increment: float) -> void:
 	_shader_time += p_increment
-
-#func set_shader_time_offset(p_offset: float) -> void:
-#	_offset = p_offset
-#	_shader_time += _

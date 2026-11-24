@@ -26,9 +26,6 @@ var _element_container_count: int
 var _element_properties_container_count: int
 var _element_canvas_count: int
 var _analyzer_waveform_samples_per_second: int
-#var _real_time_audio_data: RealTimeAudioData
-#var _shader_time_maximum_speed: float
-#var _noise_value: Vector2
 
 var _log_text: String
 

@@ -24,7 +24,6 @@ const SN_AUDIO_SOURCE: StringName = &"Audio_Source"
 var _audio_source: StringName = &""
 
 func set_audio_source(p_value: StringName) -> void:
-	#if AudioManager.get_stream_names().values().has(p_value):
 	_audio_source = p_value
 	property_changed.emit(SN_AUDIO_SOURCE)
 

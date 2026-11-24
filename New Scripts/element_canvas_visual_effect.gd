@@ -32,9 +32,6 @@ var _spin_zoom_blur_shader_material: ShaderMaterial
 var _tape_distortion_shader_material: ShaderMaterial
 var _vignette_shader_material: ShaderMaterial
 
-#var _world_environment: WorldEnvironment
-#var _environment: Environment
-
 var _audio_data: RealTimeAudioData
 
 var _glitch_block_time: float
@@ -66,27 +63,7 @@ func _ready() -> void:
 	_spin_zoom_blur_shader_material.set_shader(preload("uid://c66qqndbklssq"))
 	_tape_distortion_shader_material.set_shader(preload("uid://bhhr0lqg01smy"))
 	_vignette_shader_material.set_shader(preload("uid://dfl7xb3hyamjg"))
-	#_color_rect.set_material(_shader_material)
 	add_child(_color_rect)
-	
-	#_environment = Environment.new()
-	#_environment.set_background(Environment.BG_CANVAS)
-	#_environment.set_glow_level(0, 1.0)
-	#_environment.set_glow_level(2, 0.6)
-	#_environment.set_glow_level(3, 0.4)
-	#_environment.set_glow_level(4, 0.2)
-	#_environment.set_glow_level(5, 0.1)
-	#_environment.set_glow_intensity(0.8)
-	#_world_environment = WorldEnvironment.new()
-	#_world_environment.set_environment(_environment)
-	#add_child(_world_environment)
-	
-	#_soft_light_color_rect = ColorRect.new()
-	#_soft_light_color_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
-	#_soft_light_shader_material = ShaderMaterial.new()
-	#_soft_light_shader_material.set_shader(preload("uid://cwmshhxwgfacf"))
-	#_soft_light_color_rect.set_material(_blur_shader_material)
-	#add_child(_blur_color_rect)
 	
 	_audio_data = RealTimeAudioData.new()
 	
@@ -99,8 +76,7 @@ func _ready() -> void:
 	for property_key: StringName in element.get_properties().keys():
 		_on_element_property_changed(property_key)
 	
-	if _connect_signals():
-		CustomLogger.log_critical_error("Could not connect signals in ElementCanvasVisualEffect.")
+	_connect_signals()
 
 func _process(_p_delta: float) -> void:
 	if element.get_visual_effect_type() == ElementVisualEffect.VisualEffectType.GLITCH:
@@ -231,14 +207,10 @@ func _get_visual_effect_material(p_visual_effect: ElementVisualEffect.VisualEffe
 func _get_reaction_magnitude(p_amount: float) -> float:
 	return 1.0 + _audio_data.get_current_magnitude() * p_amount
 
-func _connect_signals() -> Error:
-	if element.property_changed.connect(_on_element_property_changed):
-		return Error.ERR_INVALID_PARAMETER
+func _connect_signals() -> void:
+	element.property_changed.connect(_on_element_property_changed)
 	
-	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		return Error.ERR_INVALID_PARAMETER
-	
-	return Error.OK
+	AudioManager.stream_list_updated.connect(_on_stream_list_updated)
 
 func _on_element_property_changed(p_property: StringName) -> void:
 	match p_property:
@@ -249,18 +221,11 @@ func _on_element_property_changed(p_property: StringName) -> void:
 				queue_free()
 		ElementVisualEffect.SN_ELEMENT_LAYER:
 			set_layer(element.get_element_layer())
-			#_environment.set_canvas_max_layer(element.get_element_layer() - 2048)
 		ElementVisualEffect.SN_ELEMENT_VISIBILITY:
 			set_visible(element.get_element_visibility())
 			set_process(element.get_element_visibility())
 		ElementVisualEffect.SN_VISUAL_EFFECT_TYPE:
 			_color_rect.set_material(_get_visual_effect_material(element.get_visual_effect_type()))
-			#_environment.set_glow_enabled(
-				#element.get_visual_effect_type() == ElementVisualEffect.VisualEffectType.BLOOM
-			#)
-			#_color_rect.set_visible(
-				#not element.get_visual_effect_type() == ElementVisualEffect.VisualEffectType.BLOOM
-			#)
 			
 			_element_ui_configurations.enable_visual_effect_visibility(element.get_visual_effect_type())
 			_element_ui_configurations.set_reaction_visibility(
@@ -273,7 +238,6 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			_bloom_shader_material.set_shader_parameter("radius", element.get_bloom_radius())
 		ElementVisualEffect.SN_BLOOM_BLEND_MODE:
 			_bloom_shader_material.set_shader_parameter("blend_mode", element.get_bloom_blend_mode())
-			#_environment.set_glow_blend_mode(element.get_bloom_blend_mode() as Environment.GlowBlendMode)
 		ElementVisualEffect.SN_CHROMATIC_ABERRATION_AMOUNT:
 			pass
 		ElementVisualEffect.SN_GLITCH_BLOCK_OFFSET_AMOUNT:
@@ -331,10 +295,6 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			_spin_zoom_blur_shader_material.set_shader_parameter("mode", element.get_spin_zoom_blur_mode())
 		ElementVisualEffect.SN_TAPE_DISTORTION_WAVE_OFFSET_AMOUNT:
 			pass
-			#_tape_distortion_shader_material.set_shader_parameter(
-			#	"wave_offset_amount",
-			#	element.get_tape_distortion_wave_offset_amount() * 0.5
-			#)
 		ElementVisualEffect.SN_TAPE_DISTORTION_WAVE_AMOUNT:
 			_tape_distortion_shader_material.set_shader_parameter(
 				"wave_amount",
@@ -349,10 +309,6 @@ func _on_element_property_changed(p_property: StringName) -> void:
 			pass
 		ElementVisualEffect.SN_TAPE_DISTORTION_BLOCK_OFFSET_AMOUNT:
 			pass
-			#_tape_distortion_shader_material.set_shader_parameter(
-			#	"block_offset_amount",
-			#	element.get_tape_distortion_block_offset_amount() * 0.1
-			#)
 		ElementVisualEffect.SN_TAPE_DISTORTION_BLOCK_AMOUNT:
 			_tape_distortion_shader_material.set_shader_parameter(
 				"block_amount",

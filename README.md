@@ -1,6 +1,6 @@
 # Oscillody
 - - -
-## Real-time oscilloscope-based audio visualizer
+## Real-time audio visualizer
 - - -
 Oscillody is a free and open-source video creation application developed by [Akosmo](https://akosmo.carrd.co) specifically made for audio visualization.
 Audio files can be imported and a visualizer created with multiple types of Elements available for use. The resulting visualizer can be exported as a video, and used in any way.

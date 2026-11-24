@@ -25,7 +25,6 @@ extends Node
 signal element_created(p_element: Element)
 ## Emitted when an [Element] is deleted.
 signal element_deleted(p_element: Element)
-#signal elements_cleared
 ## Emitted when an [Element] changes type.
 signal element_type_changed(p_old_element: Element, p_new_element: Element)
 ## Emitted when [member Element._layer] is updated in all Elements.
@@ -34,7 +33,6 @@ signal element_layers_updated
 signal property_node_visibility_changed(p_element: Element)
 
 var _elements: Array[Element] # This array is sorted by layer order.
-#var _element_ui_configurations: Dictionary[Element, ElementUIConfigurations]
 var _element_ui_configurations_array: Array[ElementUIConfigurations]
 
 var _element_unique_id: int
@@ -49,8 +47,7 @@ var _element_visual_effect_ui_configurations: ElementVisualEffectUIConfiguration
 func _init() -> void:
 	_element_unique_id = -1
 	
-	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		push_error("Could not connect signal in ElementManager.")
+	AudioManager.stream_list_updated.connect(_on_stream_list_updated)
 	
 	_element_empty_ui_configurations = preload("uid://c5noed3x5ibew")
 	_element_analyzer_ui_configurations = preload("uid://blysgijw0k6ah")
@@ -86,10 +83,6 @@ func create_element() -> Element:
 	var configs: ElementUIConfigurations = _get_configurations_basic(Element.ElementType.EMPTY)
 	configs.set_element(element)
 	_element_ui_configurations_array.append(configs)
-	#if not _element_ui_configurations.set(element, configs):
-	#	CustomLogger.log_critical_error("Could not add config to dictionary.")
-	#	delete_element(element)
-	#	return null
 	
 	CustomLogger.log_normal("Created Element with ID: " + str(element.get_element_unique_id()))
 	
@@ -102,7 +95,6 @@ func create_element() -> Element:
 
 func load_element(p_properties: Dictionary[StringName, Variant]) -> void:
 	var old_element_array_size: int = _elements.size()
-	#var old_element_ui_configs_size: int = _element_ui_configurations.size()
 	var old_element_ui_configs_size: int = _element_ui_configurations_array.size()
 	
 	var element: Element
@@ -124,8 +116,8 @@ func load_element(p_properties: Dictionary[StringName, Variant]) -> void:
 			element = ElementEmpty.new() as ElementEmpty
 	
 	element.set_element_unique_id(_get_next_available_uid())
-	element.set_element_type(p_properties.get(Element.SN_ELEMENT_TYPE as StringName), true)
-	element.set_element_layer(p_properties.get(Element.SN_ELEMENT_LAYER as StringName), false)
+	element.set_element_type(p_properties.get(Element.SN_ELEMENT_TYPE) as Element.ElementType, true)
+	element.set_element_layer(int(p_properties.get(Element.SN_ELEMENT_LAYER)), false)
 	
 	var element_properties: Dictionary[StringName, Variant] = element.get_properties()
 	for property_key: StringName in element_properties.keys():
@@ -149,20 +141,15 @@ func load_element(p_properties: Dictionary[StringName, Variant]) -> void:
 			)
 			continue
 		
-		#var property_str: StringName = property_key.get_slice(")_", 1).replace("_", " ").to_lower()
-		#element.get_property_list()
 		element.call(element_setters.get(property_key) as StringName, p_properties.get(property_key))
 	
 	_elements.append(element)
 	var configs: ElementUIConfigurations = _get_configurations_basic(element.get_element_type())
 	configs.set_element(element)
-	#if not _element_ui_configurations.set(element, configs):
-	#	CustomLogger.log_warning("Could not add config to dictionary.")
 	_element_ui_configurations_array.append(configs)
 	
 	if (
 		not _elements.size() == old_element_array_size + 1 or
-		#not _element_ui_configurations.size() == old_element_ui_configs_size + 1
 		not _element_ui_configurations_array.size() == old_element_ui_configs_size + 1
 	):
 		CustomLogger.log_warning(
@@ -170,7 +157,6 @@ func load_element(p_properties: Dictionary[StringName, Variant]) -> void:
 				{
 					"1": str(_elements.size()),
 					"2": str(old_element_array_size + 1),
-					#"3": str(_element_ui_configurations.size()),
 					"3": str(_element_ui_configurations_array.size()),
 					"4": str(old_element_ui_configs_size + 1)
 				}
@@ -187,8 +173,6 @@ func load_element(p_properties: Dictionary[StringName, Variant]) -> void:
 func delete_element(p_element: Element) -> void:
 	CustomLogger.log_normal("Deleting Element with ID: " + str(p_element.get_element_unique_id()))
 	
-	#if not _element_ui_configurations.erase(p_element):
-	#	CustomLogger.log_warning("Could not find Element in config dictionary.")
 	_element_ui_configurations_array.erase(get_configurations_for_element(p_element))
 	_elements.erase(p_element)
 	
@@ -202,7 +186,6 @@ func delete_element(p_element: Element) -> void:
 func clear_elements() -> void:
 	CustomLogger.log_normal("Clearing Elements.")
 	
-	#_element_ui_configurations.clear()
 	_element_ui_configurations_array.clear()
 	
 	for element: Element in _elements:
@@ -210,11 +193,8 @@ func clear_elements() -> void:
 	
 	_elements.clear()
 	
-	#if not _elements.is_empty() or not _element_ui_configurations.is_empty():
 	if not _elements.is_empty() or not _element_ui_configurations_array.is_empty():
 		CustomLogger.log_critical_error("Could not clear Element lists properly.")
-	
-	#elements_cleared.emit()
 
 ## Changes the type of an [Element]. Should only be used by calling [method Element.set_type].[br]
 ## [b]Note:[/b] The [Element] Resource doesn't remain the same, as this method makes a new [Element]
@@ -246,19 +226,12 @@ func change_element_type(p_element: Element) -> void:
 	new_element.set_element_layer(p_element.get_element_layer(), false)
 	new_element.set_element_visibility(p_element.get_element_visibility())
 	
-	#if not _element_ui_configurations.erase(p_element):
-	#	CustomLogger.log_critical_error("Could not find Element in config dictionary.")
 	_element_ui_configurations_array.erase(get_configurations_for_element(p_element))
 	_elements.erase(p_element)
 	
-	@warning_ignore("return_value_discarded")
 	_elements.insert(new_element.get_element_layer(), new_element)
 	var configs: ElementUIConfigurations = _get_configurations_basic(new_element.get_element_type())
 	configs.set_element(new_element)
-	#if not _element_ui_configurations.set(
-	#	new_element, configs
-	#):
-	#	CustomLogger.log_critical_error("Could not add config to dictionary.")
 	_element_ui_configurations_array.append(configs)
 	
 	element_type_changed.emit(p_element, new_element)
@@ -268,7 +241,6 @@ func change_element_type(p_element: Element) -> void:
 func reindex_layer(p_element: Element, p_to_index: int) -> void:
 	if _elements.has(p_element):
 		_elements.remove_at(_elements.find(p_element))
-		@warning_ignore("return_value_discarded")
 		_elements.insert(p_to_index, p_element)
 		_update_layers()
 
@@ -281,7 +253,6 @@ func reset_unique_id() -> Error:
 	return Error.OK
 
 func get_configurations_for_element(p_element: Element) -> ElementUIConfigurations:
-	#return _element_ui_configurations.get(p_element)
 	for config: ElementUIConfigurations in _element_ui_configurations_array:
 		if config.get_element() == p_element:
 			return config
@@ -330,5 +301,4 @@ func _on_stream_list_updated() -> void:
 	
 	for element: Element in _elements:
 		if element.has_method(&"set_audio_source"):
-			@warning_ignore("unsafe_method_access")
 			element.set_audio_source(&"")

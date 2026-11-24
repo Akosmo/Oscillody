@@ -17,8 +17,6 @@
 
 extends PanelContainer
 
-#var _files_property_container_script: Script = preload("res://New Scripts/files_property_container.gd")
-
 @onready var _preset_container: BasicPropertyContainer = %PresetContainer
 @onready var _save_preset_button: Button = %SavePresetButton
 @onready var _open_preset_folder_button: Button = %OpenPresetFolderButton
@@ -32,8 +30,7 @@ extends PanelContainer
 @onready var _master_container: BasicPropertyContainer = %MasterContainer
 
 func _ready() -> void:
-	if _connect_signals():
-		CustomLogger.log_critical_error("Could not connect signals in FilesContainer.")
+	_connect_signals()
 	
 	_preset_container.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
 	_preset_container.set_property_key(FileManager.SN_PRESET)
@@ -41,58 +38,33 @@ func _ready() -> void:
 	if not preset_list.is_empty():
 		for preset: String in preset_list:
 			_preset_container.option_button.add_item(preset)
-		#if preset_list.has("Default"):
-			#_preset_container.set_property_value_with_node("Default")
-			#FileManager.load_preset("Default")
-		#else:
-			#_preset_container.set_property_value_with_node(preset_list[0])
-			#FileManager.load_preset(preset_list[0])
 	_preset_container.set_property_value_with_node("")
 	_preset_container.set_reset_value("")
 	_preset_container.option_button.set_allow_reselect(true)
 	
-	#_master_container.set_script(_files_property_container_script)
 	_master_container.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
 	_master_container.set_property_key(FileManager.SN_MASTER)
 	_master_container.set_property_value(&"")
 	_master_container.set_reset_value(&"")
 	
-	#_export_video_button.set_disabled(OS.has_feature("debug") or AudioManager.get_streams().is_empty())
 	_export_video_button.set_disabled(
 		SettingsManager.get_ffmpeg_path().is_empty() or AudioManager.get_stream_names().is_empty()
 	)
 
-func _connect_signals() -> Error:
-	#if AudioManager.new_audio_imported.connect(_on_new_audio_imported):
-		#return ERR_INVALID_PARAMETER
+func _connect_signals() -> void:
+	_preset_container.property_value_changed.connect(_on_property_value_changed)
+	_save_preset_button.pressed.connect(_on_save_pressed)
+	_open_preset_folder_button.pressed.connect(_on_open_folder_pressed)
+	_import_audio_button.pressed.connect(_on_import_audio_pressed)
+	_import_audio_file_dialog.files_selected.connect(_on_audio_files_selected)
+	_master_container.property_value_changed.connect(_on_property_value_changed)
+	_master_container.property_reset_pressed.connect(_on_property_reset_pressed)
+	_export_video_button.pressed.connect(_on_export_video_pressed)
+	_export_video_file_dialog.file_selected.connect(_on_saving_video_file)
 	
-	if _preset_container.property_value_changed.connect(_on_property_value_changed):
-		return Error.ERR_INVALID_PARAMETER
-	if _save_preset_button.pressed.connect(_on_save_pressed):
-		return Error.ERR_INVALID_PARAMETER
-	if _open_preset_folder_button.pressed.connect(_on_open_folder_pressed):
-		return Error.ERR_INVALID_PARAMETER
-	if _import_audio_button.pressed.connect(_on_import_audio_pressed):
-		return Error.ERR_INVALID_PARAMETER
-	if _import_audio_file_dialog.files_selected.connect(_on_audio_files_selected):
-		return Error.ERR_INVALID_PARAMETER
-	if _master_container.property_value_changed.connect(_on_property_value_changed):
-		return Error.ERR_INVALID_PARAMETER
-	if _master_container.property_reset_pressed.connect(_on_property_reset_pressed):
-		return Error.ERR_INVALID_PARAMETER
-	if _export_video_button.pressed.connect(_on_export_video_pressed):
-		return Error.ERR_INVALID_PARAMETER
-	if _export_video_file_dialog.file_selected.connect(_on_saving_video_file):
-		return Error.ERR_INVALID_PARAMETER
-	
-	if AudioManager.stream_list_updated.connect(_on_stream_list_updated):
-		return Error.ERR_INVALID_PARAMETER
-	if FileManager.preset_saved.connect(_on_preset_saved):
-		return Error.ERR_INVALID_PARAMETER
-	if FileManager.canceled_preset_change.connect(_on_canceled_preset_changed):
-		return Error.ERR_INVALID_PARAMETER
-	
-	return Error.OK
+	AudioManager.stream_list_updated.connect(_on_stream_list_updated)
+	FileManager.preset_saved.connect(_on_preset_saved)
+	FileManager.canceled_preset_change.connect(_on_canceled_preset_changed)
 
 func _update_stream_list() -> void:
 	_master_container.option_button.clear()
@@ -103,10 +75,6 @@ func _update_stream_list() -> void:
 			_master_container.option_button.add_item(String(stream_name))
 		
 		var master_name: StringName = stream_names[-1]
-		#_master_container.option_button.select(-1)
-		#
-		#var master_name: StringName = stream_dict.keys()[-1]
-		#_master_container.set_property_value(master_name)
 		_master_container.set_property_value_with_node(master_name)
 		AudioManager.set_master_name(master_name)
 	else:
@@ -143,10 +111,10 @@ func _on_property_value_changed(p_property_key: StringName, p_property_value: Va
 	match p_property_key:
 		FileManager.SN_PRESET:
 			if FileManager.get_unsaved_changes():
-				FileManager.set_desired_preset(p_property_value)
+				FileManager.set_desired_preset(String(p_property_value))
 				PopupManager.request_popup(PopupManager.PopupType.UNSAVED_CHANGES)
 				return
-			if FileManager.load_preset(p_property_value):
+			if FileManager.load_preset(String(p_property_value)):
 				CustomLogger.log_error("Could not change preset.")
 		FileManager.SN_MASTER:
 			if String(p_property_value).is_empty():
@@ -183,7 +151,6 @@ func _on_saving_video_file(p_path: String) -> void:
 	MovieWriterUtilities.initialize_export(p_path)
 
 func _on_stream_list_updated() -> void:
-	#if not OS.has_feature("debug"):
 	_export_video_button.set_disabled(AudioManager.get_stream_names().is_empty())
 
 func _on_preset_saved(p_preset_name: String) -> void:

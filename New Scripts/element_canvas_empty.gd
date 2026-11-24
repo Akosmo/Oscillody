@@ -21,14 +21,10 @@ extends ElementCanvas
 var element: ElementEmpty
 
 func _ready() -> void:
-	#set_name(element.get_element_name() + "_" + str(element.get_unique_id()))
-	#set_layer(element.get_layer())
-	
 	for property_key: StringName in element.get_properties().keys():
 		_on_element_property_changed(property_key)
 	
-	if element.property_changed.connect(_on_element_property_changed):
-		CustomLogger.log_critical_error("Could not connect signal in ElementCanvasEmpty.")
+	element.property_changed.connect(_on_element_property_changed)
 
 func get_element() -> Element:
 	return element

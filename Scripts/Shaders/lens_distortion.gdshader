@@ -20,11 +20,11 @@ uniform mediump float chromatic_aberration_amount : hint_range(0.0, 6.0, 0.1) = 
 // Applying lens distortion by scaling UV around the corners.
 void fragment() {
 	highp vec2 uv = SCREEN_UV;
-	uv = uv * 2.0 - 1.0; // Changing UV range from (0 to 1) to (-1 to 1)
+	uv = uv * 2.0 - 1.0; // Changing UV range from (0 to 1) to (-1 to 1).
 
 	// Exponential value from 0.0 to 1.0, mapping distortion.
 	highp float magnitude = (pow(uv.x, 2.0) + pow(uv.y, 2.0)) * 0.5;
-	uv *= 1.0 + amount * magnitude; // Applying distortion by scaling UV where magnitude is present
+	uv *= 1.0 + amount * magnitude; // Applying distortion by scaling UV where magnitude is present.
 
 	// Scaling UV based on `amount` to match viewport.
 	// Scaling factor by aleklesovoi: https://www.shadertoy.com/view/DldXWS

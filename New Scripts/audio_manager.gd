@@ -21,9 +21,6 @@ extends Node
 ## This class is used for communications between the player control and [AudioStreamPlayer]s under the
 ## visualizer.
 
-## Emitted whenever new audio files are just imported
-## and added to [member _streams], or existing ones are cleared from Oscillody.
-signal new_audio_imported
 ## Emitted whenever the list of streams in the UI is updated, including an updated [member _master_name].
 signal stream_list_updated
 ## Emitted whenever a different stream is set as Master (audible).
@@ -55,16 +52,6 @@ var _master_volume: float = 1.0
 
 var _time_position: float = 0.0
 var _time_duration: float = 0.0
-
-#func _ready() -> void:
-#	CustomLogger.log_normal(
-#		"Sample rate (in Hz): " + str(int(AudioServer.get_mix_rate())) +
-#		"\nInput sample rate (in Hz): " + str(int(AudioServer.get_input_mix_rate())) +
-#		"\nAudio input: " + str(ProjectSettings.get_setting("audio/driver/enable_input")) +
-#		"\nNumber of channels: " + str(AudioServer.get_bus_channels(0) * 2) +
-#		"\nAudio driver: " + str(AudioServer.get_driver_name()) +
-#		"\nOutput latency (in ms): " + str(roundi(AudioServer.get_output_latency() * 1000.0))
-#	)
 
 ## Emits [signal play_pause_requested], connected to an [AudioStreamPlayer].
 func request_play_pause() -> void:
@@ -158,9 +145,6 @@ func clear_streams() -> void:
 	_streams.clear()
 	_stream_names.clear()
 	_time_duration = 0.0
-	
-	#new_audio_imported.emit()
-	#master_play_state_changed.emit()
 
 func notify_cleared_streams() -> void:
 	master_play_state_changed.emit()
@@ -220,7 +204,5 @@ audio in the Ogg file container.".format({"path": p_path})
 		_:
 			CustomLogger.log_error("{path} does not contain valid audio extension.".format({"path": p_path}))
 			return Error.FAILED
-	
-	#new_audio_imported.emit()
 	
 	return Error.OK

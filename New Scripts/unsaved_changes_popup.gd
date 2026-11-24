@@ -36,7 +36,9 @@ func _on_popup_requested(p_popup_type: PopupManager.PopupType) -> void:
 		popup_show()
 
 func _on_change_button_pressed() -> void:
-	FileManager.load_preset(FileManager.get_desired_preset())
+	if FileManager.load_preset(FileManager.get_desired_preset()):
+		CustomLogger.log_critical_error("Could not change preset.")
+		return
 	FileManager.set_desired_preset("")
 	
 	popup_hide()

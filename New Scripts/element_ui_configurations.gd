@@ -33,8 +33,7 @@ enum ControlNode {
 	COLOR_PICKER_BUTTON,
 	## Uses [LineEdit].
 	LINE_EDIT,
-	## Uses [SpinBox], or [CustomHSlider] if
-	## [method SettingsManager.are_sliders_enabled] is [code]true[/code].
+	## Uses [SpinBox], or a custom slider if ever implemented.
 	NUMERICAL,
 	## Uses [OptionButton].
 	OPTION_BUTTON,
