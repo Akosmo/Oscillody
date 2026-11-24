@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://bxhuiw50ncyvt"]
+
+[ext_resource type="PackedScene" uid="uid://b3mp8o344g6kt" path="res://Scenes/Popups/custom_popup.tscn" id="1_1k611"]
+[ext_resource type="Script" uid="uid://bbunxqb01wn8p" path="res://Scripts/Popups/close_request_popup.gd" id="2_qf3c5"]
+
+[node name="CloseRequestPopup" unique_id=1025290700 instance=ExtResource("1_1k611")]
+script = ExtResource("2_qf3c5")
+
+[node name="PanelContainer" parent="." index="2" unique_id=2106430377]
+offset_left = -195.5
+offset_top = -50.0
+offset_right = 195.5
+offset_bottom = 50.0
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer" parent_id_path=PackedInt32Array(575107532) index="0" unique_id=1339642728]
+layout_mode = 2
+text = "Are you sure you want to quit?
+All unsaved changes to the visualizer will be lost."
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" parent_id_path=PackedInt32Array(575107532) index="1" unique_id=348299754]
+layout_mode = 2
+alignment = 1
+
+[node name="QuitButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer" index="0" unique_id=1077358725]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Quit"
+
+[node name="CancelButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer" index="1" unique_id=1931774760]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Cancel"

@@ -1,0 +1,34 @@
+[gd_scene format=3 uid="uid://kko5gqgo7nkj"]
+
+[ext_resource type="PackedScene" uid="uid://b3mp8o344g6kt" path="res://Scenes/Popups/custom_popup.tscn" id="1_kojwp"]
+[ext_resource type="Script" uid="uid://bou6kdqr8fqe5" path="res://Scripts/Popups/preset_popup.gd" id="2_movq2"]
+
+[node name="PresetPopup" unique_id=1025290700 instance=ExtResource("1_kojwp")]
+script = ExtResource("2_movq2")
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer" parent_id_path=PackedInt32Array(575107532) index="0" unique_id=1699395174]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Choose preset name:"
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="PanelContainer/MarginContainer/VBoxContainer" parent_id_path=PackedInt32Array(575107532) index="1" unique_id=1726490958]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+placeholder_text = "Preset Name"
+alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" parent_id_path=PackedInt32Array(575107532) index="2" unique_id=305871201]
+layout_mode = 2
+alignment = 1
+
+[node name="SaveButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer" index="0" unique_id=872807556]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Save"
+
+[node name="CancelButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer" index="1" unique_id=364990955]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Cancel"

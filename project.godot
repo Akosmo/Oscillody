@@ -24,7 +24,7 @@ config/features=PackedStringArray("4.8", "Forward Plus")
 run/max_fps=60
 boot_splash/image="uid://18gyq6x0cf6t"
 config/icon="uid://bx3taxkx80j5l"
-config/windows_native_icon="res://New Images/Oscillody_Logo_(icon).ico"
+config/windows_native_icon="res://Images/Oscillody_Logo_(icon).ico"
 
 [audio]
 
@@ -65,7 +65,7 @@ movie_writer/disable_vsync=true
 
 timers/tooltip_delay_sec=0.25
 theme/custom="uid://dfixe5tb82hdu"
-theme/custom_font="res://New Themes/Fonts/Fira_Sans_Condensed/FiraSansCondensed-Regular.ttf"
+theme/custom_font="uid://ctnkhx1tj6d5y"
 
 [input]
 

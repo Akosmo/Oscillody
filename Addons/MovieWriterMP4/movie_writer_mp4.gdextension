@@ -1,0 +1,12 @@
+[configuration]
+
+entry_symbol = "movie_writer_mp4_library_init"
+compatibility_minimum = "4.8"
+reloadable = true
+
+[libraries]
+
+windows.debug.x86_32 = "res://Addons/MovieWriterMP4/libmovie_writer_mp4.windows.template_debug.x86_32.dll"
+windows.release.x86_32 = "res://Addons/MovieWriterMP4/libmovie_writer_mp4.windows.template_release.x86_32.dll"
+windows.debug.x86_64 = "res://Addons/MovieWriterMP4/libmovie_writer_mp4.windows.template_debug.x86_64.dll"
+windows.release.x86_64 = "res://Addons/MovieWriterMP4/libmovie_writer_mp4.windows.template_release.x86_64.dll"

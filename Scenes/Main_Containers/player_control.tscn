@@ -1,0 +1,70 @@
+[gd_scene format=3 uid="uid://d1oevod46vgin"]
+
+[ext_resource type="Script" uid="uid://dek0p5tkmyk51" path="res://Scripts/Main_Containers/player_control.gd" id="1_ydwhq"]
+
+[node name="PlayerControlContainer" type="PanelContainer" unique_id=1498337296]
+script = ExtResource("1_ydwhq")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1873984990]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=1134130833]
+layout_mode = 2
+
+[node name="PlayPauseButton" type="Button" parent="MarginContainer/HBoxContainer" unique_id=1160707606]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(59, 0)
+layout_mode = 2
+text = "PLAY"
+
+[node name="StopButton" type="Button" parent="MarginContainer/HBoxContainer" unique_id=887003186]
+unique_name_in_owner = true
+layout_mode = 2
+text = "STOP"
+
+[node name="LoopButton" type="Button" parent="MarginContainer/HBoxContainer" unique_id=723381350]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+text = "LOOP"
+
+[node name="VolumeSlider" type="HSlider" parent="MarginContainer/HBoxContainer" unique_id=1585166395]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="VolumeLabel" type="Label" parent="MarginContainer/HBoxContainer" unique_id=442053107]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(42, 0)
+layout_mode = 2
+text = "100%"
+horizontal_alignment = 1
+
+[node name="TimeSlider" type="HSlider" parent="MarginContainer/HBoxContainer" unique_id=88055961]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="TimeLabel" type="Label" parent="MarginContainer/HBoxContainer" unique_id=10301230]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(51, 0)
+layout_mode = 2
+text = "00:00 / 00:00"
+horizontal_alignment = 1
+
+[node name="TimeSliderPositionHint" type="Label" parent="." unique_id=2079037397]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+offset_transform_enabled = true
+horizontal_alignment = 1

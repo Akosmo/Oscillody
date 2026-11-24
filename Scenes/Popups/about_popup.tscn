@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://b0ngn3lc0t3ym"]
+
+[ext_resource type="PackedScene" uid="uid://b3mp8o344g6kt" path="res://Scenes/Popups/custom_popup.tscn" id="1_4md3n"]
+[ext_resource type="Script" uid="uid://ccrcukmlx5vfi" path="res://Scripts/Popups/about_popup.gd" id="2_ao0lc"]
+
+[node name="AboutPopup" unique_id=1025290700 instance=ExtResource("1_4md3n")]
+script = ExtResource("2_ao0lc")
+
+[node name="PanelContainer" parent="." index="2" unique_id=2106430377]
+offset_left = -217.0
+offset_top = -58.5
+offset_right = 217.0
+offset_bottom = 58.5
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer" parent_id_path=PackedInt32Array(575107532) index="0" unique_id=568263534]
+layout_mode = 2
+text = "Oscillody is a free and open-source video creation application
+developed by Akosmo specifically made for audio visualization.
+Oscillody is also completely made without generative AI."
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer" parent_id_path=PackedInt32Array(575107532) index="1" unique_id=302793]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Close"
