@@ -29,7 +29,7 @@ signal element_deleted(p_element: Element)
 signal element_type_changed(p_old_element: Element, p_new_element: Element)
 ## Emitted when [member Element._layer] is updated in all Elements.
 signal element_layers_updated
-## Emitted when one or multiple property nodes change visibility. See [ElementPropertyContainer].
+## Emitted when one or multiple property nodes change visibility. See [ElementPropertiesContainer].
 signal property_node_visibility_changed(p_element: Element)
 
 var _elements: Array[Element] # This array is sorted by layer order.

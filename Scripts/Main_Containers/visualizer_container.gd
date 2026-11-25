@@ -109,10 +109,9 @@ func _on_element_deleted(p_element: Element) -> void:
 
 func _on_element_type_changed(p_old_element: Element, _p_new_element: Element) -> void:
 	for node: Control in _element_properties_scroll_container.get_children():
-		if node.has_method("get_element"):
-			if node.get_element() == p_old_element:
-				node.queue_free()
-				break
+		if node.has_method("get_element") and node.get_element() == p_old_element:
+			node.queue_free()
+			break
 
 func _on_element_layers_updated() -> void:
 	for node: Node in _elements_box_container.get_children():

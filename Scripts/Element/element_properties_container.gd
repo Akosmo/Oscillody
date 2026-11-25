@@ -44,7 +44,7 @@ func _ready() -> void:
 			)
 			continue
 		
-		var property_container_node: BasicPropertyContainer = _PROPERTY_CONTAINER.instantiate()
+		var property_container_node: PropertyContainer = _PROPERTY_CONTAINER.instantiate()
 		add_child(property_container_node)
 		
 		property_container_node.set_property_key(property_key)
@@ -54,7 +54,7 @@ func _ready() -> void:
 		
 		match property_configs.get(ElementUIConfigurations.CONTROL_NODE):
 			ElementUIConfigurations.ControlNode.BUTTON:
-				property_container_node.set_control_node(BasicPropertyContainer.ControlNode.BUTTON)
+				property_container_node.set_control_node(PropertyContainer.ControlNode.BUTTON)
 				property_container_node.use_file_dialog()
 				property_container_node.button.set_text("Select Path")
 				if property_key == ElementImage.SN_IMAGE_PATH:
@@ -62,15 +62,15 @@ func _ready() -> void:
 						PackedStringArray(["*.png, *.jpg, *.jpeg ; Supported Formats"])
 					)
 			ElementUIConfigurations.ControlNode.CHECK_BUTTON:
-				property_container_node.set_control_node(BasicPropertyContainer.ControlNode.CHECK_BUTTON)
+				property_container_node.set_control_node(PropertyContainer.ControlNode.CHECK_BUTTON)
 			ElementUIConfigurations.ControlNode.COLOR_PICKER_BUTTON:
 				property_container_node.set_control_node(
 					property_container_node.ControlNode.COLOR_PICKER_BUTTON
 				)
 			ElementUIConfigurations.ControlNode.LINE_EDIT:
-				property_container_node.set_control_node(BasicPropertyContainer.ControlNode.LINE_EDIT)
+				property_container_node.set_control_node(PropertyContainer.ControlNode.LINE_EDIT)
 			ElementUIConfigurations.ControlNode.NUMERICAL:
-				property_container_node.set_control_node(BasicPropertyContainer.ControlNode.NUMERICAL)
+				property_container_node.set_control_node(PropertyContainer.ControlNode.NUMERICAL)
 				var _min: float = property_configs.get(ElementUIConfigurations.MINIMUM)
 				var _max: float = property_configs.get(ElementUIConfigurations.MAXIMUM)
 				var _step: float = property_configs.get(ElementUIConfigurations.STEP)
@@ -80,14 +80,14 @@ func _ready() -> void:
 				property_container_node.spin_box.set_step(_step)
 				property_container_node.spin_box.set_use_rounded_values(_rounded)
 			ElementUIConfigurations.ControlNode.OPTION_BUTTON:
-				property_container_node.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
+				property_container_node.set_control_node(PropertyContainer.ControlNode.OPTION_BUTTON)
 				for item: StringName in property_configs.get(ElementUIConfigurations.OPTIONS):
 					if property_key == ElementWithAudio.SN_AUDIO_SOURCE:
 						property_container_node.option_button.add_item(item)
 					else:
 						property_container_node.option_button.add_item(item.get_slice(")_", 1).replace("_", " "))
 			ElementUIConfigurations.ControlNode.TEXT_EDIT:
-				property_container_node.set_control_node(BasicPropertyContainer.ControlNode.TEXT_EDIT)
+				property_container_node.set_control_node(PropertyContainer.ControlNode.TEXT_EDIT)
 		
 		property_container_node.property_value_changed.connect(_on_property_value_changed)
 		
@@ -113,7 +113,7 @@ func _on_number_of_layers_changed(_p_element: Element) -> void:
 		return
 	
 	# The PropertyContainer for LAYER is always on this index.
-	var node: BasicPropertyContainer = get_child(2)
+	var node: PropertyContainer = get_child(2)
 	
 	var element_ui_configs: Dictionary[StringName, Dictionary] = _ui_configurations.get_configurations()
 	var property_configs: Dictionary = element_ui_configs.get(node.get_property_key())
@@ -136,7 +136,7 @@ func _on_layers_updated() -> void:
 		return
 	
 	# The PropertyContainer for LAYER is always on this index.
-	var node: BasicPropertyContainer = get_child(2)
+	var node: PropertyContainer = get_child(2)
 	var element_properties: Dictionary[StringName, Variant] = element.get_properties()
 	var property_value: int = element_properties.get(Element.SN_ELEMENT_LAYER)
 	node.set_property_value_with_node(property_value)
@@ -146,7 +146,7 @@ func _on_property_visibility_changed(p_element: Element) -> void:
 		return
 	
 	var element_ui_configs: Dictionary[StringName, Dictionary] = _ui_configurations.get_configurations()
-	for node: BasicPropertyContainer in get_children():
+	for node: PropertyContainer in get_children():
 		var property_configs: Dictionary = element_ui_configs.get(node.get_property_key())
 		if property_configs.has(ElementUIConfigurations.VISIBLE):
 			node.set_visible(property_configs.get(ElementUIConfigurations.VISIBLE) as bool)
@@ -157,7 +157,7 @@ func _on_stream_list_updated() -> void:
 		return
 	
 	var property_configs: Dictionary = element_ui_configs.get(ElementWithAudio.SN_AUDIO_SOURCE)
-	for node: BasicPropertyContainer in get_children():
+	for node: PropertyContainer in get_children():
 		if node.get_property_key() == ElementWithAudio.SN_AUDIO_SOURCE:
 			node.option_button.clear()
 			for item: StringName in property_configs.get(ElementUIConfigurations.OPTIONS):
@@ -165,10 +165,7 @@ func _on_stream_list_updated() -> void:
 			node.set_property_value_with_node(element.get_audio_source())
 
 func _on_property_value_changed(p_property_key: StringName, p_property_value: Variant) -> void:
-	if is_queued_for_deletion():
-		return
-	
-	if element == null:
+	if is_queued_for_deletion() or element == null:
 		return
 	
 	if not FileManager.get_unsaved_changes():

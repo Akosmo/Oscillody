@@ -62,6 +62,7 @@ func _exit_tree() -> void:
 		return
 	
 	_main_log_file.close()
+	_ffmpeg_log_file.close()
 
 func log_normal(p_text: String) -> void:
 	_log_internal(p_text)

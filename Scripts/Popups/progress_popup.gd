@@ -64,8 +64,8 @@ func _on_cancel_pressed() -> void:
 		popup_hide()
 
 func _on_export_finished(p_path: String) -> void:
-	_audio_stream_player.play()
 	if not p_path.is_empty():
+		_audio_stream_player.play()
 		_destination_folder = p_path
 		DisplayServer.send_toast_notification(
 			"Video has finished exporting.",
@@ -73,4 +73,5 @@ func _on_export_finished(p_path: String) -> void:
 			null,
 			_toast_notification_callback
 		)
+	
 	popup_hide()

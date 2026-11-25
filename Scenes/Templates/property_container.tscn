@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bfv2ne33xxlso"]
 
-[ext_resource type="Script" uid="uid://cs1fahg27mkye" path="res://Scripts/Main_Containers/basic_property_container.gd" id="1_nyvty"]
+[ext_resource type="Script" uid="uid://cs1fahg27mkye" path="res://Scripts/Main_Containers/property_container.gd" id="1_nyvty"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jtfbr"]
 

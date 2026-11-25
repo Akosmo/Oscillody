@@ -1,7 +1,7 @@
 # Oscillody
 # Copyright (C) 2025-present Akosmo
 
-# noise_utilities.gd is part of Oscillody.
+# shader_utilities.gd is part of Oscillody.
 # Unless specified otherwise, it is under the license below:
 
 # Oscillody is free software: you can redistribute it and/or modify it

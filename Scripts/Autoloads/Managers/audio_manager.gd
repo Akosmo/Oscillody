@@ -180,6 +180,8 @@ If it's .wav, make sure it has no more than 2 channels, \
 and is either uncompressed PCM or IEEE float format.".format({"path": p_path})
 				)
 				return Error.FAILED
+			if stream.get_format() >= 2:
+				CustomLogger.log_warning("Imported stream was lossily compressed.")
 			if not _streams.set(StringName(p_path), stream):
 				CustomLogger.log_critical_error("Could not set stream to streams dictionary.")
 				return Error.FAILED

@@ -64,32 +64,31 @@ Check your Internet connection if you want Oscillody to check for updates upon l
 		)
 
 func _on_request_completed(
-	result: int,
-	response_code: int,
-	_headers: PackedStringArray,
-	body: PackedByteArray
+	p_result: int,
+	p_response_code: int,
+	_p_headers: PackedStringArray,
+	p_body: PackedByteArray
 ) -> void:
 	CustomLogger.log_normal(
 		"HTTP request completed at {current}. Cannot check again for 10 minutes.".format(
 			{"current": _current_time}
 		)
 	)
-	
 	SettingsManager.set_update_last_checked_at(_current_time)
 	
-	if result != HTTPRequest.Result.RESULT_SUCCESS:
+	if p_result != HTTPRequest.Result.RESULT_SUCCESS:
 		CustomLogger.log_error(
-			"Request failed for latest version, check manually for updates. Result code: " + str(result)
+			"Request failed for latest version, check manually for updates. Result code: " + str(p_result)
 		)
 		return
 	
-	if response_code != 200:
+	if p_response_code != 200:
 		CustomLogger.log_error(
-			"Request failed for latest version, check manually for updates. Response code: " + str(response_code)
+			"Request failed for latest version, check manually for updates. Response code: " + str(p_response_code)
 		)
 		return
 	
-	var json_body: Dictionary = JSON.parse_string(body.get_string_from_utf8())
+	var json_body: Dictionary = JSON.parse_string(p_body.get_string_from_utf8())
 	if json_body == null:
 		CustomLogger.log_error("Could not parse request for latest version.")
 		return

@@ -1,7 +1,7 @@
 # Oscillody
 # Copyright (C) 2025-present Akosmo
 
-# basic_property_container.gd is part of Oscillody.
+# property_container.gd is part of Oscillody.
 # Unless specified otherwise, it is under the license below:
 
 # Oscillody is free software: you can redistribute it and/or modify it
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along with Oscillody.
 # If not, see <https://www.gnu.org/licenses/>.
 
-class_name BasicPropertyContainer
+class_name PropertyContainer
 extends PanelContainer
 
 signal property_value_changed(p_property_key: StringName, p_property_value: Variant)

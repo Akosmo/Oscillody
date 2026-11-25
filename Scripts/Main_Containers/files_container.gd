@@ -17,7 +17,7 @@
 
 extends PanelContainer
 
-@onready var _preset_container: BasicPropertyContainer = %PresetContainer
+@onready var _preset_container: PropertyContainer = %PresetContainer
 @onready var _save_preset_button: Button = %SavePresetButton
 @onready var _open_preset_folder_button: Button = %OpenPresetFolderButton
 
@@ -27,12 +27,12 @@ extends PanelContainer
 @onready var _export_video_button: Button = %ExportVideoButton
 @onready var _export_video_file_dialog: FileDialog = %ExportVideoFileDialog
 
-@onready var _master_container: BasicPropertyContainer = %MasterContainer
+@onready var _master_container: PropertyContainer = %MasterContainer
 
 func _ready() -> void:
 	_connect_signals()
 	
-	_preset_container.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
+	_preset_container.set_control_node(PropertyContainer.ControlNode.OPTION_BUTTON)
 	_preset_container.set_property_key(FileManager.SN_PRESET)
 	var preset_list: PackedStringArray = FileManager.get_preset_list()
 	if not preset_list.is_empty():
@@ -42,7 +42,7 @@ func _ready() -> void:
 	_preset_container.set_reset_value("")
 	_preset_container.option_button.set_allow_reselect(true)
 	
-	_master_container.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
+	_master_container.set_control_node(PropertyContainer.ControlNode.OPTION_BUTTON)
 	_master_container.set_property_key(FileManager.SN_MASTER)
 	_master_container.set_property_value(&"")
 	_master_container.set_reset_value(&"")

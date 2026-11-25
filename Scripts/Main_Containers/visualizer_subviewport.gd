@@ -192,30 +192,31 @@ func _on_master_changed() -> void:
 			AudioManager.set_master_duration(_master_player.get_stream().get_length())
 
 func _on_play_pause_requested() -> void:
-	if _master_player != null:
-		# If Master Player is stopped.
-		if not AudioManager.is_master_playing() and not _master_player.get_stream_paused():
-			# User can seek while Master Player is stopped.
-			_play_streams(AudioManager.get_master_position())
-			AudioManager.set_master_playing(true)
-		else:
-			# Master Player is either playing or paused.
-			_pause_streams(AudioManager.is_master_playing())
-			# If user seeked while the Master Player was paused.
-			if _master_player.get_playback_position() != AudioManager.get_master_position():
-				if (
-					AudioManager.get_master_position() < AudioManager.get_master_duration() or
-					AudioManager.is_loop_enabled()
-				):
-					_seek_streams(AudioManager.get_master_position())
-					AudioManager.set_master_playing(not AudioManager.is_master_playing())
-				else:
-					# If user seeked at or past duration and looping is disabled.
-					# Seeking at the exact duration just loops back, so avoid that.
-					_seek_streams(AudioManager.get_master_position() - 0.01)
-			else:
+	if _master_player == null:
+		return
+	
+	# If Master Player is stopped.
+	if not AudioManager.is_master_playing() and not _master_player.get_stream_paused():
+		# User can seek while Master Player is stopped.
+		_play_streams(AudioManager.get_master_position())
+		AudioManager.set_master_playing(true)
+	else:
+		# Master Player is either playing or paused.
+		_pause_streams(AudioManager.is_master_playing())
+		# If user seeked while the Master Player was paused.
+		if _master_player.get_playback_position() != AudioManager.get_master_position():
+			if (
+				AudioManager.get_master_position() < AudioManager.get_master_duration() or
+				AudioManager.is_loop_enabled()
+			):
+				_seek_streams(AudioManager.get_master_position())
 				AudioManager.set_master_playing(not AudioManager.is_master_playing())
-		
+			else:
+				# If user seeked at or past duration and looping is disabled.
+				# Seeking at the exact duration just loops back, so avoid that.
+				_seek_streams(AudioManager.get_master_position() - 0.01)
+		else:
+			AudioManager.set_master_playing(not AudioManager.is_master_playing())
 
 func _on_stop_requested() -> void:
 	if _master_player != null:
@@ -228,17 +229,20 @@ func _on_volume_change_requested() -> void:
 	AudioServer.set_bus_volume_linear(0, AudioManager.get_master_volume())
 
 func _on_seek_requested(p_time: float) -> void:
-	if _master_player != null:
-		if p_time < AudioManager.get_master_duration() or AudioManager.is_loop_enabled():
-			_seek_streams(p_time)
-		else:
-			# Seeking at the exact duration just loops back, so avoid that.
-			_seek_streams(p_time - 0.01)
+	if _master_player == null:
+		return
+	
+	if p_time < AudioManager.get_master_duration() or AudioManager.is_loop_enabled():
+		_seek_streams(p_time)
+	else:
+		# Seeking at the exact duration just loops back, so avoid that.
+		_seek_streams(p_time - 0.01)
 
 func _on_master_finished() -> void:
 	if OS.has_feature("movie"):
 		CustomLogger.log_normal("Video exporting has finished.")
 		get_tree().quit()
+		return
 	
 	if AudioManager.is_loop_enabled():
 		_play_streams()

@@ -1,18 +1,14 @@
 # Troubleshooting
-- - -
 ## How to use this file
-- - -
 This file will contain several issues you might encounter, and a guide on fixing them. If none of these solutions help, submit a bug report (read: CONTRIBUTING).
 Oscillody will also show you an alert if you encounter an error and how to fix it, but it might not be available for every error.
 
 ## Known issues
-- - -
 - Waveform display may look broken
 - Audio in exported videos are always 44.1kHz (only a "problem" if you've imported a 48kHz audio).
 - MP4 videos may have some small audio artifacts (you have the option to encode yourself). (TODO: Add option to not delete temp files).
 
 ## Possible issues
-- - -
 ### Oscillody won't launch
 - Update your graphics driver. If that doesn't help, launch Oscillody in compatibility renderer mode, by going to the Oscillody folder, replacing directory path by "cmd" and pressing Enter, pressing Tab until Oscillody.exe appears on the command prompt, then pressing space and typing "--rendering-driver opengl3" or "--rendering-method compatibility". If that doesn't work, submit a bug report. No quotes for any of the commands.
 

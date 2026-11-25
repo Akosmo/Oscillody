@@ -33,7 +33,8 @@ func _ready() -> void:
 	# We log system info here because it has information for several things (audio, video, etc), and
 	# because this is the last autoload to be called. It's also easier to have all of this logged in a
 	# single place.
-	_log_system_info()
+	if not OS.has_feature("movie"):
+		_log_system_info()
 	
 	_audio_players = {}
 	

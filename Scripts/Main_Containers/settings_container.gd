@@ -17,38 +17,38 @@
 
 extends PanelContainer
 
-@onready var _input_device_container: BasicPropertyContainer = %InputDeviceContainer
-@onready var _output_device_container: BasicPropertyContainer = %OutputDeviceContainer
-@onready var _export_resolution_container: BasicPropertyContainer = %ExportResolutionContainer
-@onready var _ffmpeg_path_container: BasicPropertyContainer = %FFmpegPathContainer
-@onready var _delete_temporary_files_container: BasicPropertyContainer = %DeleteTemporaryFilesContainer
-@onready var _sync_element_shake_container: BasicPropertyContainer = %SyncElementShakeContainer
-@onready var _sync_shader_time_container: BasicPropertyContainer = %SyncShaderTimeContainer
-@onready var _debug_panel_container: BasicPropertyContainer = %DebugPanelContainer
+@onready var _input_device_container: PropertyContainer = %InputDeviceContainer
+@onready var _output_device_container: PropertyContainer = %OutputDeviceContainer
+@onready var _export_resolution_container: PropertyContainer = %ExportResolutionContainer
+@onready var _ffmpeg_path_container: PropertyContainer = %FFmpegPathContainer
+@onready var _delete_temporary_files_container: PropertyContainer = %DeleteTemporaryFilesContainer
+@onready var _sync_element_shake_container: PropertyContainer = %SyncElementShakeContainer
+@onready var _sync_shader_time_container: PropertyContainer = %SyncShaderTimeContainer
+@onready var _debug_panel_container: PropertyContainer = %DebugPanelContainer
 
 func _ready() -> void:
-	_input_device_container.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
+	_input_device_container.set_control_node(PropertyContainer.ControlNode.OPTION_BUTTON)
 	_input_device_container.set_property_key(SettingsManager.SN_INPUT_DEVICE)
 	for input_device: String in AudioServer.get_input_device_list():
 		_input_device_container.option_button.add_item(input_device)
 	_input_device_container.set_property_value_with_node(SettingsManager.get_input_device())
 	_input_device_container.property_value_changed.connect(_on_property_value_changed)
 	
-	_output_device_container.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
+	_output_device_container.set_control_node(PropertyContainer.ControlNode.OPTION_BUTTON)
 	_output_device_container.set_property_key(SettingsManager.SN_OUTPUT_DEVICE)
 	for output_device: String in AudioServer.get_output_device_list():
 		_output_device_container.option_button.add_item(output_device)
 	_output_device_container.set_property_value_with_node(SettingsManager.get_output_device())
 	_output_device_container.property_value_changed.connect(_on_property_value_changed)
 	
-	_export_resolution_container.set_control_node(BasicPropertyContainer.ControlNode.OPTION_BUTTON)
+	_export_resolution_container.set_control_node(PropertyContainer.ControlNode.OPTION_BUTTON)
 	_export_resolution_container.set_property_key(SettingsManager.SN_EXPORT_RESOLUTION)
 	for resolution: StringName in SettingsManager.EXPORT_RESOLUTIONS:
 		_export_resolution_container.option_button.add_item(resolution)
 	_export_resolution_container.set_property_value_with_node(SettingsManager.get_export_resolution())
 	_export_resolution_container.property_value_changed.connect(_on_property_value_changed)
 	
-	_ffmpeg_path_container.set_control_node(BasicPropertyContainer.ControlNode.BUTTON)
+	_ffmpeg_path_container.set_control_node(PropertyContainer.ControlNode.BUTTON)
 	_ffmpeg_path_container.set_property_key(SettingsManager.SN_FFMPEG_PATH)
 	_ffmpeg_path_container.use_file_dialog()
 	_ffmpeg_path_container.button.set_text("Select Path")
@@ -58,25 +58,25 @@ func _ready() -> void:
 	_ffmpeg_path_container.set_reset_value("")
 	_ffmpeg_path_container.property_value_changed.connect(_on_property_value_changed)
 	
-	_delete_temporary_files_container.set_control_node(BasicPropertyContainer.ControlNode.CHECK_BUTTON)
+	_delete_temporary_files_container.set_control_node(PropertyContainer.ControlNode.CHECK_BUTTON)
 	_delete_temporary_files_container.set_property_key(SettingsManager.SN_DELETE_TEMPORARY_FILES)
 	_delete_temporary_files_container.set_property_value_with_node(SettingsManager.get_delete_temporary_files())
 	_delete_temporary_files_container.set_reset_value(true)
 	_delete_temporary_files_container.property_value_changed.connect(_on_property_value_changed)
 	
-	_sync_element_shake_container.set_control_node(BasicPropertyContainer.ControlNode.BUTTON)
+	_sync_element_shake_container.set_control_node(PropertyContainer.ControlNode.BUTTON)
 	_sync_element_shake_container.set_property_key(SettingsManager.SN_SYNC_ELEMENT_SHAKE)
 	_sync_element_shake_container.use_file_dialog(false)
 	_sync_element_shake_container.button.set_text("Sync")
 	_sync_element_shake_container.property_value_changed.connect(_on_property_value_changed)
 	
-	_sync_shader_time_container.set_control_node(BasicPropertyContainer.ControlNode.BUTTON)
+	_sync_shader_time_container.set_control_node(PropertyContainer.ControlNode.BUTTON)
 	_sync_shader_time_container.set_property_key(SettingsManager.SN_SYNC_SHADER_TIME)
 	_sync_shader_time_container.use_file_dialog(false)
 	_sync_shader_time_container.button.set_text("Sync")
 	_sync_shader_time_container.property_value_changed.connect(_on_property_value_changed)
 	
-	_debug_panel_container.set_control_node(BasicPropertyContainer.ControlNode.CHECK_BUTTON)
+	_debug_panel_container.set_control_node(PropertyContainer.ControlNode.CHECK_BUTTON)
 	_debug_panel_container.set_property_key(SettingsManager.SN_DEBUG_PANEL)
 	_debug_panel_container.set_property_value_with_node(SettingsManager.get_debug_panel())
 	_debug_panel_container.property_value_changed.connect(_on_property_value_changed)

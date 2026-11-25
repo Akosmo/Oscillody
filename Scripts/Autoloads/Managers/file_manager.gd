@@ -310,6 +310,7 @@ func load_audio_files() -> Error:
 		return Error.FAILED
 	
 	var load_data: PackedStringArray = _fix_audio_json_data(raw_data)
+	#var load_data: PackedStringArray = raw_data
 	
 	for path: String in load_data:
 		if AudioManager.import_audio_files(path):

@@ -67,7 +67,7 @@ func set_analyzer_end_position(p_value: Vector2) -> void:
 	_update_spacing()
 
 func set_analyzer_height(p_value: float) -> void:
-	_analyzer_height = WindowUtilities.get_subviewport().get_size().y / 2.0 * p_value
+	_analyzer_height = WindowUtilities.get_subviewport().get_size().y * 0.5 * p_value
 
 func set_sample_history_length(p_value: int) -> void:
 	_waveform_sample_history_length = p_value

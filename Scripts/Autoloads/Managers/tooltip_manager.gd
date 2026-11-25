@@ -19,17 +19,17 @@ extends Node
 
 signal tooltip_updated(p_visible: bool, p_text: String)
 
-func notify_tooltip(p_visible: bool, p_property_container: BasicPropertyContainer) -> void:
+func notify_tooltip(p_visible: bool, p_property_container: PropertyContainer) -> void:
 	if p_visible:
 		tooltip_updated.emit(p_visible, _get_tooltip_text(p_property_container))
 	else:
 		tooltip_updated.emit(p_visible, "")
 
-func _get_tooltip_text(p_property_container: BasicPropertyContainer) -> String:
+func _get_tooltip_text(p_property_container: PropertyContainer) -> String:
 	var ret: String = ""
 	var property_range: String = ""
 	if (
-		p_property_container.get_control_node() == BasicPropertyContainer.ControlNode.NUMERICAL and
+		p_property_container.get_control_node() == PropertyContainer.ControlNode.NUMERICAL and
 		p_property_container.get_property_key() != Element.SN_ELEMENT_LAYER
 	):
 		var property_min: String = str(p_property_container.spin_box.get_min())

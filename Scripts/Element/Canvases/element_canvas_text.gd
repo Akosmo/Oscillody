@@ -87,9 +87,11 @@ func _process(_p_delta: float) -> void:
 				_text_line.count(">") == 2
 			):
 				_time_string = _text_line.get_slice(">", 0).trim_prefix("<")
-				if _time_string.is_valid_float():
-					if AudioManager.get_master_position() >= _time_string.to_float():
-						_formatted_text = _text_line.c_unescape().get_slice(">", 1).trim_prefix("<")
+				if (
+					_time_string.is_valid_float() and
+					AudioManager.get_master_position() >= _time_string.to_float()
+				):
+					_formatted_text = _text_line.c_unescape().get_slice(">", 1).trim_prefix("<")
 	
 	_label.set_text(_formatted_text)
 	_fix_transform()

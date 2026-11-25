@@ -1,5 +1,4 @@
 # Changelog
-- - -
 ## 1.0.0 (February 23, 2025)
 ### Added:
 - Everything that is in the app!
@@ -99,7 +98,6 @@
 - Cursor becomes hidden when UI is also hidden (re-add... along with a bunch of these)
 - Dividers on vertical layout
 - Bloom Blend Mode
-- Added User Agent when checking for updates
 - Complete system overhaul, allowing multiple Elements (visualizer components), with free control over type, layer, visibility, and more (v3)
 - Button to open preset folder (v3)
 - Master selector (v3)
@@ -121,6 +119,7 @@ x
 - Code optimization, reorganization, and comments
 - Changing Buffer Queue Size (now Sample History Length) no longer requires restart, and moved it to waveform settings
 - CHANGELOG, README, and TROUBLESHOOTING
+- Improved update checking
 - About section of the app
 - Improved logs
 - Copyright year

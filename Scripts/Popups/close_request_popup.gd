@@ -31,18 +31,20 @@ func _ready() -> void:
 	_cancel_button.pressed.connect(_on_cancel_pressed)
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		if FileManager.get_unsaved_changes():
-			popup_show()
-			return
-		
-		if FileManager.save_settings():
-			CustomLogger.log_warning(
-				"Could not save settings. Next app launch will load either default settings, or settings \
+	if what != NOTIFICATION_WM_CLOSE_REQUEST:
+		return
+	
+	if FileManager.get_unsaved_changes():
+		popup_show()
+		return
+	
+	if FileManager.save_settings():
+		CustomLogger.log_warning(
+			"Could not save settings. Next app launch will load either default settings, or settings \
 saved previously"
-			)
-		CustomLogger.log_normal("Closing Oscillody.")
-		get_tree().quit()
+		)
+	CustomLogger.log_normal("Closing Oscillody.")
+	get_tree().quit()
 
 func _on_quit_pressed() -> void:
 	if FileManager.save_settings():
